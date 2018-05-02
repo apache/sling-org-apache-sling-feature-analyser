@@ -1,4 +1,4 @@
-# OSGi Feature Model Analyser
+# Feature Model Analyser
 
 The Analyser can analyse a feature for completeness, to ensure all requirements are satisfied by capabilities. The analyser is pluggable and can also perform other checks.
 
