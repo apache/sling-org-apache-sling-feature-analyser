@@ -30,7 +30,8 @@ public interface AnalyserTaskContext {
     Application getApplication();
 
     /**
-     * The application descriptor
+     * The application descriptor.
+     * @return the descriptor.
      */
     ApplicationDescriptor getDescriptor();
 

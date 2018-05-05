@@ -16,12 +16,12 @@
  */
 package org.apache.sling.feature.scanner.spi;
 
-import java.io.IOException;
-
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.osgi.annotation.versioning.ConsumerType;
+
+import java.io.IOException;
 
 /**
  * The extension scanner scans an extension.
@@ -29,10 +29,14 @@ import org.osgi.annotation.versioning.ConsumerType;
 @ConsumerType
 public interface ExtensionScanner  {
 
-    /** A unique (short) id. */
+    /** A unique (short) ID.
+     * @return the ID.
+     */
     String getId();
 
-    /** A human readable name to identify the scanner. */
+    /** A human readable name to identify the scanner.
+     * @return the name.
+     */
     String getName();
 
     /**

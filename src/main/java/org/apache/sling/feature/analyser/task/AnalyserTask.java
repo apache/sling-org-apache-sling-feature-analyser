@@ -25,17 +25,23 @@ import org.osgi.annotation.versioning.ConsumerType;
 @ConsumerType
 public interface AnalyserTask {
 
-    /** A unique (short) id. */
+    /** A unique (short) ID.
+     * @return the task ID.
+     */
     default String getId() {
         return getClass().getName();
     };
 
-    /** A human readable name to identify the task. */
+    /** A human readable name to identify the task.
+     * @return the task name.
+     */
     default String getName() {
         return getClass().getSimpleName();
     };
 
-    /** Execute the task. */
+    /** Execute the task.
+     * @param the task context.
+     */
     void execute(AnalyserTaskContext ctx) throws Exception;
 }
 
