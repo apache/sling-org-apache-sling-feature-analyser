@@ -40,7 +40,8 @@ public interface AnalyserTask {
     };
 
     /** Execute the task.
-     * @param the task context.
+     * @param ctx the task context.
+     * @throws Exception when the task throws an exception.
      */
     void execute(AnalyserTaskContext ctx) throws Exception;
 }
