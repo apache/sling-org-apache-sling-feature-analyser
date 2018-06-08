@@ -16,14 +16,6 @@
  */
 package org.apache.sling.feature.analyser;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
-
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
@@ -31,6 +23,12 @@ import org.apache.sling.feature.scanner.ApplicationDescriptor;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.ServiceLoader;
 
 public class Analyser {
 
@@ -41,33 +39,42 @@ public class Analyser {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public Analyser(final Scanner scanner,
-            final AnalyserTask...tasks)
-    throws IOException {
+            final AnalyserTask...tasks) throws IOException {
         this.tasks = tasks;
         this.scanner = scanner;
     }
 
     public Analyser(final Scanner scanner,
-            final String... taskIds)
+            final String... taskClassNames)
     throws IOException {
-        this(scanner, getTasks(taskIds));
-        if ( this.tasks.length != taskIds.length ) {
-            throw new IOException("Couldn't find all tasks " + taskIds);
+        this(scanner, getTasksByClassName(taskClassNames));
+        if ( this.tasks.length != taskClassNames.length ) {
+            throw new IOException("Couldn't find all tasks " + Arrays.toString(taskClassNames));
         }
     }
 
-    public Analyser(final Scanner scanner)
-    throws IOException {
-        this(scanner, getTasks((String[])null));
+    public Analyser(final Scanner scanner) throws IOException {
+        this(scanner, getTasks());
     }
 
-    private static AnalyserTask[] getTasks(final String... taskIds) {
-        final Set<String> ids = taskIds == null ? null : new HashSet<>(Arrays.asList(taskIds));
+    private static AnalyserTask[] getTasks() {
         final ServiceLoader<AnalyserTask> loader = ServiceLoader.load(AnalyserTask.class);
         final List<AnalyserTask> list = new ArrayList<>();
         for(final AnalyserTask task : loader) {
-            if ( ids == null || ids.contains(task.getId()) ) {
+            list.add(task);
+        }
+        return list.toArray(new AnalyserTask[list.size()]);
+    }
+
+    // Get tasks from class names
+    private static AnalyserTask[] getTasksByClassName(String[] taskClassNames) throws IOException {
+        List<AnalyserTask> list = new ArrayList<>();
+        for (String cls : taskClassNames) {
+            try {
+                AnalyserTask task = (AnalyserTask) Analyser.class.getClassLoader().loadClass(cls).newInstance();
                 list.add(task);
+            } catch (Exception e) {
+                throw new IOException(e);
             }
         }
         return list.toArray(new AnalyserTask[list.size()]);

@@ -16,6 +16,13 @@
  */
 package org.apache.sling.feature.analyser.main;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Application;
 import org.apache.sling.feature.analyser.Analyser;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
@@ -25,11 +32,36 @@ import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
 public class Main {
+    private static String applicationFile;
+    private static String pluginClass;
+
+    private static void parseArgs(final String[] args) {
+        Option fileOption = new Option("f", true, "Set application file");
+        Option pluginOption = new Option("p", true, "Explicitly specify plugin class to run, "
+                + "if ommitted the default plugins are used");
+
+        Options options = new Options();
+        options.addOption(fileOption);
+        options.addOption(pluginOption);
+
+        CommandLineParser parser = new DefaultParser();
+        try {
+            CommandLine cl = parser.parse(options, args);
+
+            applicationFile = cl.getOptionValue(fileOption.getOpt());
+            if (cl.hasOption(pluginOption.getOpt())) {
+                pluginClass = cl.getOptionValue(pluginOption.getOpt());
+            }
+        } catch (ParseException e) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("", options);
+            System.exit(1);
+        }
+    }
 
     public static void main(final String[] args) {
         // setup logging
@@ -42,20 +74,18 @@ public class Main {
         logger.info("Apache Sling Application Analyser");
         logger.info("");
 
-        if ( args.length == 0 ) {
+        parseArgs(args);
+
+        if (applicationFile == null) {
             logger.error("Required argument missing: application file");
             System.exit(1);
         }
-        if ( args.length > 1 ) {
-            logger.error("Too many arguments. Only one (application file) is supported");
-            System.exit(1);
-        }
-        final File f = new File(args[0]);
+
         Application app = null;
-        try ( final FileReader r = new FileReader(f)) {
+        try ( final FileReader r = new FileReader(applicationFile)) {
             app = ApplicationJSONReader.read(r);
         } catch ( final IOException ioe) {
-            logger.error("Unable to read application: {}", f, ioe);
+            logger.error("Unable to read application: {}", applicationFile, ioe);
             System.exit(1);
         }
         if ( app.getFramework() == null ) {
@@ -64,10 +94,15 @@ public class Main {
 
         try {
             final Scanner scanner = new Scanner(new ArtifactManagerConfig());
-            final Analyser analyser = new Analyser(scanner);
+            final Analyser analyser;
+            if (pluginClass != null) {
+                analyser = new Analyser(scanner, pluginClass);
+            } else {
+                analyser = new Analyser(scanner);
+            }
             analyser.analyse(app);
         } catch ( final Exception e) {
-            logger.error("Unable to analyse application: {}", f, e);
+            logger.error("Unable to analyse application: {}", applicationFile, e);
             System.exit(1);
         }
     }
