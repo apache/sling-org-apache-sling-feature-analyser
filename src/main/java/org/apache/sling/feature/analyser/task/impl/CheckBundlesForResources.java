@@ -18,15 +18,15 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Manifest;
+
 import org.apache.felix.utils.manifest.Clause;
 import org.apache.felix.utils.manifest.Parser;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.jar.Manifest;
 
 public class CheckBundlesForResources implements AnalyserTask {
 
@@ -52,7 +52,7 @@ public class CheckBundlesForResources implements AnalyserTask {
     @Override
     public void execute(final AnalyserTaskContext ctx) {
         // check for initial content
-        for(final BundleDescriptor info : ctx.getDescriptor().getBundleDescriptors()) {
+        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             final List<String> bundleResources = extractBundleResources(info.getManifest());
             if ( !bundleResources.isEmpty() ) {
                 ctx.reportWarning("Found bundle resources in " + info.getArtifact() + " : " + bundleResources);

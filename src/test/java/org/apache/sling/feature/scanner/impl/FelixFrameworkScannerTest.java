@@ -61,7 +61,7 @@ public class FelixFrameworkScannerTest {
 
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",
-                "5.6.10", null, null), kvmap, fwFile);
+                "5.6.10", null, null), fwFile, kvmap);
 
         assertFalse(bundleDescriptor.getExportedPackages().isEmpty());
         assertFalse(bundleDescriptor.getCapabilities().isEmpty());

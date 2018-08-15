@@ -69,7 +69,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
     }
 
     private void checkForVersionOnExportedPackages(final AnalyserTaskContext ctx, final Map<BundleDescriptor, Report> reports) {
-        for(final BundleDescriptor info : ctx.getDescriptor().getBundleDescriptors()) {
+        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             if ( info.getExportedPackages() != null ) {
                 for(final PackageInfo i : info.getExportedPackages()) {
                     if ( i.getPackageVersion().compareTo(Version.emptyVersion) == 0 ) {
@@ -81,7 +81,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
     }
 
     private void checkForVersionOnImportingPackages(final AnalyserTaskContext ctx, final Map<BundleDescriptor, Report> reports) {
-        for(final BundleDescriptor info : ctx.getDescriptor().getBundleDescriptors()) {
+        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             if ( info.getImportedPackages() != null ) {
                 for(final PackageInfo i : info.getImportedPackages()) {
                     if ( i.getVersion() == null ) {
@@ -105,7 +105,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
         checkForVersionOnImportingPackages(ctx, reports);
 
         final SortedMap<Integer, List<BundleDescriptor>> bundlesMap = new TreeMap<>();
-        for(final BundleDescriptor bi : ctx.getDescriptor().getBundleDescriptors()) {
+        for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             List<BundleDescriptor> list = bundlesMap.get(bi.getBundleStartLevel());
             if ( list == null ) {
                 list = new ArrayList<>();
@@ -114,7 +114,11 @@ public class CheckBundleExportsImports implements AnalyserTask {
             list.add(bi);
         }
 
+        // add all system packages
         final List<BundleDescriptor> exportingBundles = new ArrayList<>();
+        if ( ctx.getFrameworkDescriptor() != null ) {
+            exportingBundles.add(ctx.getFrameworkDescriptor());
+        }
 
         for(final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
             // first add all exporting bundles

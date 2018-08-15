@@ -22,9 +22,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
@@ -82,9 +84,19 @@ public class Analyser {
 
     public void analyse(final Feature feature)
     throws Exception {
+        this.analyse(feature, null);
+    }
+
+    public void analyse(final Feature feature, final ArtifactId fwk)
+    throws Exception {
         logger.info("Starting feature analyzer...");
 
         final FeatureDescriptor featureDesc = scanner.scan(feature);
+        BundleDescriptor bd = null;
+        if ( fwk != null ) {
+            bd = scanner.scan(fwk, feature.getFrameworkProperties());
+        }
+        final BundleDescriptor fwkDesc = bd;
 
         final List<String> warnings = new ArrayList<>();
         final List<String> errors = new ArrayList<>();
@@ -100,8 +112,13 @@ public class Analyser {
                 }
 
                 @Override
-                public FeatureDescriptor getDescriptor() {
+                public FeatureDescriptor getFeatureDescriptor() {
                     return featureDesc;
+                }
+
+                @Override
+                public BundleDescriptor getFrameworkDescriptor() {
+                    return fwkDesc;
                 }
 
                 @Override

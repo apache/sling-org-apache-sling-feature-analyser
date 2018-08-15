@@ -38,7 +38,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     @Override
     public void execute(AnalyserTaskContext ctx) throws Exception {
         final SortedMap<Integer, List<ArtifactDescriptor>> artifactsMap = new TreeMap<>();
-        for(final BundleDescriptor bi : ctx.getDescriptor().getBundleDescriptors()) {
+        for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             List<ArtifactDescriptor> list = artifactsMap.get(bi.getBundleStartLevel());
             if ( list == null ) {
                 list = new ArrayList<>();
@@ -47,15 +47,18 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
             list.add(bi);
         }
 
-        if (!ctx.getDescriptor().getArtifactDescriptors().isEmpty()) {
+        if (!ctx.getFeatureDescriptor().getArtifactDescriptors().isEmpty()) {
             artifactsMap.put(
                     (artifactsMap.isEmpty() ? 0 : artifactsMap.lastKey()) + 1,
-                    new ArrayList<>(ctx.getDescriptor().getArtifactDescriptors())
+                    new ArrayList<>(ctx.getFeatureDescriptor().getArtifactDescriptors())
                     );
         }
 
         // add system artifact
         final List<ArtifactDescriptor> artifacts = new ArrayList<>();
+        if ( ctx.getFrameworkDescriptor() != null ) {
+            artifacts.add(ctx.getFrameworkDescriptor());
+        }
 
         for(final Map.Entry<Integer, List<ArtifactDescriptor>> entry : artifactsMap.entrySet()) {
             // first add all providing artifacts

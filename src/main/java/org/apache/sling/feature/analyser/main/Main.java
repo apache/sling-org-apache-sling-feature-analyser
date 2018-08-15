@@ -26,14 +26,9 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.analyser.Analyser;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
-import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
@@ -91,14 +86,6 @@ public class Main {
         } catch ( final IOException ioe) {
             logger.error("Unable to read application: {}", featureFile, ioe);
             System.exit(1);
-        }
-        // check framework
-        if ( feature.getExtensions().getByName(FeatureConstants.EXTENSION_NAME_FRAMEWORK) == null ) {
-
-            // use hard coded Apache Felix
-            final Extension fwk = new Extension(ExtensionType.JSON, FeatureConstants.EXTENSION_NAME_FRAMEWORK, false);
-            fwk.getArtifacts().add(new Artifact(IOUtils.getFelixFrameworkId(null)));
-            feature.getExtensions().add(fwk);
         }
 
         try {

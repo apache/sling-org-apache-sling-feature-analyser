@@ -81,6 +81,7 @@
                         <exclude>readme.md</exclude>
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.analyser.task.AnalyserTask</exclude>
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.ExtensionScanner</exclude>
+                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.FrameworkScanner</exclude>
                     </excludes>
                 </configuration>
             </plugin>

@@ -24,15 +24,18 @@ import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
+import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 
 /**
  * The scanner is a service that scans items and provides descriptions for these.
@@ -41,6 +44,7 @@ import org.apache.sling.feature.scanner.spi.ExtensionScanner;
  *   <li>A bundle artifact
  *   <li>An extension (requires {@link ExtensionScanner}s)
  *   <li>A feature (requires {@link ExtensionScanner}s)
+ *   <li>A framework (requires {@link FrameworkScanner}s)
  * </ul>
  */
 public class Scanner {
@@ -48,6 +52,8 @@ public class Scanner {
     private final ArtifactManager artifactManager;
 
     private final List<ExtensionScanner> extensionScanners;
+
+    private final List<FrameworkScanner> frameworkScanners;
 
     /**
      * Create a new scanner
@@ -57,10 +63,12 @@ public class Scanner {
      * @throws IOException If something goes wrong
      */
     public Scanner(final ArtifactManagerConfig amConfig,
-            final List<ExtensionScanner> extensionScanners)
+            final List<ExtensionScanner> extensionScanners,
+            final List<FrameworkScanner> frameworkScanners)
     throws IOException {
         this.artifactManager = ArtifactManager.getArtifactManager(amConfig);
         this.extensionScanners = extensionScanners == null ? getServices(ExtensionScanner.class) : extensionScanners;
+        this.frameworkScanners = frameworkScanners == null ? getServices(FrameworkScanner.class) : frameworkScanners;
     }
 
     /**
@@ -71,7 +79,7 @@ public class Scanner {
      */
     public Scanner(final ArtifactManagerConfig amConfig)
     throws IOException {
-        this(amConfig, null);
+        this(amConfig, null, null);
     }
 
     /**
@@ -170,5 +178,32 @@ public class Scanner {
         desc.lock();
 
         return desc;
+    }
+
+    /**
+     * Scan a framework
+     *
+     * @param framework The framework
+     * @return The framework descriptor
+     * @throws IOException If something goes wrong or a scanner is missing
+     */
+    public BundleDescriptor scan(final ArtifactId framework, final KeyValueMap props) throws IOException {
+        final File file = artifactManager.getArtifactHandler(framework.toMvnUrl()).getFile();
+        if ( file == null ) {
+            throw new IOException("Unable to find file for " + framework);
+        }
+
+        BundleDescriptor fwk = null;
+        for(final FrameworkScanner scanner : this.frameworkScanners) {
+            fwk = scanner.scan(framework, file, props);
+            if ( fwk != null ) {
+                break;
+            }
+        }
+        if ( fwk == null ) {
+            throw new IOException("No scanner found for framework " + framework.toMvnId());
+        }
+
+        return fwk;
     }
 }

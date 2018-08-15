@@ -16,16 +16,16 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
 
 public class ListExportedPackages implements AnalyserTask {
 
@@ -33,7 +33,7 @@ public class ListExportedPackages implements AnalyserTask {
     public void execute(AnalyserTaskContext ctx) throws Exception {
         SortedSet<String> packages = new TreeSet<>();
 
-        for (BundleDescriptor bd : ctx.getDescriptor().getBundleDescriptors()) {
+        for (BundleDescriptor bd : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             for (PackageInfo p : bd.getExportedPackages()) {
                 packages.add(p.getName());
             }

@@ -17,6 +17,7 @@
 package org.apache.sling.feature.analyser.task;
 
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -33,7 +34,13 @@ public interface AnalyserTaskContext {
      * The feature descriptor.
      * @return the descriptor.
      */
-    FeatureDescriptor getDescriptor();
+    FeatureDescriptor getFeatureDescriptor();
+
+    /**
+     * The framework descriptor
+     * @return the descriptor
+     */
+    BundleDescriptor getFrameworkDescriptor();
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report
