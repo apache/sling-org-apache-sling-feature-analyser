@@ -82,12 +82,7 @@ public class FelixFrameworkScanner implements ExtensionScanner {
             throw new IOException("Unable to find framework file for " + framework);
         }
 
-        final KeyValueMap fwkProps = getFrameworkProperties(feature.getFrameworkProperties(), platformFile);
-        if ( fwkProps == null ) {
-            return null;
-        }
-
-        final BundleDescriptor d = scan(framework, fwkProps, platformFile);
+        final BundleDescriptor d = scan(framework, feature.getFrameworkProperties(), platformFile);
         final ContainerDescriptor cd = new ContainerDescriptor() {};
 
         cd.getBundleDescriptors().add(d);
@@ -98,8 +93,13 @@ public class FelixFrameworkScanner implements ExtensionScanner {
     }
 
     public BundleDescriptor scan(final ArtifactId framework,
-            final KeyValueMap fwkProps,
+            final KeyValueMap featureProps,
             final File platformFile) throws IOException {
+        final KeyValueMap fwkProps = getFrameworkProperties(featureProps, platformFile);
+        if ( fwkProps == null ) {
+            return null;
+        }
+
         final Set<PackageInfo> pcks = calculateSystemPackages(fwkProps);
         final List<Capability> capabilities = calculateSystemCapabilities(fwkProps);
 
