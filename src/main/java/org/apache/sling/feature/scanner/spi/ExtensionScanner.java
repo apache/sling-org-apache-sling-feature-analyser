@@ -16,12 +16,13 @@
  */
 package org.apache.sling.feature.scanner.spi;
 
+import java.io.IOException;
+
 import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.osgi.annotation.versioning.ConsumerType;
-
-import java.io.IOException;
 
 /**
  * The extension scanner scans an extension.
@@ -42,11 +43,14 @@ public interface ExtensionScanner  {
     /**
      * Try to scan the extension and return a descriptor
      *
+     * @param feature The feature the extension belongs to
      * @param extension The extension
      * @param manager Artifact manager
      * @return The descriptor or {@code null} if the scanner does not know the extension
      * @throws IOException If an error occurs while scanning the extension or the extension is invalid
      */
-    ContainerDescriptor scan(Extension extension,
+    ContainerDescriptor scan(
+            Feature feature,
+            Extension extension,
             ArtifactManager manager) throws IOException;
 }

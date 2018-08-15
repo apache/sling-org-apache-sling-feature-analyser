@@ -16,19 +16,19 @@
  */
 package org.apache.sling.feature.analyser;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.ApplicationDescriptor;
-import org.apache.sling.feature.scanner.Scanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ServiceLoader;
+
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Analyser {
 
@@ -80,11 +80,11 @@ public class Analyser {
         return list.toArray(new AnalyserTask[list.size()]);
     }
 
-    public void analyse(final Application app)
+    public void analyse(final Feature feature)
     throws Exception {
-        logger.info("Starting application analyzer...");
+        logger.info("Starting feature analyzer...");
 
-        final ApplicationDescriptor appDesc = scanner.scan(app);
+        final FeatureDescriptor featureDesc = scanner.scan(feature);
 
         final List<String> warnings = new ArrayList<>();
         final List<String> errors = new ArrayList<>();
@@ -95,13 +95,13 @@ public class Analyser {
             task.execute(new AnalyserTaskContext() {
 
                 @Override
-                public Application getApplication() {
-                    return app;
+                public Feature getFeature() {
+                    return feature;
                 }
 
                 @Override
-                public ApplicationDescriptor getDescriptor() {
-                    return appDesc;
+                public FeatureDescriptor getDescriptor() {
+                    return featureDesc;
                 }
 
                 @Override

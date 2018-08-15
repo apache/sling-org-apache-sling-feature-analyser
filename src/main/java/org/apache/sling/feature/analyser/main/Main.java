@@ -16,6 +16,9 @@
  */
 package org.apache.sling.feature.analyser.main;
 
+import java.io.FileReader;
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -23,24 +26,25 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.sling.feature.Application;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.analyser.Analyser;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.io.IOUtils;
-import org.apache.sling.feature.io.json.ApplicationJSONReader;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileReader;
-import java.io.IOException;
-
 public class Main {
-    private static String applicationFile;
+    private static String featureFile;
     private static String pluginClass;
 
     private static void parseArgs(final String[] args) {
-        Option fileOption = new Option("f", true, "Set application file");
+        Option fileOption = new Option("f", true, "Set feature file");
         Option pluginOption = new Option("p", true, "Explicitly specify plugin class to run, "
                 + "if ommitted the default plugins are used");
 
@@ -52,7 +56,7 @@ public class Main {
         try {
             CommandLine cl = parser.parse(options, args);
 
-            applicationFile = cl.getOptionValue(fileOption.getOpt());
+            featureFile = cl.getOptionValue(fileOption.getOpt());
             if (cl.hasOption(pluginOption.getOpt())) {
                 pluginClass = cl.getOptionValue(pluginOption.getOpt());
             }
@@ -76,20 +80,25 @@ public class Main {
 
         parseArgs(args);
 
-        if (applicationFile == null) {
-            logger.error("Required argument missing: application file");
+        if (featureFile == null) {
+            logger.error("Required argument missing: feature file");
             System.exit(1);
         }
 
-        Application app = null;
-        try ( final FileReader r = new FileReader(applicationFile)) {
-            app = ApplicationJSONReader.read(r);
+        Feature feature = null;
+        try ( final FileReader r = new FileReader(featureFile)) {
+            feature = FeatureJSONReader.read(r, featureFile);
         } catch ( final IOException ioe) {
-            logger.error("Unable to read application: {}", applicationFile, ioe);
+            logger.error("Unable to read application: {}", featureFile, ioe);
             System.exit(1);
         }
-        if ( app.getFramework() == null ) {
-            app.setFramework(IOUtils.getFelixFrameworkId(null));
+        // check framework
+        if ( feature.getExtensions().getByName(FeatureConstants.EXTENSION_NAME_FRAMEWORK) == null ) {
+
+            // use hard coded Apache Felix
+            final Extension fwk = new Extension(ExtensionType.JSON, FeatureConstants.EXTENSION_NAME_FRAMEWORK, false);
+            fwk.getArtifacts().add(new Artifact(IOUtils.getFelixFrameworkId(null)));
+            feature.getExtensions().add(fwk);
         }
 
         try {
@@ -100,9 +109,9 @@ public class Main {
             } else {
                 analyser = new Analyser(scanner);
             }
-            analyser.analyse(app);
+            analyser.analyse(feature);
         } catch ( final Exception e) {
-            logger.error("Unable to analyse application: {}", applicationFile, e);
+            logger.error("Unable to analyse feature: {}", featureFile, e);
             System.exit(1);
         }
     }

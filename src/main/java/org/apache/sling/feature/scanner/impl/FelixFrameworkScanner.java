@@ -38,25 +38,68 @@ import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
 
-public class FelixFrameworkScanner implements FrameworkScanner {
+public class FelixFrameworkScanner implements ExtensionScanner {
 
 
     @Override
-    public BundleDescriptor scan(final ArtifactId framework,
-            final File platformFile,
-            final KeyValueMap frameworkProps)
+    public String getId() {
+        return FeatureConstants.EXTENSION_NAME_FRAMEWORK;
+    }
+
+    @Override
+    public String getName() {
+        return "Apache Felix Framework Scanner";
+    }
+
+    @Override
+    public ContainerDescriptor scan(final Feature feature, final Extension extension, final ArtifactManager artifactManager)
     throws IOException {
-        final KeyValueMap fwkProps = getFrameworkProperties(frameworkProps, platformFile);
+        if (!FeatureConstants.EXTENSION_NAME_FRAMEWORK.equals(extension.getName()) ) {
+            return null;
+        }
+        if ( extension.getType() != ExtensionType.ARTIFACTS ) {
+            throw new IOException("Extension " + extension.getName() + " has wrong type " + extension.getType());
+        }
+        if ( extension.getArtifacts().size() != 1 ) {
+            throw new IOException("Extension " + extension.getName() + " has wrong number of artifacts (should be 1) : " + extension.getArtifacts().size());
+        }
+        final ArtifactId framework = extension.getArtifacts().get(0).getId();
+        final File platformFile = artifactManager.getArtifactHandler(framework.toMvnUrl()).getFile();
+        if ( platformFile == null ) {
+            throw new IOException("Unable to find framework file for " + framework);
+        }
+
+        final KeyValueMap fwkProps = getFrameworkProperties(feature.getFrameworkProperties(), platformFile);
         if ( fwkProps == null ) {
             return null;
         }
+
+        final BundleDescriptor d = scan(framework, fwkProps, platformFile);
+        final ContainerDescriptor cd = new ContainerDescriptor() {};
+
+        cd.getBundleDescriptors().add(d);
+
+        cd.lock();
+
+        return cd;
+    }
+
+    public BundleDescriptor scan(final ArtifactId framework,
+            final KeyValueMap fwkProps,
+            final File platformFile) throws IOException {
         final Set<PackageInfo> pcks = calculateSystemPackages(fwkProps);
         final List<Capability> capabilities = calculateSystemCapabilities(fwkProps);
 
@@ -95,6 +138,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         d.getCapabilities().addAll(capabilities);
         d.getExportedPackages().addAll(pcks);
         d.lock();
+
         return d;
     }
 

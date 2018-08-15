@@ -16,24 +16,24 @@
  */
 package org.apache.sling.feature.analyser.task;
 
-import org.apache.sling.feature.Application;
-import org.apache.sling.feature.scanner.ApplicationDescriptor;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.osgi.annotation.versioning.ProviderType;
 
 @ProviderType
 public interface AnalyserTaskContext {
 
     /**
-     * The assembled application.
-     * @return The application.
+     * The assembled feature.
+     * @return The feature.
      */
-    Application getApplication();
+    Feature getFeature();
 
     /**
-     * The application descriptor.
+     * The feature descriptor.
      * @return the descriptor.
      */
-    ApplicationDescriptor getDescriptor();
+    FeatureDescriptor getDescriptor();
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report

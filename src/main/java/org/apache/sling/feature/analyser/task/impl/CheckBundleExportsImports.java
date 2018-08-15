@@ -114,9 +114,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
             list.add(bi);
         }
 
-        // add all system packages
         final List<BundleDescriptor> exportingBundles = new ArrayList<>();
-        exportingBundles.add(ctx.getDescriptor().getFrameworkDescriptor());
 
         for(final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
             // first add all exporting bundles

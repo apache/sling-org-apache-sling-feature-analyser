@@ -16,7 +16,13 @@
  */
 package org.apache.sling.feature.scanner;
 
-import org.apache.sling.feature.Application;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
@@ -24,18 +30,9 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
-import org.apache.sling.feature.scanner.impl.ApplicationDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
-import org.apache.sling.feature.scanner.spi.FrameworkScanner;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
 
 /**
  * The scanner is a service that scans items and provides descriptions for these.
@@ -44,8 +41,6 @@ import java.util.ServiceLoader;
  *   <li>A bundle artifact
  *   <li>An extension (requires {@link ExtensionScanner}s)
  *   <li>A feature (requires {@link ExtensionScanner}s)
- *   <li>A framework (requires {@link FrameworkScanner}s)
- *   <li>An application (requires all scanner types)
  * </ul>
  */
 public class Scanner {
@@ -54,23 +49,18 @@ public class Scanner {
 
     private final List<ExtensionScanner> extensionScanners;
 
-    private final List<FrameworkScanner> frameworkScanners;
-
     /**
      * Create a new scanner
      *
      * @param amConfig The artifact manager configuration
      * @param extensionScanners A list of extension scanners
-     * @param frameworkScanners A list of framework scanners
      * @throws IOException If something goes wrong
      */
     public Scanner(final ArtifactManagerConfig amConfig,
-            final List<ExtensionScanner> extensionScanners,
-            final List<FrameworkScanner> frameworkScanners)
+            final List<ExtensionScanner> extensionScanners)
     throws IOException {
         this.artifactManager = ArtifactManager.getArtifactManager(amConfig);
         this.extensionScanners = extensionScanners == null ? getServices(ExtensionScanner.class) : extensionScanners;
-        this.frameworkScanners = frameworkScanners == null ? getServices(FrameworkScanner.class) : frameworkScanners;
     }
 
     /**
@@ -81,7 +71,7 @@ public class Scanner {
      */
     public Scanner(final ArtifactManagerConfig amConfig)
     throws IOException {
-        this(amConfig, null, null);
+        this(amConfig, null);
     }
 
     /**
@@ -132,12 +122,12 @@ public class Scanner {
         }
     }
 
-    private void scan(final Extensions extensions, final ContainerDescriptor desc)
+    private void scan(final Feature f, final Extensions extensions, final ContainerDescriptor desc)
     throws IOException {
         for(final Extension ext : extensions) {
             ContainerDescriptor extDesc = null;
             for(final ExtensionScanner scanner : this.extensionScanners) {
-                extDesc = scanner.scan(ext, this.artifactManager);
+                extDesc = scanner.scan(f, ext, this.artifactManager);
                 if ( extDesc != null ) {
                     break;
                 }
@@ -173,50 +163,12 @@ public class Scanner {
         final FeatureDescriptorImpl desc = new FeatureDescriptorImpl(feature);
 
         getBundleInfos(feature.getBundles(), desc);
-        scan(feature.getExtensions(), desc);
+        scan(feature, feature.getExtensions(), desc);
 
         compact(desc);
 
         desc.lock();
 
-        return desc;
-    }
-
-    /**
-     * Scan an application
-     *
-     * @param app The application
-     * @return The application descriptor
-     * @throws IOException If something goes wrong or a scanner is missing
-     */
-    public ApplicationDescriptor scan(final Application app) throws IOException {
-        final ApplicationDescriptorImpl desc = new ApplicationDescriptorImpl(app);
-
-        getBundleInfos(app.getBundles(), desc);
-        scan(app.getExtensions(), desc);
-
-        compact(desc);
-
-        // framework
-        final File file = artifactManager.getArtifactHandler(app.getFramework().toMvnUrl()).getFile();
-        if ( file == null ) {
-            throw new IOException("Unable to find file for " + app.getFramework());
-        }
-
-        BundleDescriptor fwk = null;
-        for(final FrameworkScanner scanner : this.frameworkScanners) {
-            fwk = scanner.scan(app.getFramework(), file, app.getFrameworkProperties());
-            if ( fwk != null ) {
-                break;
-            }
-        }
-        if ( fwk == null ) {
-            throw new IOException("No scanner found for framework " + app.getFramework().toMvnId());
-        }
-
-        desc.setFrameworkDescriptor(fwk);
-
-        desc.lock();
         return desc;
     }
 }

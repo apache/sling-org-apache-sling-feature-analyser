@@ -16,18 +16,16 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.net.URL;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.junit.Test;
 
 public class FelixFrameworkScannerTest {
     @Test
@@ -60,9 +58,10 @@ public class FelixFrameworkScannerTest {
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
         KeyValueMap kvmap = new KeyValueMap();
+
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
-            "org.apache.felix.framework",
-            "5.6.10", null, null), fwFile, kvmap);
+                "org.apache.felix.framework",
+                "5.6.10", null, null), kvmap, fwFile);
 
         assertFalse(bundleDescriptor.getExportedPackages().isEmpty());
         assertFalse(bundleDescriptor.getCapabilities().isEmpty());

@@ -16,6 +16,13 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 import org.apache.felix.utils.resource.CapabilitySet;
 import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
@@ -24,13 +31,6 @@ import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.resource.Requirement;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class CheckRequirementsCapabilities implements AnalyserTask {
     private final String format = "Artifact %s:%s requires %s in start level %d but %s";
@@ -56,7 +56,6 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
 
         // add system artifact
         final List<ArtifactDescriptor> artifacts = new ArrayList<>();
-        artifacts.add(ctx.getDescriptor().getFrameworkDescriptor());
 
         for(final Map.Entry<Integer, List<ArtifactDescriptor>> entry : artifactsMap.entrySet()) {
             // first add all providing artifacts

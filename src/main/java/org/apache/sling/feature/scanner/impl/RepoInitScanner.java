@@ -16,17 +16,18 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import java.io.IOException;
+import java.util.Collections;
+
 import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.io.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.osgi.resource.Requirement;
-
-import java.io.IOException;
-import java.util.Collections;
 
 public class RepoInitScanner implements ExtensionScanner {
     private static final Requirement REQUIREMENT_REPOINIT = new RequirementImpl(null, "osgi.implementation",
@@ -35,7 +36,7 @@ public class RepoInitScanner implements ExtensionScanner {
 
     @Override
     public String getId() {
-        return "repoinit";
+        return FeatureConstants.EXTENSION_NAME_REPOINIT;
     }
 
     @Override
@@ -44,7 +45,8 @@ public class RepoInitScanner implements ExtensionScanner {
     }
 
     @Override
-    public ContainerDescriptor scan(final Extension extension,
+    public ContainerDescriptor scan(final Feature feature,
+            final Extension extension,
             final ArtifactManager artifactManager)
     throws IOException {
         if (!FeatureConstants.EXTENSION_NAME_REPOINIT.equals(extension.getName()) ) {
