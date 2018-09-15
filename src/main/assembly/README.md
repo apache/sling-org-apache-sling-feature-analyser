@@ -97,48 +97,20 @@ The subdirectory `${project.build.finalName}` will be created from the archive.
 
 ## Execution
 
-  Open the shell and type `sfa help` to see the available commands:
+  Open the shell and type `sfa --help` to see the available commands:
 
 ```
-$ ./bin/sfa help
-usage: sfa <command> [<args>]
-
-The most commonly used sfa commands are:
-    analyse   Apache Sling Application Analyser
-    help      Display help information
-
-See 'sfa help <command>' for more information on a specific command.
-```
-
-  See the `analyse` options:
-
-```
-$ ./bin/sfa help analise
-Unknown command analise
-
-MacBook-Pro:org.apache.sling.feature.analyser-0.1.3-SNAPSHOT stripodi$ ./bin/sfa help analyse
-NAME
-        sfa analyse - Apache Sling Application Analyser
-
-SYNOPSIS
-        sfa analyse (-f <featureFile> | --feature-file <featureFile>)
-                [(-p <pluginClass> | --plugin-class <pluginClass>)] [(-q | --quiet)]
-                [(-v | --version)] [(-X | --verbose)]
-
-OPTIONS
-        -f <featureFile>, --feature-file <featureFile>
-            Set feature file.
-
-        -p <pluginClass>, --plugin-class <pluginClass>
-            Explicitly specify plugin class to run, if ommitted the default
-            plugins are used
-
-        -q, --quiet
-            Log errors only.
-
-        -v, --version
-            Display version information.
-
-        -X, --verbose
-            Produce execution debug output.
+$ ./bin/sfa --help
+Usage: sfa [-hqvX] -f=<featureFile> [-p=<pluginClass>]
+Apache Sling Application Analyser
+  -f, --feature-file=<featureFile>
+                  Set feature file.
+  -h, --help      Display the usage message.
+  -p, --plugin-class=<pluginClass>
+                  Explicitly specify plugin class to run, if ommitted the default
+                    plugins are used
+  -q, --quiet     Log errors only.
+  -v, --version   Display version information.
+  -X, --verbose   Produce execution debug output.
+Copyright(c) 2018 The Apache Software Foundation.
 ```

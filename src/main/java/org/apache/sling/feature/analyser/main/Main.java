@@ -29,31 +29,36 @@ import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.airlift.airline.Cli;
-import io.airlift.airline.Command;
-import io.airlift.airline.Help;
-import io.airlift.airline.Option;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 
-@Command(name = "analyse", description = "Apache Sling Application Analyser")
+@Command(
+    name = "sfa",
+    description = "Apache Sling Application Analyser",
+    footer = "Copyright(c) 2018 The Apache Software Foundation."
+)
 public class Main implements Runnable {
 
-    @Option(name = { "-X", "--verbose" }, description = "Produce execution debug output.")
+    @Option(names = { "-h", "--help" }, usageHelp = true, description = "Display the usage message.")
+    private boolean helpRequested;
+
+    @Option(names = { "-X", "--verbose" }, description = "Produce execution debug output.")
     private boolean debug;
 
-    @Option(name = { "-q", "--quiet" }, description = "Log errors only.")
+    @Option(names = { "-q", "--quiet" }, description = "Log errors only.")
     private boolean quiet;
 
-    @Option(name = { "-v", "--version" }, description = "Display version information.")
+    @Option(names = { "-v", "--version" }, description = "Display version information.")
     private boolean printVersion;
 
-    @Option(name = { "-f", "--feature-file" }, description = "Set feature file.", required = true)
+    @Option(names = { "-f", "--feature-file" }, description = "Set feature file.", required = true)
     private File featureFile;
 
-    @Option(name = { "-p", "--plugin-class" }, description = "Explicitly specify plugin class to run, "
+    @Option(names = { "-p", "--plugin-class" }, description = "Explicitly specify plugin class to run, "
             + "if ommitted the default plugins are used")
     private String pluginClass;
 
-    @Override
     public void run() {
         // setup logging
         if (quiet) {
@@ -77,7 +82,7 @@ public class Main implements Runnable {
             printVersion(logger);
         }
 
-        String appName = getClass().getAnnotation(Command.class).description();
+        String appName = getClass().getAnnotation(Command.class).description()[0];
 
         logger.info(appName);
         logger.info("");
@@ -139,7 +144,7 @@ public class Main implements Runnable {
                 System.getProperty("user.language"),
                 System.getProperty("user.country"),
                 System.getProperty("sun.jnu.encoding"));
-        logger.info("Default Time Zone: {}", TimeZone.getDefault());
+        logger.info("Default Time Zone: {}", TimeZone.getDefault().getDisplayName());
         logger.info("OS name: \"{}\", version: \"{}\", arch: \"{}\", family: \"{}\"",
                 System.getProperty("os.name"),
                 System.getProperty("os.version"),
@@ -179,12 +184,6 @@ public class Main implements Runnable {
     }
 
     public static void main(String[] args) {
-        Cli.<Runnable>builder(System.getProperty("app.name"))
-            .withDescription("Apache Sling Feature analyser launcher")
-            .withDefaultCommand(Help.class)
-            .withCommands(Help.class, Main.class)
-            .build()
-            .parse(args)
-            .run();
+        CommandLine.run(new Main(), args);
     }
 }

@@ -130,9 +130,9 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>io.airlift</groupId>
-            <artifactId>airline</artifactId>
-            <version>0.8</version>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>3.6.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
