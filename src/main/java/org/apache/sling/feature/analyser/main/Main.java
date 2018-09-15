@@ -16,16 +16,11 @@
  */
 package org.apache.sling.feature.analyser.main;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.TimeZone;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.Analyser;
 import org.apache.sling.feature.io.ArtifactManagerConfig;
@@ -34,55 +29,67 @@ import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Main {
-    private static String featureFile;
-    private static String pluginClass;
+import io.airlift.airline.Cli;
+import io.airlift.airline.Command;
+import io.airlift.airline.Help;
+import io.airlift.airline.Option;
 
-    private static void parseArgs(final String[] args) {
-        Option fileOption = new Option("f", true, "Set feature file");
-        Option pluginOption = new Option("p", true, "Explicitly specify plugin class to run, "
-                + "if ommitted the default plugins are used");
+@Command(name = "analyse", description = "Apache Sling Application Analyser")
+public class Main implements Runnable {
 
-        Options options = new Options();
-        options.addOption(fileOption);
-        options.addOption(pluginOption);
+    @Option(name = { "-X", "--verbose" }, description = "Produce execution debug output.")
+    private boolean debug;
 
-        CommandLineParser parser = new DefaultParser();
-        try {
-            CommandLine cl = parser.parse(options, args);
+    @Option(name = { "-q", "--quiet" }, description = "Log errors only.")
+    private boolean quiet;
 
-            featureFile = cl.getOptionValue(fileOption.getOpt());
-            if (cl.hasOption(pluginOption.getOpt())) {
-                pluginClass = cl.getOptionValue(pluginOption.getOpt());
-            }
-        } catch (ParseException e) {
-            HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("", options);
-            System.exit(1);
-        }
-    }
+    @Option(name = { "-v", "--version" }, description = "Display version information.")
+    private boolean printVersion;
 
-    public static void main(final String[] args) {
+    @Option(name = { "-f", "--feature-file" }, description = "Set feature file.", required = true)
+    private File featureFile;
+
+    @Option(name = { "-p", "--plugin-class" }, description = "Explicitly specify plugin class to run, "
+            + "if ommitted the default plugins are used")
+    private String pluginClass;
+
+    @Override
+    public void run() {
         // setup logging
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
+        if (quiet) {
+            System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "error");
+        } else if (debug) {
+            System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
+        } else {
+            System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "info");
+        }
         System.setProperty("org.slf4j.simpleLogger.showThreadName", "false");
         System.setProperty("org.slf4j.simpleLogger.levelInBrackets", "true");
         System.setProperty("org.slf4j.simpleLogger.showLogName", "false");
 
         final Logger logger = LoggerFactory.getLogger("analyser");
-        logger.info("Apache Sling Application Analyser");
+
+        // Add the Shutdown Hook to the Java virtual machine
+        // in order to destroy all the allocated resources
+        Runtime.getRuntime().addShutdownHook(new ShutDownHook(logger));
+
+        if (printVersion) {
+            printVersion(logger);
+        }
+
+        String appName = getClass().getAnnotation(Command.class).description();
+
+        logger.info(appName);
         logger.info("");
 
-        parseArgs(args);
-
-        if (featureFile == null) {
-            logger.error("Required argument missing: feature file");
+        if (!featureFile.exists() || !featureFile.isFile()) {
+            logger.error("Feature file does not exist or is not a valid file");
             System.exit(1);
         }
 
         Feature feature = null;
         try ( final FileReader r = new FileReader(featureFile)) {
-            feature = FeatureJSONReader.read(r, featureFile);
+            feature = FeatureJSONReader.read(r, featureFile.getAbsolutePath());
         } catch ( final IOException ioe) {
             logger.error("Unable to read application: {}", featureFile, ioe);
             System.exit(1);
@@ -97,9 +104,87 @@ public class Main {
                 analyser = new Analyser(scanner);
             }
             analyser.analyse(feature);
+
+            logger.info( "+-----------------------------------------------------+" );
+            logger.info("{} SUCCESS", appName);
         } catch ( final Exception e) {
-            logger.error("Unable to analyse feature: {}", featureFile, e);
+            logger.info( "+-----------------------------------------------------+" );
+            logger.info("{} FAILURE", appName);
+            logger.info( "+-----------------------------------------------------+" );
+
+            if (debug) {
+                logger.error("Unable to analyse feature {}:", featureFile, e);
+            } else {
+                logger.error("Unable to analyse feature {}: {}", featureFile, e.getMessage());
+            }
+
+            logger.info( "" );
+
             System.exit(1);
         }
+
+        logger.info( "+-----------------------------------------------------+" );
+    }
+
+    private static void printVersion(final Logger logger) {
+        logger.info("{} v{} (built on {})",
+                System.getProperty("project.artifactId"),
+                System.getProperty("project.version"),
+                System.getProperty("build.timestamp"));
+        logger.info("Java version: {}, vendor: {}",
+                System.getProperty("java.version"),
+                System.getProperty("java.vendor"));
+        logger.info("Java home: {}", System.getProperty("java.home"));
+        logger.info("Default locale: {}_{}, platform encoding: {}",
+                System.getProperty("user.language"),
+                System.getProperty("user.country"),
+                System.getProperty("sun.jnu.encoding"));
+        logger.info("Default Time Zone: {}", TimeZone.getDefault());
+        logger.info("OS name: \"{}\", version: \"{}\", arch: \"{}\", family: \"{}\"",
+                System.getProperty("os.name"),
+                System.getProperty("os.version"),
+                System.getProperty("os.arch"),
+                getOsFamily());
+        logger.info("+-----------------------------------------------------+");
+    }
+
+    private static final String getOsFamily() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String pathSep = System.getProperty("path.separator");
+
+        if (osName.indexOf("windows") != -1) {
+            return "windows";
+        } else if (osName.indexOf("os/2") != -1) {
+            return "os/2";
+        } else if (osName.indexOf("z/os") != -1 || osName.indexOf("os/390") != -1) {
+            return "z/os";
+        } else if (osName.indexOf("os/400") != -1) {
+            return "os/400";
+        } else if (pathSep.equals(";")) {
+            return "dos";
+        } else if (osName.indexOf("mac") != -1) {
+            if (osName.endsWith("x")) {
+                return "mac"; // MACOSX
+            }
+            return "unix";
+        } else if (osName.indexOf("nonstop_kernel") != -1) {
+            return "tandem";
+        } else if (osName.indexOf("openvms") != -1) {
+            return "openvms";
+        } else if (pathSep.equals(":")) {
+            return "unix";
+        }
+
+        return "undefined";
+    }
+
+    public static void main(String[] args) {
+        Cli.<Runnable>builder(System.getProperty("app.name"))
+            .withDescription("Apache Sling Feature analyser launcher")
+            .withDefaultCommand(Help.class)
+            .withCommands(Help.class, Main.class)
+            .build()
+            .parse(args)
+            .run();
     }
 }
