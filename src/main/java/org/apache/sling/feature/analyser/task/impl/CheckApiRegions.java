@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import javax.json.Json;
 import javax.json.stream.JsonParser;
 import javax.json.stream.JsonParser.Event;
+import javax.json.stream.JsonParsingException;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
@@ -78,7 +79,16 @@ public class CheckApiRegions implements AnalyserTask {
 
         // read the api-regions and create a Sieve data structure for checks
 
-        ApiRegions apiRegions = fromJson(jsonRepresentation);
+        ApiRegions apiRegions;
+        try {
+            apiRegions = fromJson(jsonRepresentation);
+        } catch (JsonParsingException e) {
+            ctx.reportError("API Regions '"
+                    + jsonRepresentation
+                    + "' does not represent a valid JSON 'api-regions': "
+                    + e.getMessage());
+            return;
+        }
 
         // then, for each bundle, get the Export-Package and process the packages
 
