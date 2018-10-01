@@ -25,6 +25,7 @@ import java.net.URL;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.junit.Test;
 
 public class FelixFrameworkScannerTest {
@@ -61,7 +62,13 @@ public class FelixFrameworkScannerTest {
 
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",
-                "5.6.10", null, null), fwFile, kvmap);
+                "5.6.10", null, null), kvmap, new ArtifactProvider() {
+
+                    @Override
+                    public File provide(ArtifactId id) {
+                        return fwFile;
+                    }
+                });
 
         assertFalse(bundleDescriptor.getExportedPackages().isEmpty());
         assertFalse(bundleDescriptor.getCapabilities().isEmpty());

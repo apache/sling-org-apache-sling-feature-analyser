@@ -24,8 +24,8 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureConstants;
-import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.osgi.resource.Requirement;
 
@@ -47,7 +47,7 @@ public class RepoInitScanner implements ExtensionScanner {
     @Override
     public ContainerDescriptor scan(final Feature feature,
             final Extension extension,
-            final ArtifactManager artifactManager)
+            final ArtifactProvider provider)
     throws IOException {
         if (!FeatureConstants.EXTENSION_NAME_REPOINIT.equals(extension.getName()) ) {
             return null;

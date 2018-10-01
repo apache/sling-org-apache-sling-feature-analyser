@@ -16,6 +16,7 @@
  */
 package org.apache.sling.feature.analyser.main;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -26,12 +27,14 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.Analyser;
 import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.io.file.ArtifactManagerConfig;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.scanner.Scanner;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,7 +93,18 @@ public class Main {
         }
 
         try {
-            final Scanner scanner = new Scanner(ArtifactManager.getArtifactManager(new ArtifactManagerConfig()));
+            final ArtifactManager am = ArtifactManager.getArtifactManager(new ArtifactManagerConfig());
+            final Scanner scanner = new Scanner(new ArtifactProvider() {
+
+                @Override
+                public File provide(ArtifactId id) {
+                    try {
+                        return am.getArtifactHandler(id.toMvnUrl()).getFile();
+                    } catch (final IOException e) {
+                        return null;
+                    }
+                }
+            });
             final Analyser analyser;
             if (pluginClass != null) {
                 analyser = new Analyser(scanner, pluginClass);

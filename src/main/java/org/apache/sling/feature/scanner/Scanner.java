@@ -30,9 +30,9 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 
@@ -48,7 +48,7 @@ import org.apache.sling.feature.scanner.spi.FrameworkScanner;
  */
 public class Scanner {
 
-    private final ArtifactManager artifactManager;
+    private final ArtifactProvider artifactProvider;
 
     private final List<ExtensionScanner> extensionScanners;
 
@@ -61,11 +61,11 @@ public class Scanner {
      * @param extensionScanners A list of extension scanners
      * @throws IOException If something goes wrong
      */
-    public Scanner(final ArtifactManager am,
+    public Scanner(final ArtifactProvider artifactProvider,
             final List<ExtensionScanner> extensionScanners,
             final List<FrameworkScanner> frameworkScanners)
     throws IOException {
-        this.artifactManager = am;
+        this.artifactProvider = artifactProvider;
         this.extensionScanners = extensionScanners == null ? getServices(ExtensionScanner.class) : extensionScanners;
         this.frameworkScanners = frameworkScanners == null ? getServices(FrameworkScanner.class) : frameworkScanners;
     }
@@ -76,9 +76,9 @@ public class Scanner {
      * @param am The artifact manager
      * @throws IOException If something goes wrong
      */
-    public Scanner(final ArtifactManager am)
+    public Scanner(final ArtifactProvider artifactProvider)
     throws IOException {
-        this(am, null, null);
+        this(artifactProvider, null, null);
     }
 
     /**
@@ -105,7 +105,7 @@ public class Scanner {
      * @throws IOException If something goes wrong or the provided artifact is not a bundle.
      */
     public BundleDescriptor scan(final Artifact bundle, final int startLevel) throws IOException {
-        final File file = artifactManager.getArtifactHandler(bundle.getId().toMvnUrl()).getFile();
+        final File file = artifactProvider.provide(bundle.getId());
         if ( file == null ) {
             throw new IOException("Unable to find file for " + bundle.getId());
         }
@@ -134,7 +134,7 @@ public class Scanner {
         for(final Extension ext : extensions) {
             ContainerDescriptor extDesc = null;
             for(final ExtensionScanner scanner : this.extensionScanners) {
-                extDesc = scanner.scan(f, ext, this.artifactManager);
+                extDesc = scanner.scan(f, ext, this.artifactProvider);
                 if ( extDesc != null ) {
                     break;
                 }
@@ -187,14 +187,9 @@ public class Scanner {
      * @throws IOException If something goes wrong or a scanner is missing
      */
     public BundleDescriptor scan(final ArtifactId framework, final KeyValueMap props) throws IOException {
-        final File file = artifactManager.getArtifactHandler(framework.toMvnUrl()).getFile();
-        if ( file == null ) {
-            throw new IOException("Unable to find file for " + framework);
-        }
-
         BundleDescriptor fwk = null;
         for(final FrameworkScanner scanner : this.frameworkScanners) {
-            fwk = scanner.scan(framework, file, props);
+            fwk = scanner.scan(framework, props, artifactProvider);
             if ( fwk != null ) {
                 break;
             }

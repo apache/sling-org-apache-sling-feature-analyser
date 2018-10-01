@@ -22,10 +22,10 @@ import java.io.IOException;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 
 public class ApiRegionsExtensionScanner implements ExtensionScanner {
@@ -41,11 +41,11 @@ public class ApiRegionsExtensionScanner implements ExtensionScanner {
     }
 
     @Override
-    public ContainerDescriptor scan(Feature feature, Extension extension, ArtifactManager manager) throws IOException {
+    public ContainerDescriptor scan(Feature feature, Extension extension, ArtifactProvider provider) throws IOException {
         FeatureDescriptor featureDescriptor = new FeatureDescriptorImpl(feature);
 
         for (Artifact artifact : feature.getBundles()) {
-            File file = manager.getArtifactHandler(artifact.getId().toMvnUrl()).getFile();
+            File file = provider.provide(artifact.getId());
             BundleDescriptor bundleDescriptor = new BundleDescriptorImpl(artifact, file, artifact.getStartOrder());
             featureDescriptor.getBundleDescriptors().add(bundleDescriptor);
         }

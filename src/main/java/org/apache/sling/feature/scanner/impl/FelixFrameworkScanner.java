@@ -41,6 +41,7 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
@@ -50,9 +51,13 @@ public class FelixFrameworkScanner implements FrameworkScanner {
 
     @Override
     public BundleDescriptor scan(final ArtifactId framework,
-            final File platformFile,
-            final KeyValueMap frameworkProps)
+            final KeyValueMap frameworkProps,
+            final ArtifactProvider provider)
     throws IOException {
+        final File platformFile = provider.provide(framework);
+        if ( platformFile == null ) {
+            throw new IOException("Unable to find file for " + framework.toMvnId());
+        }
         final KeyValueMap fwkProps = getFrameworkProperties(frameworkProps, platformFile);
         if ( fwkProps == null ) {
             return null;

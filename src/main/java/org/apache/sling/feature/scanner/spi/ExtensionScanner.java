@@ -20,7 +20,6 @@ import java.io.IOException;
 
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.osgi.annotation.versioning.ConsumerType;
 
@@ -45,12 +44,12 @@ public interface ExtensionScanner  {
      *
      * @param feature The feature the extension belongs to
      * @param extension The extension
-     * @param manager Artifact manager
+     * @param provider Artifact provider
      * @return The descriptor or {@code null} if the scanner does not know the extension
      * @throws IOException If an error occurs while scanning the extension or the extension is invalid
      */
     ContainerDescriptor scan(
             Feature feature,
             Extension extension,
-            ArtifactManager manager) throws IOException;
+            ArtifactProvider provider) throws IOException;
 }

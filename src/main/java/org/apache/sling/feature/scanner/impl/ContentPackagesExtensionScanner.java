@@ -25,8 +25,8 @@ import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.FeatureConstants;
-import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
+import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
@@ -44,7 +44,7 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
     @Override
     public ContainerDescriptor scan(final Feature feature,
             final Extension extension,
-            final ArtifactManager artifactManager)
+            final ArtifactProvider provider)
     throws IOException {
         if (!FeatureConstants.EXTENSION_NAME_CONTENT_PACKAGES.equals(extension.getName()) ) {
             return null;
@@ -57,7 +57,7 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
         final ContainerDescriptor cd = new ContainerDescriptor() {};
 
         for(final Artifact a : extension.getArtifacts()) {
-            final File file = artifactManager.getArtifactHandler(a.getId().toMvnUrl()).getFile();
+            final File file = provider.provide(a.getId());
             if ( file == null ) {
                 throw new IOException("Unable to find file for " + a.getId());
             }

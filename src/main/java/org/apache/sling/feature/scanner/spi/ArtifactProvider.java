@@ -16,28 +16,16 @@
  */
 package org.apache.sling.feature.scanner.spi;
 
-import java.io.IOException;
+import java.io.File;
 
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.osgi.annotation.versioning.ConsumerType;
 
-/**
- * The framework scanner scans the framework
- */
-@ConsumerType
-public interface FrameworkScanner  {
+public interface ArtifactProvider {
 
     /**
-     * Try to scan the artifact
-     * @param framework The framework artifact id
-     * @param frameworkProps framework properties to launch the framework
-     * @param provider Artifact provider
-     * @return A descriptor or {@code null}
-     * @throws IOException If an error occurs while scanning the platform or the artifact is invalid
+     * Provide the artifact with the given id.
+     * @param id The artifact id
+     * @return The file or {@code null}
      */
-    BundleDescriptor scan(ArtifactId framework,
-            KeyValueMap frameworkProps,
-            ArtifactProvider provider) throws IOException;
+    File provide(ArtifactId id);
 }
