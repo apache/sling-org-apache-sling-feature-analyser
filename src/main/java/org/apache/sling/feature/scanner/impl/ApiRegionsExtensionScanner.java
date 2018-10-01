@@ -22,7 +22,7 @@ import java.io.IOException;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.io.ArtifactManager;
+import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;

@@ -28,8 +28,8 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.Analyser;
-import org.apache.sling.feature.io.DefaultArtifactManagerConfig;
-import org.apache.sling.feature.io.DefaultArtifactManager;
+import org.apache.sling.feature.io.file.ArtifactManager;
+import org.apache.sling.feature.io.file.ArtifactManagerConfig;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
@@ -90,7 +90,7 @@ public class Main {
         }
 
         try {
-            final Scanner scanner = new Scanner(DefaultArtifactManager.getArtifactManager(new DefaultArtifactManagerConfig()));
+            final Scanner scanner = new Scanner(ArtifactManager.getArtifactManager(new ArtifactManagerConfig()));
             final Analyser analyser;
             if (pluginClass != null) {
                 analyser = new Analyser(scanner, pluginClass);
