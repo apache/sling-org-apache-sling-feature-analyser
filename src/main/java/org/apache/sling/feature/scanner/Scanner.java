@@ -31,7 +31,6 @@ import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.io.ArtifactManager;
-import org.apache.sling.feature.io.ArtifactManagerConfig;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
@@ -58,15 +57,15 @@ public class Scanner {
     /**
      * Create a new scanner
      *
-     * @param amConfig The artifact manager configuration
+     * @param am The artifact manager
      * @param extensionScanners A list of extension scanners
      * @throws IOException If something goes wrong
      */
-    public Scanner(final ArtifactManagerConfig amConfig,
+    public Scanner(final ArtifactManager am,
             final List<ExtensionScanner> extensionScanners,
             final List<FrameworkScanner> frameworkScanners)
     throws IOException {
-        this.artifactManager = ArtifactManager.getArtifactManager(amConfig);
+        this.artifactManager = am;
         this.extensionScanners = extensionScanners == null ? getServices(ExtensionScanner.class) : extensionScanners;
         this.frameworkScanners = frameworkScanners == null ? getServices(FrameworkScanner.class) : frameworkScanners;
     }
@@ -74,12 +73,12 @@ public class Scanner {
     /**
      * Create a new scanner and use the service loader to find the scanners
      *
-     * @param amConfig The artifact manager configuration
+     * @param am The artifact manager
      * @throws IOException If something goes wrong
      */
-    public Scanner(final ArtifactManagerConfig amConfig)
+    public Scanner(final ArtifactManager am)
     throws IOException {
-        this(amConfig, null, null);
+        this(am, null, null);
     }
 
     /**
