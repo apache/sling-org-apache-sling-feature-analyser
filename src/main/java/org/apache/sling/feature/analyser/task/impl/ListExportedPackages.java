@@ -30,6 +30,16 @@ import org.apache.sling.feature.scanner.PackageInfo;
 public class ListExportedPackages implements AnalyserTask {
 
     @Override
+    public String getId() {
+        return "exported-packages";
+    }
+
+    @Override
+    public String getName() {
+        return "List exported packages check";
+    }
+
+    @Override
     public void execute(AnalyserTaskContext ctx) throws Exception {
         SortedSet<String> packages = new TreeSet<>();
 

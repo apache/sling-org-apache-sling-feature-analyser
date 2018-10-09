@@ -36,6 +36,16 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     private final String format = "Artifact %s:%s requires %s in start level %d but %s";
 
     @Override
+    public String getId() {
+        return "requirements-capabilities";
+    }
+
+    @Override
+    public String getName() {
+        return "Requirements Capabilities check";
+    }
+
+    @Override
     public void execute(AnalyserTaskContext ctx) throws Exception {
         final SortedMap<Integer, List<ArtifactDescriptor>> artifactsMap = new TreeMap<>();
         for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {

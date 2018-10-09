@@ -16,11 +16,15 @@
  */
 package org.apache.sling.feature.analyser;
 
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -55,31 +59,14 @@ public class Analyser {
         }
     }
 
+    public Analyser(final Scanner scanner,
+                    final Set<String> includes,
+                    final Set<String> excludes) throws IOException {
+        this(scanner, getTasksByIds(includes, excludes));
+    }
+
     public Analyser(final Scanner scanner) throws IOException {
         this(scanner, getTasks());
-    }
-
-    private static AnalyserTask[] getTasks() {
-        final ServiceLoader<AnalyserTask> loader = ServiceLoader.load(AnalyserTask.class);
-        final List<AnalyserTask> list = new ArrayList<>();
-        for(final AnalyserTask task : loader) {
-            list.add(task);
-        }
-        return list.toArray(new AnalyserTask[list.size()]);
-    }
-
-    // Get tasks from class names
-    private static AnalyserTask[] getTasksByClassName(String[] taskClassNames) throws IOException {
-        List<AnalyserTask> list = new ArrayList<>();
-        for (String cls : taskClassNames) {
-            try {
-                AnalyserTask task = (AnalyserTask) Analyser.class.getClassLoader().loadClass(cls).newInstance();
-                list.add(task);
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
-        }
-        return list.toArray(new AnalyserTask[list.size()]);
     }
 
     public void analyse(final Feature feature)
@@ -89,7 +76,7 @@ public class Analyser {
 
     public void analyse(final Feature feature, final ArtifactId fwk)
     throws Exception {
-        logger.info("Starting feature analyzer...");
+        logger.info("Starting analyzing feature '{}'...", feature.getId());
 
         final FeatureDescriptor featureDesc = scanner.scan(feature);
         BundleDescriptor bd = null;
@@ -103,7 +90,8 @@ public class Analyser {
 
         // execute analyser tasks
         for(final AnalyserTask task : tasks) {
-            logger.info("- Executing {}...", task.getName());
+            logger.info("- Executing {} [{}]...", task.getName(), task.getId());
+
             task.execute(new AnalyserTaskContext() {
 
                 @Override
@@ -141,9 +129,13 @@ public class Analyser {
         }
 
         if ( !errors.isEmpty() ) {
-            throw new Exception("Analyser detected errors. See log output for error messages.");
+            throw new Exception("Analyser detected errors on Feature '"
+                                + feature.getId()
+                                + "'. See log output for error messages.");
         }
 
-        logger.info("Provisioning model analyzer finished");
+        logger.info("Feature '"
+                    + feature.getId()
+                    + "' provisioning model analyzer finished");
     }
 }
