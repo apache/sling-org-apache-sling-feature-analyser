@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.osgi.annotation.versioning.ConsumerType;
 

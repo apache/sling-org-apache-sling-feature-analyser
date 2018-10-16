@@ -22,10 +22,10 @@ import java.io.IOException;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
-import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 
 public class ApiRegionsExtensionScanner implements ExtensionScanner {

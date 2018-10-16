@@ -30,11 +30,11 @@ import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.Analyser;
+import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.io.file.ArtifactManagerConfig;
 import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.scanner.Scanner;
-import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -24,8 +24,8 @@ import java.net.URL;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.KeyValueMap;
+import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.spi.ArtifactProvider;
 import org.junit.Test;
 
 public class FelixFrameworkScannerTest {
