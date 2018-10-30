@@ -30,6 +30,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.Analyser;
+import org.apache.sling.feature.analyser.AnalyserResult;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.io.file.ArtifactManager;
 import org.apache.sling.feature.io.file.ArtifactManagerConfig;
@@ -111,7 +112,19 @@ public class Main {
             } else {
                 analyser = new Analyser(scanner);
             }
-            analyser.analyse(feature);
+            final AnalyserResult result = analyser.analyse(feature);
+            for (final String msg : result.getWarnings()) {
+                logger.warn(msg);
+            }
+            for (final String msg : result.getErrors()) {
+                logger.error(msg);
+            }
+
+            if (!result.getErrors().isEmpty()) {
+                logger.error("Analyser detected errors on Feature '" + feature.getId()
+                        + "'. See log output for error messages.");
+            }
+
         } catch ( final Exception e) {
             logger.error("Unable to analyse feature: {}", featureFile, e);
             System.exit(1);

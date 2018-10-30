@@ -69,13 +69,11 @@ public class Analyser {
         this(scanner, getTasks());
     }
 
-    public void analyse(final Feature feature)
-    throws Exception {
-        this.analyse(feature, null);
+    public AnalyserResult analyse(final Feature feature) throws Exception {
+        return this.analyse(feature, null);
     }
 
-    public void analyse(final Feature feature, final ArtifactId fwk)
-    throws Exception {
+    public AnalyserResult analyse(final Feature feature, final ArtifactId fwk) throws Exception {
         logger.info("Starting analyzing feature '{}'...", feature.getId());
 
         final FeatureDescriptor featureDesc = scanner.scan(feature);
@@ -121,21 +119,22 @@ public class Analyser {
             });
         }
 
-        for(final String msg : warnings) {
-            logger.warn(msg);
-        }
-        for(final String msg : errors) {
-            logger.error(msg);
-        }
-
-        if ( !errors.isEmpty() ) {
-            throw new Exception("Analyser detected errors on Feature '"
-                                + feature.getId()
-                                + "'. See log output for error messages.");
-        }
-
         logger.info("Feature '"
                     + feature.getId()
-                    + "' provisioning model analyzer finished");
+                + "' provisioning model analyzer finished : " + warnings.size() + " warnings, " + errors.size()
+                + " errors.");
+
+        return new AnalyserResult() {
+
+            @Override
+            public List<String> getWarnings() {
+                return warnings;
+            }
+
+            @Override
+            public List<String> getErrors() {
+                return errors;
+            }
+        };
     }
 }
