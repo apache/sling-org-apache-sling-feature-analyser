@@ -16,13 +16,6 @@
  */
 package org.apache.sling.feature.scanner;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
@@ -35,6 +28,13 @@ import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
 
 /**
  * The scanner is a service that scans items and provides descriptions for these.
@@ -57,8 +57,9 @@ public class Scanner {
     /**
      * Create a new scanner
      *
-     * @param am The artifact manager
+     * @param artifactProvider The artifact provider
      * @param extensionScanners A list of extension scanners
+     * @param frameworkScanners A list of framework scanners
      * @throws IOException If something goes wrong
      */
     public Scanner(final ArtifactProvider artifactProvider,
@@ -73,7 +74,7 @@ public class Scanner {
     /**
      * Create a new scanner and use the service loader to find the scanners
      *
-     * @param am The artifact manager
+     * @param artifactProvider The artifact provider
      * @throws IOException If something goes wrong
      */
     public Scanner(final ArtifactProvider artifactProvider)
@@ -183,6 +184,7 @@ public class Scanner {
      * Scan a framework
      *
      * @param framework The framework
+     * @param props framework properties to launch the framework
      * @return The framework descriptor
      * @throws IOException If something goes wrong or a scanner is missing
      */
