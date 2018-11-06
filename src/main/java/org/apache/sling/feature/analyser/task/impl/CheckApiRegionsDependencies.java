@@ -16,67 +16,56 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import java.util.Collection;
-import java.util.Formatter;
 import java.util.Set;
 
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Constants;
 
-public class CheckApiRegions extends AbstractApiRegionsAnalyserTask {
+public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask {
+
+    private static final String GLOBAL_REGION_NAME = "global";
+
+    private static final String DEPRECATED_REGION_NAME = "deprecated";
 
     @Override
     public String getId() {
-        return API_REGIONS_KEY;
+        return API_REGIONS_KEY + "-dependencies";
     }
 
     @Override
     public String getName() {
-        return "Api Regions analyser task";
+        return "Api Regions dependecies analyser task";
     }
 
     @Override
     protected void execute(ApiRegions apiRegions, AnalyserTaskContext ctx) throws Exception {
-        // for each bundle, get the Export-Package and process the packages
+        Set<String> globalApis = apiRegions.getApis(GLOBAL_REGION_NAME);
+        Set<String> deprectaedApis = apiRegions.getApis(DEPRECATED_REGION_NAME);
 
         FeatureDescriptor featureDescriptor = ctx.getFeatureDescriptor();
         for (BundleDescriptor bundleDescriptor : featureDescriptor.getBundleDescriptors()) {
             for (PackageInfo packageInfo : bundleDescriptor.getExportedPackages()) {
                 String exportedPackage = packageInfo.getName();
-                // use the Sieve technique: remove bundle exported packages from the api-regions
-                apiRegions.remove(exportedPackage);
-            }
-        }
 
-        // final evaluation: if the Sieve is not empty, not all declared packages are exported by bundles of the same feature
-        if (!apiRegions.isEmpty()) {
-            // track a single error for each region
-            for (String region : apiRegions.getRegions()) {
-                Set<String> apis = apiRegions.getApis(region);
-                if (!apis.isEmpty()) {
-                    Formatter formatter = new Formatter();
-                    formatter.format("Region '%s' defined in feature '%s' declares %s package%s which %s not exported by any bundle:%n",
-                                     region,
-                                     ctx.getFeature().getId(),
-                                     apis.size(),
-                                     getExtension(apis, "", "s"),
-                                     getExtension(apis, "is", "are"));
-                    apis.forEach(api -> formatter.format(" * %s%n", api));
-
-                    ctx.reportError(formatter.toString());
-
-                    formatter.close();
+                if (globalApis.contains(exportedPackage)) {
+                    for (String uses : packageInfo.getUses()) {
+                        if (deprectaedApis.contains(uses)) {
+                            String errorMessage = String.format(
+                                    "Bundle '%s', defined in feature '%s', declares '%s' in the '%s' header which requires '%s' package that is in the 'deprecated' region",
+                                    bundleDescriptor.getArtifact().getId(),
+                                    ctx.getFeature().getId(),
+                                    exportedPackage,
+                                    Constants.EXPORT_PACKAGE,
+                                    uses);
+                            ctx.reportError(errorMessage);
+                        }
+                    }
                 }
             }
         }
-    }
-
-    // utility methods
-
-    private static <T> String getExtension(Collection<T> collection, String singular, String plural) {
-        return collection.size() > 1 ? plural : singular;
     }
 
 }

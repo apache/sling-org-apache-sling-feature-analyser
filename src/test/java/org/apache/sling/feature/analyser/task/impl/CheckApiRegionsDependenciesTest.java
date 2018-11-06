@@ -23,21 +23,21 @@ import java.util.List;
 
 import org.junit.Test;
 
-public class CheckApiRegionsTest extends AbstractApiRegionsAnalyserTaskTest<CheckApiRegions> {
+public class CheckApiRegionsDependenciesTest extends AbstractApiRegionsAnalyserTaskTest<CheckApiRegionsDependencies> {
 
     @Override
-    protected CheckApiRegions newTask() {
-        return new CheckApiRegions();
+    protected CheckApiRegionsDependencies newTask() {
+        return new CheckApiRegionsDependencies();
     }
 
     @Test
     public void testNotValidApiRegionJson() throws Exception {
-        List<String> errors = execute("[{\"name\": \"global\",\"exports\": [\"org.osgi.util.function.doesnotexist\"]}]");
+        List<String> errors = execute("[{\"name\": \"global\",\"exports\": [\"org.osgi.util.function\"]},{\"name\": \"deprecated\",\"exports\": [\"org.objectweb.asm\"]}]");
 
         assertFalse(errors.isEmpty());
         assertTrue(errors.iterator()
                 .next()
-                .startsWith("Region 'global' defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0' declares 1 package which is not exported by any bundle"));
+                .startsWith("Bundle 'org.osgi:org.osgi.util.function:1.0.0', defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0', declares 'org.osgi.util.function' in the 'Export-Package' header which requires 'org.objectweb.asm' package that is in the 'deprecated' region"));
     }
 
     @Test
