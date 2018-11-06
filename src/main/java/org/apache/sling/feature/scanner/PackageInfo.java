@@ -16,6 +16,9 @@
  */
 package org.apache.sling.feature.scanner;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
@@ -24,11 +27,17 @@ public class PackageInfo implements Comparable<PackageInfo> {
     private final boolean optional;
     private final String name;
     private final String version;
+    private final Set<String> uses;
 
     public PackageInfo(final String name, final String version, final boolean optional) {
+        this(name, version, optional, Collections.emptySet());
+    }
+
+    public PackageInfo(final String name, final String version, final boolean optional, Set<String> uses) {
         this.name = name;
         this.version = version;
         this.optional = optional;
+        this.uses = uses;
     }
 
     public String getName() {
@@ -55,6 +64,10 @@ public class PackageInfo implements Comparable<PackageInfo> {
             return null;
 
         return new VersionRange(this.version);
+    }
+
+    public Set<String> getUses() {
+        return uses;
     }
 
     @Override

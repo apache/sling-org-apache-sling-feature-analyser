@@ -20,7 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -169,9 +172,21 @@ public class BundleDescriptorImpl
                     final String resolution = entry.getDirective("resolution");
                     optional = "optional".equalsIgnoreCase(resolution);
                 }
+
+                Set<String> uses = new HashSet<>();
+                String usesAttribute = entry.getDirective("uses");
+                if (usesAttribute != null && !usesAttribute.isEmpty()) {
+                    StringTokenizer tokenizer = new StringTokenizer(usesAttribute, ",");
+                    while (tokenizer.hasMoreTokens()) {
+                        String usePackage = tokenizer.nextToken();
+                        uses.add(usePackage);
+                    }
+                }
+
                 final PackageInfo pck = new PackageInfo(entry.getName(),
                     version,
-                    optional);
+                    optional,
+                    uses);
                 pcks.add(pck);
             }
 
