@@ -43,6 +43,15 @@ public interface AnalyserTaskContext {
     BundleDescriptor getFrameworkDescriptor();
 
     /**
+     * Returns the context configuration parameter.
+     *
+     * @param argName the argument name associated to a configuration value
+     * @param defaultValue the default value, if the configuration parameter is missing
+     * @return a configuration value associated to the input argName, defaultValue if the configuration parameter is missing
+     */
+    String getConfigurationParameter(String argName, String defaultValue);
+
+    /**
      * This method is invoked by a {@link AnalyserTask} to report
      * a warning.
      * @param message The message.

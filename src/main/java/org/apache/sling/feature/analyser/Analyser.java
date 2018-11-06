@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
@@ -43,6 +45,8 @@ public class Analyser {
     private final Scanner scanner;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private final Properties configuration = new Properties();
 
     public Analyser(final Scanner scanner,
             final AnalyserTask...tasks) throws IOException {
@@ -67,6 +71,14 @@ public class Analyser {
 
     public Analyser(final Scanner scanner) throws IOException {
         this(scanner, getTasks());
+    }
+
+    public void addConfigurationParameter(String name, String value) {
+        configuration.setProperty(name, value);
+    }
+
+    public <C extends Map<String, String>> void addConfigurationParameters(C configuration) {
+        this.configuration.putAll(configuration);
     }
 
     public AnalyserResult analyse(final Feature feature) throws Exception {
@@ -105,6 +117,11 @@ public class Analyser {
                 @Override
                 public BundleDescriptor getFrameworkDescriptor() {
                     return fwkDesc;
+                }
+
+                @Override
+                public String getConfigurationParameter(String argName, String defaultValue) {
+                    return configuration.getProperty(argName, defaultValue);
                 }
 
                 @Override
