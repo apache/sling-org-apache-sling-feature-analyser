@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
@@ -115,6 +117,21 @@ public class Analyser {
         for(final AnalyserTask task : tasks) {
             logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
+            final Map<String, String> taskConfiguration = new HashMap<>();
+            for (Entry<String, String> entry : configuration.entrySet()) {
+                String key = entry.getKey();
+                int splitSeparatorIndex = key.indexOf('_');
+                if (splitSeparatorIndex != -1) {
+                    String prefix = key.substring(0, splitSeparatorIndex);
+                    if (task.getId().equals(prefix)) {
+                        String suffix = key.substring(splitSeparatorIndex + 1);
+                        taskConfiguration.put(suffix, entry.getValue());
+                    }
+                } else {
+                    taskConfiguration.put(key, entry.getValue());
+                }
+            }
+
             task.execute(new AnalyserTaskContext() {
 
                 @Override
@@ -134,7 +151,7 @@ public class Analyser {
 
                 @Override
                 public String getConfigurationParameter(String argName, String defaultValue) {
-                    return configuration.getOrDefault(argName, defaultValue);
+                    return taskConfiguration.getOrDefault(argName, defaultValue);
                 }
 
                 @Override
