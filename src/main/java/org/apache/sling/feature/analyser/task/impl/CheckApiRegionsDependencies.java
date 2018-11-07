@@ -28,7 +28,7 @@ public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask 
 
     private static final String EXPORTING_APIS_KEY = "exporting-apis";
 
-    private static final String HIDING_APIS_KEY = "exporting-apis";
+    private static final String HIDING_APIS_KEY = "hiding-apis";
 
     private static final String DEFAULT_GLOBAL_REGION_NAME = "global";
 
