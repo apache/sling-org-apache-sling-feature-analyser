@@ -24,10 +24,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
@@ -48,7 +47,7 @@ public class Analyser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String, String> configuration;
+    private final Map<String, Properties> configuration;
 
     public Analyser(final Scanner scanner,
             final AnalyserTask...tasks) throws IOException {
@@ -56,7 +55,7 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, String> configuration,
+            final Map<String, Properties> configuration,
             final AnalyserTask...tasks) throws IOException {
         this.tasks = tasks;
         this.configuration = configuration;
@@ -70,7 +69,7 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, String> configuration,
+            final Map<String, Properties> configuration,
             final String... taskClassNames)
     throws IOException {
         this(scanner, configuration, getTasksByClassName(taskClassNames));
@@ -86,7 +85,7 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-                    final Map<String, String> configuration,
+                    final Map<String, Properties> configuration,
                     final Set<String> includes,
                     final Set<String> excludes) throws IOException {
         this(scanner, configuration, getTasksByIds(includes, excludes));
@@ -117,20 +116,7 @@ public class Analyser {
         for(final AnalyserTask task : tasks) {
             logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
-            final Map<String, String> taskConfiguration = new HashMap<>();
-            for (Entry<String, String> entry : configuration.entrySet()) {
-                String key = entry.getKey();
-                int splitSeparatorIndex = key.indexOf('_');
-                if (splitSeparatorIndex != -1) {
-                    String prefix = key.substring(0, splitSeparatorIndex);
-                    if (task.getId().equals(prefix)) {
-                        String suffix = key.substring(splitSeparatorIndex + 1);
-                        taskConfiguration.put(suffix, entry.getValue());
-                    }
-                } else {
-                    taskConfiguration.put(key, entry.getValue());
-                }
-            }
+            final Properties taskConfiguration = configuration.getOrDefault(task.getId(), new Properties());
 
             task.execute(new AnalyserTaskContext() {
 
@@ -151,7 +137,7 @@ public class Analyser {
 
                 @Override
                 public String getConfigurationParameter(String argName, String defaultValue) {
-                    return taskConfiguration.getOrDefault(argName, defaultValue);
+                    return taskConfiguration.getProperty(argName, defaultValue);
                 }
 
                 @Override
