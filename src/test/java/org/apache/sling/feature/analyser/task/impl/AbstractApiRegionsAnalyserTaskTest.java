@@ -42,6 +42,8 @@ import org.apache.sling.feature.scanner.PackageInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRegionsAnalyserTask> {
 
@@ -106,6 +108,14 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
 
         AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
         when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getConfigurationParameter(anyString(), anyString())).thenAnswer(new Answer<String>() {
+
+            public String answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                return (String) args[1];
+            }
+
+        });
 
         PackageInfo packageInfo = new PackageInfo("org.osgi.util.function", "1.0", false, Collections.singleton("org.objectweb.asm"));
 

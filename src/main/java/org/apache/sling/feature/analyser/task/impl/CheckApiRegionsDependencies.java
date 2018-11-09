@@ -26,9 +26,13 @@ import org.osgi.framework.Constants;
 
 public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask {
 
-    private static final String GLOBAL_REGION_NAME = "global";
+    private static final String EXPORTING_APIS_KEY = "exporting-apis";
 
-    private static final String DEPRECATED_REGION_NAME = "deprecated";
+    private static final String HIDING_APIS_KEY = "hiding-apis";
+
+    private static final String DEFAULT_GLOBAL_REGION_NAME = "global";
+
+    private static final String DEFAULT_DEPRECATED_REGION_NAME = "deprecated";
 
     @Override
     public String getId() {
@@ -42,24 +46,29 @@ public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask 
 
     @Override
     protected void execute(ApiRegions apiRegions, AnalyserTaskContext ctx) throws Exception {
-        Set<String> globalApis = apiRegions.getApis(GLOBAL_REGION_NAME);
-        Set<String> deprectaedApis = apiRegions.getApis(DEPRECATED_REGION_NAME);
+        String exportingApisName = ctx.getConfigurationParameter(EXPORTING_APIS_KEY, DEFAULT_GLOBAL_REGION_NAME);
+        String hidingApisName = ctx.getConfigurationParameter(HIDING_APIS_KEY, DEFAULT_DEPRECATED_REGION_NAME);
+
+        Set<String> exportingApis = apiRegions.getApis(exportingApisName);
+        Set<String> hidingApis = apiRegions.getApis(hidingApisName);
 
         FeatureDescriptor featureDescriptor = ctx.getFeatureDescriptor();
         for (BundleDescriptor bundleDescriptor : featureDescriptor.getBundleDescriptors()) {
             for (PackageInfo packageInfo : bundleDescriptor.getExportedPackages()) {
                 String exportedPackage = packageInfo.getName();
 
-                if (globalApis.contains(exportedPackage)) {
+                if (exportingApis.contains(exportedPackage)) {
                     for (String uses : packageInfo.getUses()) {
-                        if (deprectaedApis.contains(uses)) {
+                        if (hidingApis.contains(uses)) {
                             String errorMessage = String.format(
-                                    "Bundle '%s', defined in feature '%s', declares '%s' in the '%s' header which requires '%s' package that is in the 'deprecated' region",
+                                    "Bundle '%s' (defined in feature '%s') declares '%s' in the '%s' header, enlisted in the '%s' region, which requires '%s' package that is in the '%s' region",
                                     bundleDescriptor.getArtifact().getId(),
                                     ctx.getFeature().getId(),
                                     exportedPackage,
                                     Constants.EXPORT_PACKAGE,
-                                    uses);
+                                    exportingApisName,
+                                    uses,
+                                    hidingApisName);
                             ctx.reportError(errorMessage);
                         }
                     }

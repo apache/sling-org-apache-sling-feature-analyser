@@ -23,7 +23,10 @@ import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTas
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
@@ -44,16 +47,32 @@ public class Analyser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
+    private final Map<String, Properties> configuration;
+
     public Analyser(final Scanner scanner,
             final AnalyserTask...tasks) throws IOException {
+        this(scanner, Collections.emptyMap(), tasks);
+    }
+
+    public Analyser(final Scanner scanner,
+            final Map<String, Properties> configuration,
+            final AnalyserTask...tasks) throws IOException {
         this.tasks = tasks;
+        this.configuration = configuration;
         this.scanner = scanner;
     }
 
     public Analyser(final Scanner scanner,
             final String... taskClassNames)
     throws IOException {
-        this(scanner, getTasksByClassName(taskClassNames));
+        this(scanner, Collections.emptyMap(), taskClassNames);
+    }
+
+    public Analyser(final Scanner scanner,
+            final Map<String, Properties> configuration,
+            final String... taskClassNames)
+    throws IOException {
+        this(scanner, configuration, getTasksByClassName(taskClassNames));
         if ( this.tasks.length != taskClassNames.length ) {
             throw new IOException("Couldn't find all tasks " + Arrays.toString(taskClassNames));
         }
@@ -62,7 +81,14 @@ public class Analyser {
     public Analyser(final Scanner scanner,
                     final Set<String> includes,
                     final Set<String> excludes) throws IOException {
-        this(scanner, getTasksByIds(includes, excludes));
+        this(scanner, Collections.emptyMap(), includes, excludes);
+    }
+
+    public Analyser(final Scanner scanner,
+                    final Map<String, Properties> configuration,
+                    final Set<String> includes,
+                    final Set<String> excludes) throws IOException {
+        this(scanner, configuration, getTasksByIds(includes, excludes));
     }
 
     public Analyser(final Scanner scanner) throws IOException {
@@ -90,6 +116,8 @@ public class Analyser {
         for(final AnalyserTask task : tasks) {
             logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
+            final Properties taskConfiguration = configuration.getOrDefault(task.getId(), new Properties());
+
             task.execute(new AnalyserTaskContext() {
 
                 @Override
@@ -105,6 +133,11 @@ public class Analyser {
                 @Override
                 public BundleDescriptor getFrameworkDescriptor() {
                     return fwkDesc;
+                }
+
+                @Override
+                public String getConfigurationParameter(String argName, String defaultValue) {
+                    return taskConfiguration.getProperty(argName, defaultValue);
                 }
 
                 @Override
