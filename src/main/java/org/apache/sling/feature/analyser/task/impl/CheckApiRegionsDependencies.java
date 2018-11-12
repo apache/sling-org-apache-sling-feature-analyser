@@ -58,18 +58,30 @@ public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask 
                 String exportedPackage = packageInfo.getName();
 
                 if (exportingApis.contains(exportedPackage)) {
-                    for (String uses : packageInfo.getUses()) {
-                        if (hidingApis.contains(uses)) {
-                            String errorMessage = String.format(
-                                    "Bundle '%s' (defined in feature '%s') declares '%s' in the '%s' header, enlisted in the '%s' region, which requires '%s' package that is in the '%s' region",
-                                    bundleDescriptor.getArtifact().getId(),
-                                    ctx.getFeature().getId(),
-                                    exportedPackage,
-                                    Constants.EXPORT_PACKAGE,
-                                    exportingApisName,
-                                    uses,
-                                    hidingApisName);
-                            ctx.reportError(errorMessage);
+                    if (hidingApis.contains(exportedPackage)) {
+                        String errorMessage = String.format(
+                                "Bundle '%s' (defined in feature '%s') declares '%s' in the '%s' header that is enlisted in both exporting '%s' and hiding '%s' APIs regions, please adjust Feature settings",
+                                bundleDescriptor.getArtifact().getId(),
+                                ctx.getFeature().getId(),
+                                exportedPackage,
+                                Constants.EXPORT_PACKAGE,
+                                exportingApisName,
+                                hidingApisName);
+                        ctx.reportError(errorMessage);
+                    } else {
+                        for (String uses : packageInfo.getUses()) {
+                            if (hidingApis.contains(uses)) {
+                                String errorMessage = String.format(
+                                        "Bundle '%s' (defined in feature '%s') declares '%s' in the '%s' header, enlisted in the '%s' region, which requires '%s' package that is in the '%s' region",
+                                        bundleDescriptor.getArtifact().getId(),
+                                        ctx.getFeature().getId(),
+                                        exportedPackage,
+                                        Constants.EXPORT_PACKAGE,
+                                        exportingApisName,
+                                        uses,
+                                        hidingApisName);
+                                ctx.reportError(errorMessage);
+                            }
                         }
                     }
                 }
