@@ -35,10 +35,19 @@ public class CheckApiRegionsDependenciesTest extends AbstractApiRegionsAnalyserT
         List<String> errors = execute("[{\"name\": \"global\",\"exports\": [\"org.osgi.util.function\"]},{\"name\": \"deprecated\",\"exports\": [\"org.objectweb.asm\"]}]");
 
         assertFalse(errors.isEmpty());
-        System.out.println(errors.iterator().next());
         assertTrue(errors.iterator()
                 .next()
                 .equals("Bundle 'org.osgi:org.osgi.util.function:1.0.0' (defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0') declares 'org.osgi.util.function' in the 'Export-Package' header, enlisted in the 'global' region, which requires 'org.objectweb.asm' package that is in the 'deprecated' region"));
+    }
+
+    @Test
+    public void testPackageEnlistedInBothRegions() throws Exception {
+        List<String> errors = execute("[{\"name\": \"global\",\"exports\": [\"org.osgi.util.function\"]},{\"name\": \"deprecated\",\"exports\": [\"org.osgi.util.function\"]}]");
+
+        assertFalse(errors.isEmpty());
+        assertTrue(errors.iterator()
+                .next()
+                .equals("Bundle 'org.osgi:org.osgi.util.function:1.0.0' (defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0') declares 'org.osgi.util.function' in the 'Export-Package' header that is enlisted in both exporting 'global' and hiding 'deprecated' APIs regions, please adjust Feature settings"));
     }
 
     @Test
