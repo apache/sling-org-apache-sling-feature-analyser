@@ -32,8 +32,8 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.lang.text.StrLookup;
-import org.apache.commons.lang.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
 import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.Artifact;
@@ -180,7 +180,8 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         defaultMap.put("java.specification.version",
                 System.getProperty("java.specification.version", "1.8"));
 
-        StrSubstitutor ss = new StrSubstitutor(new StrLookup() {
+        StringSubstitutor ss = new StringSubstitutor(new StringLookup() {
+
             @Override
             public String lookup(String key) {
                 // Normally if a variable cannot be found, StrSubstitutor will
