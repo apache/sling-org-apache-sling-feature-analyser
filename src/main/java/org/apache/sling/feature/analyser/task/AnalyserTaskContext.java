@@ -17,10 +17,11 @@
 package org.apache.sling.feature.analyser.task;
 
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.osgi.annotation.versioning.ProviderType;
+
+import java.util.Map;
 
 @ProviderType
 public interface AnalyserTaskContext {
@@ -48,7 +49,7 @@ public interface AnalyserTaskContext {
      *
      * @return The configuration map for the analyser task
      */
-    KeyValueMap getConfiguration();
+    Map<String,String> getConfiguration();
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report

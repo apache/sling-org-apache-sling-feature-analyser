@@ -16,17 +16,18 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
-import java.io.File;
-import java.net.URL;
-
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.junit.Test;
+
+import java.io.File;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class FelixFrameworkScannerTest {
     @Test
@@ -36,8 +37,8 @@ public class FelixFrameworkScannerTest {
 
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
-        KeyValueMap kvmap = new KeyValueMap();
-        KeyValueMap props = ffs.getFrameworkProperties(kvmap, fwFile);
+        Map<String,String> kvmap = new HashMap<>();
+        Map<String,String> props = ffs.getFrameworkProperties(kvmap, fwFile);
         assertEquals("osgi.service; objectClass:List<String>=org.osgi.service.resolver.Resolver; "
                     + "uses:=org.osgi.service.resolver, "
                 + "osgi.service; objectClass:List<String>=org.osgi.service.startlevel.StartLevel; "
@@ -58,7 +59,7 @@ public class FelixFrameworkScannerTest {
 
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
-        KeyValueMap kvmap = new KeyValueMap();
+        Map<String,String> kvmap = new HashMap<>();
 
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",

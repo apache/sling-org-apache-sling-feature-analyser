@@ -22,7 +22,6 @@ import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
@@ -188,7 +187,7 @@ public class Scanner {
      * @return The framework descriptor
      * @throws IOException If something goes wrong or a scanner is missing
      */
-    public BundleDescriptor scan(final ArtifactId framework, final KeyValueMap props) throws IOException {
+    public BundleDescriptor scan(final ArtifactId framework, final Map<String,String> props) throws IOException {
         BundleDescriptor fwk = null;
         for(final FrameworkScanner scanner : this.frameworkScanners) {
             fwk = scanner.scan(framework, props, artifactProvider);

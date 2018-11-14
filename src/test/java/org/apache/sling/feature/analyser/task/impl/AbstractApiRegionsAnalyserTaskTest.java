@@ -16,25 +16,11 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.jar.Manifest;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -43,8 +29,23 @@ import org.apache.sling.feature.scanner.PackageInfo;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.jar.Manifest;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRegionsAnalyserTask> {
 
@@ -109,7 +110,8 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
 
         AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
         when(ctx.getFeature()).thenReturn(feature);
-        KeyValueMap cfg = mock(KeyValueMap.class);
+        @SuppressWarnings("unchecked")
+        Map<String,String> cfg = Mockito.mock(Map.class);
         when(ctx.getConfiguration()).thenReturn(cfg);
         when(cfg.getOrDefault(anyString(), anyString())).thenAnswer(new Answer<String>() {
 

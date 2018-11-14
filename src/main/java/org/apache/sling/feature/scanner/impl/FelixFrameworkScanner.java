@@ -17,6 +17,19 @@
 package org.apache.sling.feature.scanner.impl;
 
 
+import org.apache.commons.text.StringSubstitutor;
+import org.apache.commons.text.lookup.StringLookup;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.felix.utils.resource.ResourceBuilder;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -32,33 +45,19 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.text.StringSubstitutor;
-import org.apache.commons.text.lookup.StringLookup;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.felix.utils.resource.ResourceBuilder;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.KeyValueMap;
-import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
-import org.apache.sling.feature.scanner.spi.FrameworkScanner;
-import org.osgi.framework.Constants;
-import org.osgi.resource.Capability;
-
 public class FelixFrameworkScanner implements FrameworkScanner {
 
 
     @Override
     public BundleDescriptor scan(final ArtifactId framework,
-            final KeyValueMap frameworkProps,
+            final Map<String,String> frameworkProps,
             final ArtifactProvider provider)
     throws IOException {
         final File platformFile = provider.provide(framework);
         if ( platformFile == null ) {
             throw new IOException("Unable to find file for " + framework.toMvnId());
         }
-        final KeyValueMap fwkProps = getFrameworkProperties(frameworkProps, platformFile);
+        final Map<String,String> fwkProps = getFrameworkProperties(frameworkProps, platformFile);
         if ( fwkProps == null ) {
             return null;
         }
@@ -103,7 +102,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         return d;
     }
 
-    private List<Capability> calculateSystemCapabilities(final KeyValueMap fwkProps) throws IOException
+    private List<Capability> calculateSystemCapabilities(final Map<String,String> fwkProps) throws IOException
     {
          Map<String, String> mf = new HashMap<>();
          mf.put(Constants.PROVIDE_CAPABILITY,
@@ -129,7 +128,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
          }
     }
 
-    private Set<PackageInfo> calculateSystemPackages(final KeyValueMap fwkProps) {
+    private Set<PackageInfo> calculateSystemPackages(final Map<String,String> fwkProps) {
         return
             Stream.of(
                 Parser.parseHeader(
@@ -146,7 +145,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
 
     private static final String DEFAULT_PROPERTIES = "default.properties";
 
-    KeyValueMap getFrameworkProperties(final KeyValueMap appProps, final File framework)
+    Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final File framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
         try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(framework)) ) {
@@ -173,7 +172,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             return null;
         }
 
-        final KeyValueMap frameworkProps = new KeyValueMap();
+        final Map<String,String> frameworkProps = new HashMap<>();
         frameworkProps.putAll(appProps);
 
         // replace variables

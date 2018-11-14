@@ -16,21 +16,8 @@
  */
 package org.apache.sling.feature.analyser;
 
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -38,6 +25,19 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
 
 public class Analyser {
 
@@ -47,7 +47,7 @@ public class Analyser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String, KeyValueMap> configurations;
+    private final Map<String, Map<String,String>> configurations;
 
     public Analyser(final Scanner scanner,
             final AnalyserTask...tasks) throws IOException {
@@ -55,7 +55,7 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, KeyValueMap> configurations,
+            final Map<String, Map<String,String>> configurations,
             final AnalyserTask...tasks) throws IOException {
         this.tasks = tasks;
         this.configurations = configurations;
@@ -69,7 +69,7 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, KeyValueMap> configurations,
+            final Map<String, Map<String,String>> configurations,
             final String... taskClassNames)
     throws IOException {
         this(scanner, configurations, getTasksByClassName(taskClassNames));
@@ -85,7 +85,7 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, KeyValueMap> configurations,
+            final Map<String, Map<String,String>> configurations,
                     final Set<String> includes,
                     final Set<String> excludes) throws IOException {
         this(scanner, configurations, getTasksByIds(includes, excludes));
@@ -116,7 +116,7 @@ public class Analyser {
         for(final AnalyserTask task : tasks) {
             logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
-            final KeyValueMap taskConfiguration = getConfiguration(task.getId());
+            final Map<String,String> taskConfiguration = getConfiguration(task.getId());
 
             task.execute(new AnalyserTaskContext() {
 
@@ -136,7 +136,7 @@ public class Analyser {
                 }
 
                 @Override
-                public KeyValueMap getConfiguration() {
+                public Map<String,String> getConfiguration() {
                     return taskConfiguration;
                 }
 
@@ -171,8 +171,8 @@ public class Analyser {
         };
     }
 
-    private KeyValueMap getConfiguration(final String id) {
-        final KeyValueMap result = new KeyValueMap();
+    private Map<String,String> getConfiguration(final String id) {
+        final Map<String,String> result = new HashMap<>();
 
         result.putAll(this.configurations.get("*"));
         result.putAll(this.configurations.get(id));
