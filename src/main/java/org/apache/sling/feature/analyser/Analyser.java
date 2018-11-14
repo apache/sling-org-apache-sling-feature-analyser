@@ -174,8 +174,14 @@ public class Analyser {
     private Map<String,String> getConfiguration(final String id) {
         final Map<String,String> result = new HashMap<>();
 
-        result.putAll(this.configurations.get("*"));
-        result.putAll(this.configurations.get(id));
+        Map<String, String> globalCfg = this.configurations.get("*");
+        if (globalCfg != null)
+            result.putAll(globalCfg);
+
+
+        Map<String, String> specificCfg = this.configurations.get(id);
+        if (specificCfg != null)
+            result.putAll(specificCfg);
 
         return result;
     }
