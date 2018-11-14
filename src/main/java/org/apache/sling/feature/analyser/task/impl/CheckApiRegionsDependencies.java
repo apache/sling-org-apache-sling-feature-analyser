@@ -46,8 +46,8 @@ public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask 
 
     @Override
     protected void execute(ApiRegions apiRegions, AnalyserTaskContext ctx) throws Exception {
-        String exportingApisName = ctx.getConfigurationParameter(EXPORTING_APIS_KEY, DEFAULT_GLOBAL_REGION_NAME);
-        String hidingApisName = ctx.getConfigurationParameter(HIDING_APIS_KEY, DEFAULT_DEPRECATED_REGION_NAME);
+        String exportingApisName = ctx.getConfiguration().getOrDefault(EXPORTING_APIS_KEY, DEFAULT_GLOBAL_REGION_NAME);
+        String hidingApisName = ctx.getConfiguration().getOrDefault(HIDING_APIS_KEY, DEFAULT_DEPRECATED_REGION_NAME);
 
         Set<String> exportingApis = apiRegions.getApis(exportingApisName);
         Set<String> hidingApis = apiRegions.getApis(hidingApisName);

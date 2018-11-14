@@ -34,6 +34,7 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -100,7 +101,7 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
 
         Feature feature = mock(Feature.class);
         when(feature.getId()).thenReturn(new ArtifactId("org.apache.sling.testing",
-                                                        "org.apache.sling.testing.apiregions", 
+                                                        "org.apache.sling.testing.apiregions",
                                                         "1.0.0",
                                                         null,
                                                         null));
@@ -108,8 +109,11 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
 
         AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
         when(ctx.getFeature()).thenReturn(feature);
-        when(ctx.getConfigurationParameter(anyString(), anyString())).thenAnswer(new Answer<String>() {
+        KeyValueMap cfg = mock(KeyValueMap.class);
+        when(ctx.getConfiguration()).thenReturn(cfg);
+        when(cfg.getOrDefault(anyString(), anyString())).thenAnswer(new Answer<String>() {
 
+            @Override
             public String answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
                 return (String) args[1];

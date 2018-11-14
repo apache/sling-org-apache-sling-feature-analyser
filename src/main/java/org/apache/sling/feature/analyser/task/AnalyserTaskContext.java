@@ -17,6 +17,7 @@
 package org.apache.sling.feature.analyser.task;
 
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.osgi.annotation.versioning.ProviderType;
@@ -43,13 +44,11 @@ public interface AnalyserTaskContext {
     BundleDescriptor getFrameworkDescriptor();
 
     /**
-     * Returns the context configuration parameter.
+     * Returns the configuration.
      *
-     * @param argName the argument name associated to a configuration value
-     * @param defaultValue the default value, if the configuration parameter is missing
-     * @return a configuration value associated to the input argName, defaultValue if the configuration parameter is missing
+     * @return The configuration map for the analyser task
      */
-    String getConfigurationParameter(String argName, String defaultValue);
+    KeyValueMap getConfiguration();
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report

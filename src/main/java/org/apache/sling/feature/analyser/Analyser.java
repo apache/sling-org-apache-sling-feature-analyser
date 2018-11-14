@@ -26,11 +26,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.KeyValueMap;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -47,7 +47,7 @@ public class Analyser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String, Properties> configuration;
+    private final Map<String, KeyValueMap> configurations;
 
     public Analyser(final Scanner scanner,
             final AnalyserTask...tasks) throws IOException {
@@ -55,10 +55,10 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, Properties> configuration,
+            final Map<String, KeyValueMap> configurations,
             final AnalyserTask...tasks) throws IOException {
         this.tasks = tasks;
-        this.configuration = configuration;
+        this.configurations = configurations;
         this.scanner = scanner;
     }
 
@@ -69,10 +69,10 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-            final Map<String, Properties> configuration,
+            final Map<String, KeyValueMap> configurations,
             final String... taskClassNames)
     throws IOException {
-        this(scanner, configuration, getTasksByClassName(taskClassNames));
+        this(scanner, configurations, getTasksByClassName(taskClassNames));
         if ( this.tasks.length != taskClassNames.length ) {
             throw new IOException("Couldn't find all tasks " + Arrays.toString(taskClassNames));
         }
@@ -85,10 +85,10 @@ public class Analyser {
     }
 
     public Analyser(final Scanner scanner,
-                    final Map<String, Properties> configuration,
+            final Map<String, KeyValueMap> configurations,
                     final Set<String> includes,
                     final Set<String> excludes) throws IOException {
-        this(scanner, configuration, getTasksByIds(includes, excludes));
+        this(scanner, configurations, getTasksByIds(includes, excludes));
     }
 
     public Analyser(final Scanner scanner) throws IOException {
@@ -116,7 +116,7 @@ public class Analyser {
         for(final AnalyserTask task : tasks) {
             logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
-            final Properties taskConfiguration = configuration.getOrDefault(task.getId(), new Properties());
+            final KeyValueMap taskConfiguration = getConfiguration(task.getId());
 
             task.execute(new AnalyserTaskContext() {
 
@@ -136,8 +136,8 @@ public class Analyser {
                 }
 
                 @Override
-                public String getConfigurationParameter(String argName, String defaultValue) {
-                    return taskConfiguration.getProperty(argName, defaultValue);
+                public KeyValueMap getConfiguration() {
+                    return taskConfiguration;
                 }
 
                 @Override
@@ -169,5 +169,14 @@ public class Analyser {
                 return errors;
             }
         };
+    }
+
+    private KeyValueMap getConfiguration(final String id) {
+        final KeyValueMap result = new KeyValueMap();
+
+        result.putAll(this.configurations.get("*"));
+        result.putAll(this.configurations.get(id));
+
+        return result;
     }
 }
