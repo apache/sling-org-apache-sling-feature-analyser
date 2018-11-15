@@ -72,7 +72,7 @@ public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask 
                         for (String uses : packageInfo.getUses()) {
                             if (hidingApis.contains(uses)) {
                                 String errorMessage = String.format(
-                                        "Bundle '%s' (defined in feature '%s') declares '%s' in the '%s' header, enlisted in the '%s' region, which requires '%s' package that is in the '%s' region",
+                                        "Bundle '%s' (defined in feature '%s') declares '%s' in the '%s' header, enlisted in the '%s' region, which uses '%s' package that is in the '%s' region",
                                         bundleDescriptor.getArtifact().getId(),
                                         ctx.getFeature().getId(),
                                         exportedPackage,
