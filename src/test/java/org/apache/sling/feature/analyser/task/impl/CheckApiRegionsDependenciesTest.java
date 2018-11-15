@@ -16,12 +16,12 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CheckApiRegionsDependenciesTest extends AbstractApiRegionsAnalyserTaskTest<CheckApiRegionsDependencies> {
 
@@ -37,7 +37,7 @@ public class CheckApiRegionsDependenciesTest extends AbstractApiRegionsAnalyserT
         assertFalse(errors.isEmpty());
         assertTrue(errors.iterator()
                 .next()
-                .equals("Bundle 'org.osgi:org.osgi.util.function:1.0.0' (defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0') declares 'org.osgi.util.function' in the 'Export-Package' header, enlisted in the 'global' region, which requires 'org.objectweb.asm' package that is in the 'deprecated' region"));
+                .equals("Bundle 'org.osgi:org.osgi.util.function:1.0.0' (defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0') declares 'org.osgi.util.function' in the 'Export-Package' header, enlisted in the 'global' region, which uses 'org.objectweb.asm' package that is in the 'deprecated' region"));
     }
 
     @Test
