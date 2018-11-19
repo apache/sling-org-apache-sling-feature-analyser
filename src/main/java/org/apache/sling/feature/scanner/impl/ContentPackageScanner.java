@@ -330,24 +330,17 @@ public class ContentPackageScanner {
                 id = configFile.getName().substring(0, lastDot);
             }
 
-            final String pid, factoryPid;
+            final String pid;
             final int slashPos = id.indexOf('-');
             if ( slashPos == -1 ) {
                 pid = id;
-                factoryPid = null;
             } else {
-                pid = id.substring(slashPos + 1);
-                factoryPid = id.substring(0, slashPos);
+                pid = id.substring(0, slashPos) + '~' + id.substring(slashPos + 1);
             }
 
-            final Configuration cfg;
-            if ( factoryPid != null ) {
-                cfg = new Configuration(factoryPid, pid);
-            } else {
-                cfg = new Configuration(pid);
-            }
-            cfg.getProperties().put("content-path", contentPath);
-            cfg.getProperties().put("content-package", packageArtifact.getId().toMvnId());
+            final Configuration cfg = new Configuration(pid);
+            cfg.getProperties().put(Configuration.PROP_PREFIX + "content-path", contentPath);
+            cfg.getProperties().put(Configuration.PROP_PREFIX + "content-package", packageArtifact.getId().toMvnId());
 
             return cfg;
         }
