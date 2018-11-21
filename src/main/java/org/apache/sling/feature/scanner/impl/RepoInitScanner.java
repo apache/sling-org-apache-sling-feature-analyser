@@ -23,7 +23,6 @@ import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.FeatureConstants;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
@@ -36,7 +35,7 @@ public class RepoInitScanner implements ExtensionScanner {
 
     @Override
     public String getId() {
-        return FeatureConstants.EXTENSION_NAME_REPOINIT;
+        return Extension.EXTENSION_NAME_REPOINIT;
     }
 
     @Override
@@ -49,7 +48,7 @@ public class RepoInitScanner implements ExtensionScanner {
             final Extension extension,
             final ArtifactProvider provider)
     throws IOException {
-        if (!FeatureConstants.EXTENSION_NAME_REPOINIT.equals(extension.getName()) ) {
+        if (!Extension.EXTENSION_NAME_REPOINIT.equals(extension.getName())) {
             return null;
         }
         if ( extension.getType() != ExtensionType.TEXT ) {
