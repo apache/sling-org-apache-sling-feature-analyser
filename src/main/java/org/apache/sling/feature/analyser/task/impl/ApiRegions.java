@@ -104,7 +104,7 @@ final class ApiRegions {
         apis.computeIfAbsent(region, k -> new TreeSet<>()).addAll(exportedApis);
     }
 
-    public Iterable<String> getRegions() {
+    public Set<String> getRegions() {
         return apis.keySet();
     }
 
