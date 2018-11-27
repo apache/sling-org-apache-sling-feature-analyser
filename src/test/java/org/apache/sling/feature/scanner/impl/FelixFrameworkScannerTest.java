@@ -63,7 +63,7 @@ public class FelixFrameworkScannerTest {
 
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",
-                "5.6.10", null, null), kvmap, new ArtifactProvider() {
+                "6.0.1", null, null), kvmap, new ArtifactProvider() {
 
                     @Override
                     public File provide(ArtifactId id) {

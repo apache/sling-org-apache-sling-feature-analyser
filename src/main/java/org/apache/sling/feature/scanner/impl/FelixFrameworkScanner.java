@@ -112,11 +112,6 @@ public class FelixFrameworkScanner implements FrameworkScanner {
                 )
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(",")));
-         mf.put(Constants.EXPORT_PACKAGE, Stream.of(
-             fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES),
-             fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA)
-             ).filter(Objects::nonNull)
-                 .collect(Collectors.joining(",")));
          mf.put(Constants.BUNDLE_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
          mf.put(Constants.BUNDLE_MANIFESTVERSION, "2");
          try
@@ -173,11 +168,16 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         }
 
         final Map<String,String> frameworkProps = new HashMap<>();
-        frameworkProps.putAll(appProps);
+        appProps.forEach((key, value) -> frameworkProps.put(key, value.replace("{dollar}", "$")));
 
         // replace variables
         defaultMap.put("java.specification.version",
                 System.getProperty("java.specification.version", "1.8"));
+
+        defaultMap.put("felix.detect.java.specification.version", "1.8");
+        defaultMap.put("felix.detect.java.version", "0.0.0.JavaSE_018");
+
+
 
         StringSubstitutor ss = new StringSubstitutor(new StringLookup() {
 
@@ -199,6 +199,24 @@ public class FelixFrameworkScanner implements FrameworkScanner {
                 final String substValue = ss.replace(value);
                 frameworkProps.put(name.toString(), substValue);
             }
+        }
+
+        ss = new StringSubstitutor(new StringLookup() {
+
+            @Override
+            public String lookup(String key) {
+                // Normally if a variable cannot be found, StrSubstitutor will
+                // leave the raw variable in place. We need to replace it with
+                // nothing in that case.
+
+                String val = frameworkProps.get(key);
+                return val != null ? val.replace("{dollar}", "$") : "";
+            }
+        });
+
+        ss.setEnableSubstitutionInVariables(true);
+        for (Map.Entry<String, String> entry : frameworkProps.entrySet()) {
+            entry.setValue(ss.replace(entry.getValue().replace("{dollar}", "$")));
         }
 
         return frameworkProps;
