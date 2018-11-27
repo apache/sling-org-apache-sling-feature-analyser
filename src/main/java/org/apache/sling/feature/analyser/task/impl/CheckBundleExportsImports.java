@@ -85,15 +85,21 @@ public class CheckBundleExportsImports implements AnalyserTask {
             if ( info.getImportedPackages() != null ) {
                 for(final PackageInfo i : info.getImportedPackages()) {
                     if ( i.getVersion() == null ) {
-                        // don't report for javax and org.w3c. packages (TODO)
-                        if ( !i.getName().startsWith("javax.")
-                             && !i.getName().startsWith("org.w3c.")) {
+                        // don't report for packages we don't provide yet (TODO)
+                        if ( !isIgnored(i)) {
                             getReport(reports, info).importWithoutVersion.add(i);
                         }
                     }
                 }
             }
         }
+    }
+
+    private boolean isIgnored(final PackageInfo i) {
+        return i.getName().startsWith("javax.")
+              || i.getName().startsWith("org.w3c.")
+              || i.getName().startsWith("org.xml.sax.")
+              || i.getName().equals("org.ietf.jgss");
     }
 
 
@@ -131,6 +137,10 @@ public class CheckBundleExportsImports implements AnalyserTask {
             for(final BundleDescriptor info : entry.getValue()) {
                 if ( info.getImportedPackages() != null ) {
                     for(final PackageInfo pck : info.getImportedPackages() ) {
+                       // don't report for packages we don't provide yet (TODO)
+                        if ( isIgnored(pck) ) {
+                            continue;
+                        }
                         final List<BundleDescriptor> candidates = getCandidates(exportingBundles, pck);
                         if ( candidates.isEmpty() ) {
                             if ( pck.isOptional() ) {
