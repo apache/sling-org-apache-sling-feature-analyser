@@ -5,3 +5,4 @@ org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities
 org.apache.sling.feature.analyser.task.impl.CheckApiRegions
 org.apache.sling.feature.analyser.task.impl.CheckApiRegionsDependencies
 org.apache.sling.feature.analyser.task.impl.CheckApiRegionsDuplicates
+org.apache.sling.feature.analyser.task.impl.CheckApiRegionsOrder
