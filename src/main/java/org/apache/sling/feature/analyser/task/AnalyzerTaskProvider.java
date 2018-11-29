@@ -18,13 +18,15 @@
  */
 package org.apache.sling.feature.analyser.task;
 
+import org.apache.sling.feature.analyser.Analyser;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
-
-import org.apache.sling.feature.analyser.Analyser;
 
 public final class AnalyzerTaskProvider {
 
@@ -40,16 +42,29 @@ public final class AnalyzerTaskProvider {
     // excludes can be null, means "do not exclude anything"
     // if both includes and excludes are null, method mehaves like getTasks()
     public static AnalyserTask[] getTasksByIds(Set<String> includes, Set<String> excludes) {
+        if (excludes == null)
+            excludes = Collections.emptySet();
+
         final ServiceLoader<AnalyserTask> loader = ServiceLoader.load(AnalyserTask.class);
+        final Set<String> foundTasks = new HashSet<>();
         final List<AnalyserTask> list = new ArrayList<>();
         for(final AnalyserTask task : loader) {
             boolean included = includes != null ? includes.contains(task.getId()) : true;
-            boolean excluded = excludes != null ? excludes.contains(task.getId()) : false;
+            boolean excluded = excludes.contains(task.getId());
 
             if (included && !excluded) {
                 list.add(task);
+                foundTasks.add(task.getId());
             }
         }
+
+        Set<String> notFoundTasks = new HashSet<>(includes != null ? includes : Collections.emptySet());
+        notFoundTasks.removeAll(foundTasks);
+        notFoundTasks.removeAll(excludes);
+        if (notFoundTasks.size() > 0) {
+            throw new IllegalStateException("Configured analyser task(s) not found: " + notFoundTasks);
+        }
+
         return list.toArray(new AnalyserTask[list.size()]);
     }
 

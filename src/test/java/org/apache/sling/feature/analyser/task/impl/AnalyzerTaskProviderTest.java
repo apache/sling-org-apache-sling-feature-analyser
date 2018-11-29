@@ -18,16 +18,18 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.*;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.junit.Test;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
+import static org.junit.Assert.assertEquals;
 
 public final class AnalyzerTaskProviderTest {
 
@@ -84,4 +86,8 @@ public final class AnalyzerTaskProviderTest {
         assertEquals(expected, actual);
     }
 
+    @Test(expected=IllegalStateException.class)
+    public void testFailOnAnalyzerNotFound() throws Exception {
+        getTasksByIds(Collections.singleton("not-found"), null);
+    }
 }
