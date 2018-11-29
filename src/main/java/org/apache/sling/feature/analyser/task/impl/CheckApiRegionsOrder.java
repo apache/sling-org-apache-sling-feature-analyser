@@ -39,6 +39,11 @@ public class CheckApiRegionsOrder implements AnalyserTask {
     }
 
     @Override
+    public String getName() {
+        return "Api Regions check order analyser task";
+    }
+
+    @Override
     public final void execute(AnalyserTaskContext ctx) throws Exception {
         String order = ctx.getConfiguration().get("order");
         Feature feature = ctx.getFeature();
@@ -97,6 +102,7 @@ public class CheckApiRegionsOrder implements AnalyserTask {
                     if (regionIdx < 0) {
                         reportError(ctx, "Region '" + name + "' appears in the wrong order. It appears after '"
                                 + prescribedOrder.get(prevIdx) + "'. Order of regions should be " + prescribedOrder);
+                        return;
                     }
                 }
             }
