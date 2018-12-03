@@ -207,9 +207,27 @@ public class ContentPackageScanner {
                 i.lock();
             }
         } finally {
-            if ( tempDir.exists() ) {
-                tempDir.delete();
+            deleteRecursive(tempDir);
+        }
+    }
+
+    private boolean deleteRecursive(File file) {
+        if (file.isDirectory()) {
+            File[] childs = file.listFiles();
+            if (childs != null) {
+                for (File child : childs) {
+                    if (!deleteRecursive(child)) {
+                        return false;
+                    }
+                }
+                return file.delete();
             }
+            else {
+                return false;
+            }
+        }
+        else {
+            return file.delete();
         }
     }
 
