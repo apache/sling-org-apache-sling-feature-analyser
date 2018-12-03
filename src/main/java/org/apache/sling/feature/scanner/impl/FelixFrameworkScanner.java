@@ -171,8 +171,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         appProps.forEach((key, value) -> frameworkProps.put(key, value.replace("{dollar}", "$")));
 
         // replace variables
-        defaultMap.put("java.specification.version",
-                System.getProperty("java.specification.version", "1.8"));
+        defaultMap.put("java.specification.version","1.8");
 
         defaultMap.put("felix.detect.java.specification.version", "1.8");
         defaultMap.put("felix.detect.java.version", "0.0.0.JavaSE_018");
