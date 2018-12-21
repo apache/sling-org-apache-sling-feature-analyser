@@ -16,23 +16,16 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import java.util.Set;
-
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
 
+import java.util.List;
+import java.util.Set;
+
 public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask {
-
-    private static final String EXPORTING_APIS_KEY = "exporting-apis";
-
-    private static final String HIDING_APIS_KEY = "hiding-apis";
-
-    private static final String DEFAULT_GLOBAL_REGION_NAME = "global";
-
-    private static final String DEFAULT_DEPRECATED_REGION_NAME = "deprecated";
 
     @Override
     public String getId() {
@@ -46,9 +39,16 @@ public class CheckApiRegionsDependencies extends AbstractApiRegionsAnalyserTask 
 
     @Override
     protected void execute(ApiRegions apiRegions, AnalyserTaskContext ctx) throws Exception {
-        String exportingApisName = ctx.getConfiguration().getOrDefault(EXPORTING_APIS_KEY, DEFAULT_GLOBAL_REGION_NAME);
-        String hidingApisName = ctx.getConfiguration().getOrDefault(HIDING_APIS_KEY, DEFAULT_DEPRECATED_REGION_NAME);
+        List<String> regions = apiRegions.getRegions();
 
+        for (int i=0; i < regions.size(); i++) {
+            for (int j=i+1; j < regions.size(); j++) {
+                execute(ctx, apiRegions, regions.get(i), regions.get(j));
+            }
+        }
+    }
+
+    private void execute(AnalyserTaskContext ctx, ApiRegions apiRegions, String exportingApisName, String hidingApisName) {
         Set<String> exportingApis = apiRegions.getApis(exportingApisName);
         Set<String> hidingApis = apiRegions.getApis(hidingApisName);
 

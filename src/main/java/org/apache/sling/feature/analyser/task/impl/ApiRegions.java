@@ -17,12 +17,14 @@
 package org.apache.sling.feature.analyser.task.impl;
 
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 
 import javax.json.Json;
@@ -38,7 +40,7 @@ final class ApiRegions {
 
     private static final String EXPORTS_KEY = "exports";
 
-    public static ApiRegions fromJson(String jsonRepresentation) {
+    static ApiRegions fromJson(String jsonRepresentation) {
         ApiRegions apiRegions = new ApiRegions();
 
         // pointers
@@ -88,35 +90,36 @@ final class ApiRegions {
         return apiRegions;
     }
 
-    // class members
+    // Use Linked Hash Map to keep the order of the regions as specified in the JSON
+    private final Map<String, Set<String>> apis = new LinkedHashMap<>();
 
-    private final Map<String, Set<String>> apis = new TreeMap<>();
-
-    // ctor
-
-    protected ApiRegions() {
+    ApiRegions() {
         // it should not be directly instantiated outside this package
     }
 
-    // methods
-
-    public void add(String region, Collection<String> exportedApis) {
+    void add(String region, Collection<String> exportedApis) {
         apis.computeIfAbsent(region, k -> new TreeSet<>()).addAll(exportedApis);
     }
 
-    public Set<String> getRegions() {
-        return apis.keySet();
+    /**
+     * Return the regions in the order they were listed.
+     * @return The regions.
+     */
+    List<String> getRegions() {
+        // As the regions are stored in a LinkedHashMap the order is preserved.
+        // So we can return the keys.
+        return new ArrayList<>(apis.keySet());
     }
 
-    public Set<String> getApis(String region) {
+    Set<String> getApis(String region) {
         return apis.computeIfAbsent(region, k -> Collections.emptySet());
     }
 
-    public void remove(String packageName) {
+    void remove(String packageName) {
         apis.values().forEach(apis -> apis.remove(packageName));
     }
 
-    public boolean isEmpty() {
+    boolean isEmpty() {
         for (Set<String> packages : apis.values()) {
             if (!packages.isEmpty()) {
                 return false;
@@ -129,5 +132,4 @@ final class ApiRegions {
     public String toString() {
         return apis.toString().replace(',', '\n');
     }
-
 }
