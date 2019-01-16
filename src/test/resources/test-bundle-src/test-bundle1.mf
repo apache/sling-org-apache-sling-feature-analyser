@@ -1,0 +1,4 @@
+Bundle-SymbolicName: test-bundle1
+Bundle-Version: 1.2.3
+Bundle-ManifestVersion: 2
+Export-Package: org.foo.a;version="1.2",org.foo.b;version="1",org.foo.c;version="3"

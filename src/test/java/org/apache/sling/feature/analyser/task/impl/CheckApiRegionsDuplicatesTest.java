@@ -16,13 +16,13 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.junit.Test;
 
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class CheckApiRegionsDuplicatesTest extends AbstractApiRegionsAnalyserTaskTest<CheckApiRegionsDuplicates> {
 
@@ -37,9 +37,10 @@ public class CheckApiRegionsDuplicatesTest extends AbstractApiRegionsAnalyserTas
 
         assertFalse(errors.isEmpty());
         assertEquals(1, errors.size());
+        System.out.println(errors);
         assertTrue(errors.iterator()
                 .next()
-                .startsWith("Regions 'deprecated' and 'global' defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0' declare both 1 package(s)"));
+                .startsWith("Regions 'global' and 'deprecated' defined in feature 'org.apache.sling.testing:org.apache.sling.testing.apiregions:1.0.0' declare both 1 package(s)"));
     }
 
 }
