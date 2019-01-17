@@ -34,6 +34,8 @@ import org.mockito.Mockito;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -165,18 +167,60 @@ public class CheckBundleExportsImportsTest {
         fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
         fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
 
+        Map<String, String> cfgMap = new HashMap<String, String>();
+        cfgMap.put("fileStorage", resourceRoot + "/origins/testImportExportWithRegionMismatch");
+        cfgMap.put("ignoreAPIRegions", "false");
+
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
-        Mockito.when(ctx.getConfiguration()).thenReturn(
-                Collections.singletonMap("fileStorage",
-                        resourceRoot + "/origins/testImportExportWithRegionMismatch"));
+        Mockito.when(ctx.getConfiguration()).thenReturn(cfgMap);
         t.execute(ctx);
 
         Mockito.verify(ctx).reportError(Mockito.contains("org.foo.b"));
         Mockito.verify(ctx).reportError(Mockito.contains("something"));
         Mockito.verify(ctx).reportError(Mockito.contains("somethingelse"));
         Mockito.verify(ctx, Mockito.times(1)).reportError(Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
+    }
+
+    @Test
+    /*
+     * Bundle 2 imports org.foo.b from bundle 1, but bundle 1 exports it in a different
+     * region, bundle 1 is in something region, and bundle 2 is in somethingelse region.
+     * However this should still pass as the analyzer is configured to ignore regions.
+     */
+    public void testImportExportWithRegionMismatchIgnoreRegions() throws Exception {
+        String exJson = "[{\"name\": \"something\", \"exports\": [\"org.foo.b\"]}]";
+
+        CheckBundleExportsImports t = new CheckBundleExportsImports();
+
+        Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        ex.setJSON(exJson);
+        f.getExtensions().add(ex);
+
+        FeatureDescriptor fd = new FeatureDescriptor() {
+            @Override
+            public Feature getFeature() {
+                return f;
+            }
+        };
+
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
+        fdAddBundle(fd, "g:b2:1", "test-bundle2.jar");
+
+        Map<String, String> cfgMap = new HashMap<String, String>();
+        cfgMap.put("fileStorage", resourceRoot + "/origins/testImportExportWithRegionMismatch");
+        cfgMap.put("ignoreAPIRegions", "true");
+
+        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(f);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        Mockito.when(ctx.getConfiguration()).thenReturn(cfgMap);
+        t.execute(ctx);
+
+        Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
 

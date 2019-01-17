@@ -46,12 +46,8 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 public class CheckBundleExportsImports implements AnalyserTask {
-    /**
-     * Ignore API Region information files being absent.
-     */
-    private static final String SKIP_API_REGION_FILE_ERRORS_SYSTEM_PROPERTY = "skipAPIRegionFileErrors";
-
     private static final String FILE_STORAGE_CONFIG_KEY = "fileStorage";
+    private static final String IGNORE_API_REGIONS_CONFIG_KEY = "ignoreAPIRegions";
     private static final String API_REGIONS = "api-regions";
     private static final String GLOBAL_REGION = "global";
     private static final String NO_REGION = " __NO_REGION__ ";
@@ -123,6 +119,9 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) throws IOException {
+        boolean ignoreAPIRegions = ctx.getConfiguration().getOrDefault(
+                IGNORE_API_REGIONS_CONFIG_KEY, "false").equalsIgnoreCase("true");
+
         // basic checks
         final Map<BundleDescriptor, Report> reports = new HashMap<>();
         checkForVersionOnExportedPackages(ctx, reports);
@@ -144,9 +143,18 @@ public class CheckBundleExportsImports implements AnalyserTask {
             exportingBundles.add(ctx.getFrameworkDescriptor());
         }
 
-        ApiRegions apiRegions = readAPIRegionsFromFeature(ctx);
-        Map<String, Set<String>> bundleToOriginalFeatures = readBundleOrigins(ctx);
-        Map<String, Set<String>> featureToOriginalRegions = readRegionOrigins(ctx);
+        ApiRegions apiRegions;
+        Map<String, Set<String>> bundleToOriginalFeatures;
+        Map<String, Set<String>> featureToOriginalRegions;
+        if (ignoreAPIRegions) {
+            apiRegions = new ApiRegions(); // Empty API Regions
+            bundleToOriginalFeatures = Collections.emptyMap();
+            featureToOriginalRegions = Collections.emptyMap();
+        } else {
+            apiRegions = readAPIRegionsFromFeature(ctx);
+            bundleToOriginalFeatures = readBundleOrigins(ctx);
+            featureToOriginalRegions = readRegionOrigins(ctx);
+        }
 
         for(final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
             // first add all exporting bundles
@@ -377,7 +385,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
         String fileStorage = ctx.getConfiguration().get(FILE_STORAGE_CONFIG_KEY);
         if (fileStorage == null) {
-            if (APIRegionExtension != null && System.getProperty(SKIP_API_REGION_FILE_ERRORS_SYSTEM_PROPERTY) == null) {
+            if (APIRegionExtension != null) {
                 throw new IllegalStateException("Feature " + feature.getId() +
                         " has API regions defined, but no storage is configured for origin information files. "
                         + "Please configure the " + FILE_STORAGE_CONFIG_KEY + " configuration item.");
@@ -388,7 +396,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
         String featureName = feature.getId().toMvnId().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
         File file = new File(fileStorage, featureName + File.separator + fileName);
         if (!file.exists()) {
-            if (APIRegionExtension != null && System.getProperty(SKIP_API_REGION_FILE_ERRORS_SYSTEM_PROPERTY) == null)
+            if (APIRegionExtension != null)
                 throw new IllegalStateException("Feature " + feature.getId() +
                         " has API regions defined but no file with origin information can be found " + file +
                         " Configure the org.apache.sling.feature.extension.apiregions appropriately to write this information");
