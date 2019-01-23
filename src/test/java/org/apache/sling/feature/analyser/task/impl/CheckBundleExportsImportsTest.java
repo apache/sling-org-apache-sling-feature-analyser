@@ -56,6 +56,37 @@ public class CheckBundleExportsImportsTest {
     }
 
     @Test
+    /*
+     * Bundle b3 imports org.foo.e, but no bundle exports it. The feature is marked
+     * as complete which it isn't
+     */
+    public void testImportExportNoRegionsMarkedAsComplete() throws Exception {
+        CheckBundleExportsImports t = new CheckBundleExportsImports();
+
+        Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
+        f.setComplete(true);
+        FeatureDescriptor fd = new FeatureDescriptor() {
+            @Override
+            public Feature getFeature() {
+                return f;
+            }
+        };
+
+        fdAddBundle(fd, "g:b1:1", "test-bundle1.jar");
+        fdAddBundle(fd, "g:b3:1", "test-bundle3.jar");
+
+        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(f);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        t.execute(ctx);
+
+        Mockito.verify(ctx, Mockito.times(2)).reportError(Mockito.anyString());
+        Mockito.verify(ctx).reportError(Mockito.contains("org.foo.e"));
+        Mockito.verify(ctx).reportError(Mockito.contains("marked as 'complete'"));
+        Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
+    }
+
+    @Test
     public void testImportExportNoRegionsAllOk() throws IOException {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
@@ -80,6 +111,9 @@ public class CheckBundleExportsImportsTest {
     }
 
     @Test
+    /*
+     * Bundle b3 imports org.foo.e, but no bundle exports it
+     */
     public void testImportExportNoRegionsMissing() throws IOException {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 

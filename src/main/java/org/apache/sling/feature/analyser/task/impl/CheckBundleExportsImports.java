@@ -235,6 +235,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
             }
         }
 
+        boolean errorReported = false;
         for(final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
             final String key = "Bundle " + entry.getKey().getArtifact().getId().getArtifactId() + ":" + entry.getKey().getArtifact().getId().getVersion();
 
@@ -248,6 +249,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
             if ( !entry.getValue().missingExports.isEmpty() ) {
                 ctx.reportError(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
                         String.valueOf(entry.getKey().getBundleStartLevel()) + " but no bundle is exporting these for that start level.");
+                errorReported = true;
             }
             if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
                 StringBuilder message = new StringBuilder(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level " +
@@ -259,7 +261,11 @@ public class CheckBundleExportsImports implements AnalyserTask {
                     message.append("\n" + pkg.getName() + " is exported in regions " + regions.getKey() + " but it is imported in regions " + regions.getValue());
                 }
                 ctx.reportError(message.toString());
+                errorReported = true;
             }
+        }
+        if (errorReported && ctx.getFeature().isComplete()) {
+            ctx.reportError(ctx.getFeature().getId().toMvnId() + " is marked as 'complete' but has missing imports.");
         }
     }
 
