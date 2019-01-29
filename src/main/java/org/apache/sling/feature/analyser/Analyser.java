@@ -40,6 +40,10 @@ import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTas
 import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
 
 public class Analyser {
+    /**
+     * Configurration key for configuration that applies to all tasks.
+     */
+    static final String ALL_TASKS_KEY = "all";
 
     private final AnalyserTask[] tasks;
 
@@ -171,10 +175,10 @@ public class Analyser {
         };
     }
 
-    private Map<String,String> getConfiguration(final String id) {
+    Map<String,String> getConfiguration(final String id) {
         final Map<String,String> result = new HashMap<>();
 
-        Map<String, String> globalCfg = this.configurations.get("*");
+        Map<String, String> globalCfg = this.configurations.get(ALL_TASKS_KEY);
         if (globalCfg != null)
             result.putAll(globalCfg);
 
