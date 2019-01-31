@@ -24,6 +24,9 @@ import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
  * Information about a bundle
  */
 public abstract class BundleDescriptor extends ArtifactDescriptor implements Comparable<BundleDescriptor> {
+    protected BundleDescriptor(String name) {
+        super(name);
+    }
 
     /**
      * Get the bundle symbolic name.

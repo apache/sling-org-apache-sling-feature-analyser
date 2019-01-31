@@ -16,17 +16,18 @@
  */
 package org.apache.sling.feature.scanner;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 
 /**
  * A descriptor holds information about requirements and capabilities
  */
 public abstract class Descriptor  {
+    private final String name;
 
     private boolean locked;
 
@@ -39,6 +40,10 @@ public abstract class Descriptor  {
     private final Set<Requirement> reqs = new HashSet<>();
 
     private final Set<Capability> caps = new HashSet<>();
+
+    protected Descriptor(String name) {
+        this.name = name;
+    }
 
     public void lock() {
         this.locked = true;
@@ -72,6 +77,14 @@ public abstract class Descriptor  {
 
     public final Set<PackageInfo> getDynamicImportedPackages() {
         return locked ? Collections.unmodifiableSet(dynImports) : dynImports;
+    }
+
+    /**
+     * Returns the name of the entity associated with this descriptor.
+     * @return the name.
+     */
+    public String getName() {
+        return name;
     }
 
     /**

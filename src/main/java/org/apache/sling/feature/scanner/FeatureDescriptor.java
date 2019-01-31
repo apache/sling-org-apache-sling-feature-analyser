@@ -20,9 +20,22 @@ import org.apache.sling.feature.Feature;
 
 /**
  * Information about a feature.
- * This is the aggregated information.
  */
 public abstract class FeatureDescriptor extends ContainerDescriptor {
+    private final Feature feature;
 
-    public abstract Feature getFeature();
+    protected FeatureDescriptor(Feature f) {
+        super(f.getId().toMvnId());
+        feature = f;
+        analyze(f);
+    }
+
+    private void analyze(Feature f) {
+        getCapabilities().addAll(f.getCapabilities());
+        getRequirements().addAll(f.getRequirements());
+    }
+
+    public Feature getFeature() {
+        return feature;
+    }
 }

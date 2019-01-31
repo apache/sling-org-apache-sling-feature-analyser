@@ -26,14 +26,7 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 public class FeatureDescriptorImpl
     extends FeatureDescriptor {
 
-    private final Feature feature;
-
     public FeatureDescriptorImpl(final Feature feature) {
-        this.feature = feature;
-    }
-
-    @Override
-    public Feature getFeature() {
-        return this.feature;
+        super(feature);
     }
 }

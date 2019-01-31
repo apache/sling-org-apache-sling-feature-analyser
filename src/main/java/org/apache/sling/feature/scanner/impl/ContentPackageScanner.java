@@ -16,6 +16,13 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,13 +37,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ContentPackageScanner {
 
@@ -56,7 +56,7 @@ public class ContentPackageScanner {
         }
 
         final Set<ContentPackageDescriptor> contentPackages = new HashSet<>();
-        final ContentPackageDescriptor cp = new ContentPackageDescriptor();
+        final ContentPackageDescriptor cp = new ContentPackageDescriptor(file.getName());
         final int lastDot = file.getName().lastIndexOf(".");
         cp.setName(file.getName().substring(0, lastDot));
         cp.setArtifact(desc);
@@ -197,7 +197,7 @@ public class ContentPackageScanner {
 
             for(final File f : toProcess) {
                 extractContentPackage(cp, infos, f);
-                final ContentPackageDescriptor i = new ContentPackageDescriptor();
+                final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName());
                 final int lastDot = f.getName().lastIndexOf(".");
                 i.setName(f.getName().substring(0, lastDot));
                 i.setArtifactFile(f);

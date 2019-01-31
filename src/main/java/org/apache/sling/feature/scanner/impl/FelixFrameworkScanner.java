@@ -64,7 +64,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         final Set<PackageInfo> pcks = calculateSystemPackages(fwkProps);
         final List<Capability> capabilities = calculateSystemCapabilities(fwkProps);
 
-        final BundleDescriptor d = new BundleDescriptor() {
+        final BundleDescriptor d = new BundleDescriptor(framework.toMvnId()) {
 
             @Override
             public String getBundleSymbolicName() {

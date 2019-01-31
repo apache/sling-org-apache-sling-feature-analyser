@@ -16,14 +16,14 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.apache.sling.feature.scanner.BundleDescriptor;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Information about a content package.
@@ -42,6 +42,10 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
     private File artifactFile;
 
     private Artifact artifact;
+
+    public ContentPackageDescriptor(String name) {
+        super(name);
+    }
 
     /**
      * Get the artifact file
@@ -120,6 +124,7 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
         this.contentPath = path;
     }
 
+    @Override
     public String getName() {
         return name;
     }

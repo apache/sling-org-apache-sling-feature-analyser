@@ -1,0 +1,5 @@
+Bundle-SymbolicName: test-bundle5
+Bundle-Version: 1.2.0
+Bundle-ManifestVersion: 2
+Provide-Capability: org.zzz;qqq="123";vvv="vvv";zzz="aaa"
+Require-Capability: org.foo.bar;filter:="(abc=def)"

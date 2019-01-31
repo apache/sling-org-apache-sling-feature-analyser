@@ -26,6 +26,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -128,7 +129,7 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
         BundleDescriptor bundleDescriptor = new TestBundleDescriptor();
         bundleDescriptor.getExportedPackages().add(packageInfo);
 
-        FeatureDescriptor featureDescriptor = new TestFeatureDescriptor();
+        FeatureDescriptor featureDescriptor = new FeatureDescriptorImpl(feature);
         featureDescriptor.getBundleDescriptors().add(bundleDescriptor);
 
         when(ctx.getFeatureDescriptor()).thenReturn(featureDescriptor);
@@ -145,16 +146,10 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
         return errors;
     }
 
-    private static final class TestFeatureDescriptor extends FeatureDescriptor {
-
-        @Override
-        public Feature getFeature() {
-            return null;
-        }
-
-    }
-
     private static final class TestBundleDescriptor extends BundleDescriptor {
+        TestBundleDescriptor() {
+            super("org.osgi:org.osgi.util.function:1.0.0");
+        }
 
         @Override
         public File getArtifactFile() {

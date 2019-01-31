@@ -30,6 +30,10 @@ public abstract class ContainerDescriptor extends Descriptor {
 
     private final Set<ArtifactDescriptor> artifacts = new HashSet<>();
 
+    protected ContainerDescriptor(String name) {
+        super(name);
+    }
+
     /**
      * Return a set of bundle descriptors.
      *

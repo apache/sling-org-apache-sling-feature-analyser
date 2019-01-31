@@ -16,9 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.IOException;
-import java.util.Collections;
-
 import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
@@ -27,6 +24,9 @@ import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.osgi.resource.Requirement;
+
+import java.io.IOException;
+import java.util.Collections;
 
 public class RepoInitScanner implements ExtensionScanner {
     private static final Requirement REQUIREMENT_REPOINIT = new RequirementImpl(null, "osgi.implementation",
@@ -55,7 +55,7 @@ public class RepoInitScanner implements ExtensionScanner {
             return null;
         }
 
-        final ContainerDescriptor cd = new ContainerDescriptor() {};
+        final ContainerDescriptor cd = new ContainerDescriptor(feature.getId().toMvnId() + "(" + getId() + ")") {};
 
         cd.getRequirements().add(REQUIREMENT_REPOINIT);
 

@@ -16,6 +16,15 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.felix.utils.resource.ResourceBuilder;
+import org.apache.felix.utils.resource.ResourceImpl;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Constants;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,15 +36,6 @@ import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
-
-import org.apache.felix.utils.manifest.Clause;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.felix.utils.resource.ResourceBuilder;
-import org.apache.felix.utils.resource.ResourceImpl;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
-import org.osgi.framework.Constants;
 
 /**
  * Information about a bundle
@@ -64,6 +64,7 @@ public class BundleDescriptorImpl
     public BundleDescriptorImpl(final Artifact a,
             final File file,
             final int startLevel) throws IOException  {
+        super(a.getId().toMvnId());
         this.artifact = a;
         this.artifactFile = file;
         this.startLevel = startLevel;

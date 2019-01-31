@@ -16,14 +16,17 @@
  */
 package org.apache.sling.feature.scanner;
 
-import java.io.File;
-
 import org.apache.sling.feature.Artifact;
+
+import java.io.File;
 
 /**
  * Information about an artifact
  */
 public abstract class ArtifactDescriptor extends Descriptor {
+    protected ArtifactDescriptor(String name) {
+        super(name);
+    }
 
     /**
      * Get the artifact file
