@@ -56,9 +56,10 @@ public class CheckRequirementsCapabilitiesTest {
         Requirement req = new RequirementImpl(null,
                 "org.zzz", "(&(zzz=aaa)(qqq=123))");
 
+        feature.getCapabilities().addAll(Arrays.asList(cap1, cap2));
+        feature.getRequirements().add(req);
+
         FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
-        fd.getCapabilities().addAll(Arrays.asList(cap1, cap2));
-        fd.getRequirements().add(req);
         fd.getBundleDescriptors().add(bd1);
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
@@ -106,9 +107,10 @@ public class CheckRequirementsCapabilitiesTest {
         Requirement req = new RequirementImpl(null,
                 "org.zzz", "(&(zzz=aaa)(qqq=123))");
 
+        feature.getCapabilities().addAll(Arrays.asList(cap1, cap2));
+        feature.getRequirements().add(req);
+
         FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
-        fd.getCapabilities().addAll(Arrays.asList(cap1, cap2));
-        fd.getRequirements().add(req);
 
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(feature);

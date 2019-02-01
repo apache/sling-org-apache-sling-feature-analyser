@@ -102,4 +102,9 @@ public abstract class Descriptor  {
     public final Set<Capability> getCapabilities() {
         return locked ?  Collections.unmodifiableSet(caps) : caps;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

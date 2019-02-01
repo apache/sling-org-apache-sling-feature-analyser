@@ -65,12 +65,12 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
 
         // Add descriptor for feature capabilties. These are added at start level 0
         Descriptor featureCaps = new ReqCapDescriptor(featureMavenID);
-        featureCaps.getCapabilities().addAll(ctx.getFeatureDescriptor().getCapabilities());
+        featureCaps.getCapabilities().addAll(ctx.getFeature().getCapabilities());
         getDescriptorList(0, artifactsMap).add(featureCaps);
 
         // Add descriptor for feature requirements. These are added at the highest start level found
         Descriptor featureReqs = new ReqCapDescriptor(featureMavenID);
-        featureReqs.getRequirements().addAll(ctx.getFeatureDescriptor().getRequirements());
+        featureReqs.getRequirements().addAll(ctx.getFeature().getRequirements());
         Integer highestStartLevel = artifactsMap.lastKey();
         getDescriptorList(highestStartLevel, artifactsMap).add(featureReqs);
 
@@ -115,7 +115,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                             }
                             else if (candidates.size() > 1)
                             {
-                                ctx.reportWarning(String.format(format, info.getName(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level."));
+                                ctx.reportWarning(String.format(format, info.getName(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level: " + candidates));
                             }
                         }
                     }
