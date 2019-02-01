@@ -80,6 +80,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
             artifacts.add(ctx.getFrameworkDescriptor());
         }
 
+        boolean errorReported = false;
         for(final Map.Entry<Integer, List<Descriptor>> entry : artifactsMap.entrySet()) {
             // first add all providing artifacts
             for (final Descriptor info : entry.getValue()) {
@@ -105,6 +106,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                                 if (!RequirementImpl.isOptional(requirement))
                                 {
                                     ctx.reportError(String.format(format, info.getName(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level."));
+                                    errorReported = true;
                                 }
                                 else
                                 {
@@ -119,6 +121,9 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                     }
                 }
             }
+        }
+        if (errorReported && ctx.getFeature().isComplete()) {
+            ctx.reportError(ctx.getFeature().getId().toMvnId() + " is marked as 'complete' but has unsatisfied requirements.");
         }
     }
 
