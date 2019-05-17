@@ -17,6 +17,22 @@
 package org.apache.sling.feature.scanner.impl;
 
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+
 import org.apache.commons.text.StringSubstitutor;
 import org.apache.commons.text.lookup.StringLookup;
 import org.apache.felix.utils.manifest.Parser;
@@ -24,27 +40,12 @@ import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.jar.Manifest;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public class FelixFrameworkScanner implements FrameworkScanner {
 
@@ -144,22 +145,21 @@ public class FelixFrameworkScanner implements FrameworkScanner {
     Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final URL framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
-        try (final ZipInputStream zis = new ZipInputStream(framework.openStream()) ) {
-            boolean done = false;
-            while ( !done ) {
-                final ZipEntry entry = zis.getNextEntry();
-                if ( entry == null ) {
-                    done = true;
-                } else {
+        
+        try (final JarFile zipFile = IOUtils.getJarFileFromURL(framework, true, null)) {
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            
+            while ( entries.hasMoreElements() ) {
+                final ZipEntry entry = entries.nextElement();
+                
+                try (final InputStream zis = zipFile.getInputStream(entry)) {
                     final String entryName = entry.getName();
                     if ( entryName.endsWith(".properties") ) {
                         final Properties props = new Properties();
                         props.load(zis);
-
                         propsMap.put(entryName, props);
                     }
-                    zis.closeEntry();
-                }
+                } 
             }
         }
 
