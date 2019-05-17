@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,7 +38,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 public class ContentPackageScanner {
 
@@ -243,13 +241,16 @@ public class ContentPackageScanner {
         final File toDir = new File(tempDir, bundleFile.getName());
         toDir.mkdirs();
 
-        try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(bundleFile)) ) {
-            boolean done = false;
-            while ( !done ) {
-                final ZipEntry entry = zis.getNextEntry();
-                if ( entry == null ) {
-                    done = true;
-                } else {
+        ZipFile zipFile = null;
+        try {
+            zipFile = new ZipFile(bundleFile);
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            
+            while ( entries.hasMoreElements() ) {
+                final ZipEntry entry = entries.nextElement();
+                InputStream zis = null; 
+                try {
+                    zis = zipFile.getInputStream(entry);
                     final String entryName = entry.getName();
                     if ( !entryName.endsWith("/") && entryName.startsWith("META-INF/maven/") && entryName.endsWith("/pom.properties")) {
                         logger.debug("- extracting : {}", entryName);
@@ -262,12 +263,16 @@ public class ContentPackageScanner {
                                 fos.write(buffer, 0, len);
                             }
                         }
-
                     }
-                    zis.closeEntry();
+                } finally {
+                    if(zis != null)
+                        zis.close();
                 }
             }
 
+        } finally {
+            if(zipFile != null) 
+                zipFile.close();
         }
 
         // check for maven

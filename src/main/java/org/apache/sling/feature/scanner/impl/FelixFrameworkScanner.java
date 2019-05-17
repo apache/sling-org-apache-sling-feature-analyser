@@ -31,8 +31,9 @@ import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +44,7 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipFile;
 
 public class FelixFrameworkScanner implements FrameworkScanner {
 
@@ -143,23 +144,31 @@ public class FelixFrameworkScanner implements FrameworkScanner {
     Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final File framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
-        try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(framework)) ) {
-            boolean done = false;
-            while ( !done ) {
-                final ZipEntry entry = zis.getNextEntry();
-                if ( entry == null ) {
-                    done = true;
-                } else {
+        ZipFile zipFile = null;
+        try {
+            zipFile = new ZipFile(framework);
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            
+            while ( entries.hasMoreElements() ) {
+                final ZipEntry entry = entries.nextElement();
+                InputStream zis = null; 
+                try {
                     final String entryName = entry.getName();
+                    zis = zipFile.getInputStream(entry);
                     if ( entryName.endsWith(".properties") ) {
                         final Properties props = new Properties();
                         props.load(zis);
 
                         propsMap.put(entryName, props);
                     }
-                    zis.closeEntry();
+                } finally {
+                    if(zis != null) 
+                        zis.close();
                 }
             }
+        } finally {
+            if(zipFile != null) 
+                zipFile.close();
         }
 
         final Properties defaultMap = propsMap.get(DEFAULT_PROPERTIES);
