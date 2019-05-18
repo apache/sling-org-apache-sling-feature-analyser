@@ -89,8 +89,8 @@ public class ContentPackageScanner {
                     final ZipEntry entry = entries.nextElement();
                     final String entryName = entry.getName();
                     logger.debug("Content package entry {}", entryName);
-
-                    if (!entryName.endsWith("/") && entryName.startsWith("jcr_root/")) {
+                    
+                    if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
                         final String contentPath = entryName.substring(8);
 
                         FileType fileType = null;
