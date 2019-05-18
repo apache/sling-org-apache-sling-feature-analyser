@@ -92,6 +92,7 @@ public class ContentPackageScanner {
                 while( entries.hasMoreElements() ) {
                     final ZipEntry entry = entries.nextElement();
                     final String entryName = entry.getName();
+                    logger.debug("Content package entry {}", entryName);
                     final InputStream zis = zipFile.getInputStream(entry);
                     
                     if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
