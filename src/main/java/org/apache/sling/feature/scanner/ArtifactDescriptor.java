@@ -29,6 +29,7 @@ import org.apache.sling.feature.Artifact;
  * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class ArtifactDescriptor extends Descriptor {
+
     protected ArtifactDescriptor(String name) {
         super(name);
     }

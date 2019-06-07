@@ -27,6 +27,7 @@ import org.apache.sling.feature.Feature;
  * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class FeatureDescriptor extends ContainerDescriptor {
+
     private final Feature feature;
 
     protected FeatureDescriptor(Feature f) {

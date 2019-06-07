@@ -16,15 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import org.apache.felix.utils.manifest.Clause;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.felix.utils.resource.ResourceBuilder;
-import org.apache.felix.utils.resource.ResourceImpl;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
-import org.osgi.framework.Constants;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +27,15 @@ import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.felix.utils.resource.ResourceBuilder;
+import org.apache.felix.utils.resource.ResourceImpl;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Constants;
 
 /**
  * Information about a bundle
@@ -141,7 +141,8 @@ public class BundleDescriptorImpl
                 ResourceImpl resource = ResourceBuilder.build(null, this.manifest.getMainAttributes().entrySet().stream()
                     .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
                 this.getCapabilities().addAll(resource.getCapabilities(null));
-                this.getRequirements().addAll(resource.getRequirements(null));
+                this.getRequirements().addAll(resource.getRequirements(null).stream()
+                        .map(entry -> new MatchingRequirementImpl(entry)).collect(Collectors.toList()));
             } catch (Exception ex) {
                 throw new IOException(ex);
             }

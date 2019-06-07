@@ -16,20 +16,20 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import org.apache.felix.utils.resource.RequirementImpl;
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.scanner.ContainerDescriptor;
-import org.apache.sling.feature.scanner.spi.ExtensionScanner;
-import org.osgi.resource.Requirement;
-
 import java.io.IOException;
 import java.util.Collections;
 
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.MatchingRequirement;
+import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.scanner.ContainerDescriptor;
+import org.apache.sling.feature.scanner.spi.ExtensionScanner;
+
 public class RepoInitScanner implements ExtensionScanner {
-    private static final Requirement REQUIREMENT_REPOINIT = new RequirementImpl(null, "osgi.implementation",
+    private static final MatchingRequirement REQUIREMENT_REPOINIT = new MatchingRequirementImpl(null,
+            "osgi.implementation",
             Collections.singletonMap("filter", "(&(osgi.implementation=org.apache.sling.jcr.repoinit)(version>=1.0)(!(version>=2.0)))"),
                     null);
 
