@@ -84,9 +84,7 @@ public class ContentPackageScanner {
 
             final List<File> toProcess = new ArrayList<>();
             
-            ZipFile zipFile = null;
-            try {
-                zipFile = new ZipFile(archive);
+            try (final ZipFile zipFile = new ZipFile(archive)) {
                 Enumeration<? extends ZipEntry> entries = zipFile.entries();
                 
                 while( entries.hasMoreElements() ) {
@@ -152,16 +150,15 @@ public class ContentPackageScanner {
                             final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
                             newFile.getParentFile().mkdirs();
 
-                            InputStream zis = zipFile.getInputStream(entry);
-                            try (final FileOutputStream fos = new FileOutputStream(newFile)) {
+                            try (
+                                    final FileOutputStream fos = new FileOutputStream(newFile);
+                                    final InputStream zis = zipFile.getInputStream(entry);
+                            ) {
                                 int len;
                                 while ((len = zis.read(buffer)) > -1) {
                                     fos.write(buffer, 0, len);
                                 }
-                            } finally {
-                                zis.close();
-                                zis = null;
-                            }
+                            } 
 
                             if ( fileType == FileType.BUNDLE ) {
                                 int startLevel = 20;
@@ -197,10 +194,7 @@ public class ContentPackageScanner {
                     }
                 }
                 
-            } finally {
-                if(zipFile != null) 
-                    zipFile.close();
-            }
+            } 
 
             for(final File f : toProcess) {
                 extractContentPackage(cp, infos, f);
@@ -245,38 +239,31 @@ public class ContentPackageScanner {
         final File toDir = new File(tempDir, bundleFile.getName());
         toDir.mkdirs();
 
-        ZipFile zipFile = null;
-        try {
-            zipFile = new ZipFile(bundleFile);
+        
+        try (final ZipFile zipFile = new ZipFile(bundleFile)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while ( entries.hasMoreElements() ) {
                 final ZipEntry entry = entries.nextElement();
-                InputStream zis = null; 
-                try {
-                    zis = zipFile.getInputStream(entry);
-                    final String entryName = entry.getName();
-                    if ( !entryName.endsWith("/") && entryName.startsWith("META-INF/maven/") && entryName.endsWith("/pom.properties")) {
-                        logger.debug("- extracting : {}", entryName);
-                        final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
-                        newFile.getParentFile().mkdirs();
+                
+                final String entryName = entry.getName();
+                if ( !entryName.endsWith("/") && entryName.startsWith("META-INF/maven/") && entryName.endsWith("/pom.properties")) {
+                    logger.debug("- extracting : {}", entryName);
+                    final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
+                    newFile.getParentFile().mkdirs();
 
-                        try (final FileOutputStream fos = new FileOutputStream(newFile)) {
-                            int len;
-                            while ((len = zis.read(buffer)) > -1) {
-                                fos.write(buffer, 0, len);
-                            }
+                    try (
+                            final FileOutputStream fos = new FileOutputStream(newFile); 
+                            final InputStream zis = zipFile.getInputStream(entry)
+                    ) {
+                        int len;
+                        while ((len = zis.read(buffer)) > -1) {
+                            fos.write(buffer, 0, len);
                         }
                     }
-                } finally {
-                    if(zis != null)
-                        zis.close();
                 }
             }
 
-        } finally {
-            if(zipFile != null) 
-                zipFile.close();
         }
 
         // check for maven

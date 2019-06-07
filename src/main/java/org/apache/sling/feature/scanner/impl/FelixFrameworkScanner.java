@@ -144,31 +144,23 @@ public class FelixFrameworkScanner implements FrameworkScanner {
     Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final File framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
-        ZipFile zipFile = null;
-        try {
-            zipFile = new ZipFile(framework);
+       
+        try (final ZipFile zipFile = new ZipFile(framework)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while ( entries.hasMoreElements() ) {
                 final ZipEntry entry = entries.nextElement();
-                InputStream zis = null; 
-                try {
+                 
+                try (final InputStream zis = zipFile.getInputStream(entry)) {
                     final String entryName = entry.getName();
-                    zis = zipFile.getInputStream(entry);
                     if ( entryName.endsWith(".properties") ) {
                         final Properties props = new Properties();
                         props.load(zis);
 
                         propsMap.put(entryName, props);
                     }
-                } finally {
-                    if(zis != null) 
-                        zis.close();
-                }
+                } 
             }
-        } finally {
-            if(zipFile != null) 
-                zipFile.close();
         }
 
         final Properties defaultMap = propsMap.get(DEFAULT_PROPERTIES);
