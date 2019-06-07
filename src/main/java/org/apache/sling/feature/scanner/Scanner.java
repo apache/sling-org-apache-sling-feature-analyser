@@ -16,11 +16,19 @@
  */
 package org.apache.sling.feature.scanner;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.Extensions;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
@@ -28,22 +36,20 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-
 /**
- * The scanner is a service that scans items and provides descriptions for these.
- * The following items can be scanned individually
+ * The scanner is a service that scans items and provides descriptions for
+ * these. The following items can be scanned individually
  * <ul>
- *   <li>A bundle artifact
- *   <li>An extension (requires {@link ExtensionScanner}s)
- *   <li>A feature (requires {@link ExtensionScanner}s)
- *   <li>A framework (requires {@link FrameworkScanner}s)
+ * <li>A bundle artifact
+ * <li>A feature (requires {@link ExtensionScanner}s)
+ * <li>A framework (requires {@link FrameworkScanner}s)
  * </ul>
+ *
+ * The scanner uses an internal cache for the scanned results, subsequent scan
+ * calls with the same input will be directly served from the cache. The cache
+ * is an in memory cache and its lifetime is bound to the lifetime of the used
+ * scanner instance.
+ *
  */
 public class Scanner {
 
@@ -52,6 +58,9 @@ public class Scanner {
     private final List<ExtensionScanner> extensionScanners;
 
     private final List<FrameworkScanner> frameworkScanners;
+
+    /** The in memory cache for the scanned descriptors. */
+    private final Map<String, Object> cache = new ConcurrentHashMap<>();
 
     /**
      * Create a new scanner
@@ -105,18 +114,25 @@ public class Scanner {
      * @throws IOException If something goes wrong or the provided artifact is not a bundle.
      */
     public BundleDescriptor scan(final Artifact bundle, final int startLevel) throws IOException {
-        final File file = artifactProvider.provide(bundle.getId());
-        if ( file == null ) {
-            throw new IOException("Unable to find file for " + bundle.getId());
-        }
+        final String key = bundle.getId().toMvnId().concat(":").concat(String.valueOf(startLevel));
+        BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
+        if (desc == null) {
+            final File file = artifactProvider.provide(bundle.getId());
+            if (file == null) {
+                throw new IOException("Unable to find file for " + bundle.getId());
+            }
 
-        return new BundleDescriptorImpl(bundle, file, startLevel);
+            desc = new BundleDescriptorImpl(bundle, file, startLevel);
+            this.cache.put(key, desc);
+        }
+        return desc;
     }
 
     /**
-     * Get all bundle descriptors for a feature / application
+     * Get all bundle descriptors
+     *
      * @param bundles The bundles
-     * @param desc The descriptor
+     * @param desc    The container descriptor
      * @throws IOException If something goes wrong or no suitable scanner is found.
      */
     private void getBundleInfos(final Bundles bundles, final ContainerDescriptor desc)
@@ -129,9 +145,16 @@ public class Scanner {
         }
     }
 
-    private void scan(final Feature f, final Extensions extensions, final ContainerDescriptor desc)
+    /**
+     * Scan all extensions of a feature
+     *
+     * @param f    The feature
+     * @param desc The container descriptor
+     * @throws IOException If something goes wrong or no suitable scanner is found.
+     */
+    private void scanExtensions(final Feature f, final ContainerDescriptor desc)
     throws IOException {
-        for(final Extension ext : extensions) {
+        for (final Extension ext : f.getExtensions()) {
             ContainerDescriptor extDesc = null;
             for(final ExtensionScanner scanner : this.extensionScanners) {
                 extDesc = scanner.scan(f, ext, this.artifactProvider);
@@ -153,6 +176,11 @@ public class Scanner {
         }
     }
 
+    /**
+     * Compact the container description
+     * 
+     * @param desc The contaier description
+     */
     private void compact(final ContainerDescriptor desc) {
         // TBD remove all import packages / dynamic import packages which are resolved by this bundle set
         // same with requirements
@@ -167,15 +195,21 @@ public class Scanner {
      * @throws IOException If something goes wrong or a scanner is missing
      */
     public FeatureDescriptor scan(final Feature feature) throws IOException {
-        final FeatureDescriptorImpl desc = new FeatureDescriptorImpl(feature);
+        final String key = feature.getId().toMvnId();
 
-        getBundleInfos(feature.getBundles(), desc);
-        scan(feature, feature.getExtensions(), desc);
+        FeatureDescriptorImpl desc = (FeatureDescriptorImpl) this.cache.get(key);
+        if (desc == null) {
+            desc = new FeatureDescriptorImpl(feature);
 
-        compact(desc);
+            getBundleInfos(feature.getBundles(), desc);
+            scanExtensions(feature, desc);
 
-        desc.lock();
+            compact(desc);
 
+            desc.lock();
+
+            this.cache.put(key, desc);
+        }
         return desc;
     }
 
@@ -188,17 +222,29 @@ public class Scanner {
      * @throws IOException If something goes wrong or a scanner is missing
      */
     public BundleDescriptor scan(final ArtifactId framework, final Map<String,String> props) throws IOException {
-        BundleDescriptor fwk = null;
-        for(final FrameworkScanner scanner : this.frameworkScanners) {
-            fwk = scanner.scan(framework, props, artifactProvider);
-            if ( fwk != null ) {
-                break;
+        final StringBuilder sb = new StringBuilder();
+        sb.append(framework.toMvnId());
+        if (props != null) {
+            final Map<String, String> sortedMap = new TreeMap<String, String>(props);
+            for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
+                sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
             }
         }
-        if ( fwk == null ) {
-            throw new IOException("No scanner found for framework " + framework.toMvnId());
+        final String key = sb.toString();
+        BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
+        if (desc == null) {
+            for (final FrameworkScanner scanner : this.frameworkScanners) {
+                desc = scanner.scan(framework, props, artifactProvider);
+                if (desc != null) {
+                    break;
+                }
+            }
+            if (desc == null) {
+                throw new IOException("No scanner found for framework " + framework.toMvnId());
+            }
+            this.cache.put(key, desc);
         }
 
-        return fwk;
+        return desc;
     }
 }

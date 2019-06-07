@@ -16,12 +16,17 @@
  */
 package org.apache.sling.feature.scanner;
 
-import org.apache.sling.feature.Artifact;
-
 import java.io.File;
 
+import org.apache.sling.feature.Artifact;
+
 /**
- * Information about an artifact
+ * Information about an artifact.
+ *
+ * Note that this implementation is not synchronized. If multiple threads access
+ * a descriptor concurrently, and at least one of the threads modifies the
+ * descriptor structurally, it must be synchronized externally. However, once a
+ * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class ArtifactDescriptor extends Descriptor {
     protected ArtifactDescriptor(String name) {

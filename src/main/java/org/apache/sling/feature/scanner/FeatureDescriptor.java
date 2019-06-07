@@ -20,6 +20,11 @@ import org.apache.sling.feature.Feature;
 
 /**
  * Information about a feature.
+ *
+ * Note that this implementation is not synchronized. If multiple threads access
+ * a descriptor concurrently, and at least one of the threads modifies the
+ * descriptor structurally, it must be synchronized externally. However, once a
+ * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class FeatureDescriptor extends ContainerDescriptor {
     private final Feature feature;

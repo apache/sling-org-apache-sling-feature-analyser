@@ -21,7 +21,12 @@ import java.util.jar.Manifest;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 
 /**
- * Information about a bundle
+ * Information about a bundle.
+ *
+ * Note that this implementation is not synchronized. If multiple threads access
+ * a descriptor concurrently, and at least one of the threads modifies the
+ * descriptor structurally, it must be synchronized externally. However, once a
+ * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class BundleDescriptor extends ArtifactDescriptor implements Comparable<BundleDescriptor> {
     protected BundleDescriptor(String name) {

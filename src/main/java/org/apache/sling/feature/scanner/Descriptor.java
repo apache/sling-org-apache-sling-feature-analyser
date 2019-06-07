@@ -16,15 +16,20 @@
  */
 package org.apache.sling.feature.scanner;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+
 /**
- * A descriptor holds information about requirements and capabilities
+ * A descriptor holds information about requirements and capabilities.
+ *
+ * Note that this implementation is not synchronized. If multiple threads access
+ * a descriptor concurrently, and at least one of the threads modifies the
+ * descriptor structurally, it must be synchronized externally. However, once a
+ * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class Descriptor  {
     private final String name;
