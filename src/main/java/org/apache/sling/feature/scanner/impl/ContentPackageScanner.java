@@ -93,7 +93,6 @@ public class ContentPackageScanner {
                     final ZipEntry entry = entries.nextElement();
                     final String entryName = entry.getName();
                     logger.debug("Content package entry {}", entryName);
-                    final InputStream zis = zipFile.getInputStream(entry);
                     
                     if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
                         final String contentPath = entryName.substring(8);
@@ -153,11 +152,15 @@ public class ContentPackageScanner {
                             final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
                             newFile.getParentFile().mkdirs();
 
+                            InputStream zis = zipFile.getInputStream(entry);
                             try (final FileOutputStream fos = new FileOutputStream(newFile)) {
                                 int len;
                                 while ((len = zis.read(buffer)) > -1) {
                                     fos.write(buffer, 0, len);
                                 }
+                            } finally {
+                                zis.close();
+                                zis = null;
                             }
 
                             if ( fileType == FileType.BUNDLE ) {
