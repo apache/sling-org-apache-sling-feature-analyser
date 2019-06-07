@@ -43,7 +43,7 @@ public class CheckRequirementsCapabilitiesTest {
 
         BundleDescriptor bd1 = new BundleDescriptorImpl(
                 new Artifact(ArtifactId.fromMvnId("g:b1:1.2.0")),
-                f, 7);
+                f.toURI().toURL(), 7);
 
         Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
 
@@ -78,7 +78,7 @@ public class CheckRequirementsCapabilitiesTest {
 
         BundleDescriptor bd1 = new BundleDescriptorImpl(
                 new Artifact(ArtifactId.fromMvnId("g:b1:1.2.0")),
-                f, 7);
+                f.toURI().toURL(), 7);
 
         Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
         FeatureDescriptor fd = new FeatureDescriptorImpl(feature);

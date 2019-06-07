@@ -60,7 +60,7 @@ public class CheckBundlesForConnect implements AnalyserTask {
                 }
 
                 final Set<String> packages = new HashSet<>();
-                try (final JarInputStream jis = new JarInputStream(new FileInputStream(bd.getArtifactFile()))) {
+                try (final JarInputStream jis = new JarInputStream(bd.getArtifactFile().openStream())) {
                     JarEntry entry;
                     while ((entry = jis.getNextJarEntry()) != null) {
                         if (entry.getName().endsWith(".class")) {

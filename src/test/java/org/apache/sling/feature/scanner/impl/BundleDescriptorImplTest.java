@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -52,7 +53,7 @@ public class BundleDescriptorImplTest
             + "Bundle-Version: 1\n"
             + "Bundle-ManifestVersion: 2\n"
             + "Export-Package: org.apache.sling;version=1.0,org.apache.felix;version=2.0\n";
-        File f = createBundle(bmf);
+        URL f = new URL("jar:" + createBundle(bmf).toURI().toURL() + "!/");
         BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f, 1);
         final Set<PackageInfo> infos = bdf.getExportedPackages();
         assertEquals(2, infos.size());

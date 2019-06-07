@@ -35,6 +35,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -152,7 +153,7 @@ public abstract class AbstractApiRegionsAnalyserTaskTest<T extends AbstractApiRe
         }
 
         @Override
-        public File getArtifactFile() {
+        public URL getArtifactFile() {
             // do nothing
             return null;
         }

@@ -22,6 +22,7 @@ import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
     /** Configurations in the content package. */
     public final List<Configuration> configs = new ArrayList<>();
 
-    private File artifactFile;
+    private URL artifactFile;
 
     private Artifact artifact;
 
@@ -52,7 +53,7 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
      * @return The artifact file
      */
     @Override
-    public File getArtifactFile() {
+    public URL getArtifactFile() {
         return artifactFile;
     }
 
@@ -78,7 +79,7 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
      * Set the artifact file
      * @param artifactFile The artifact file
      */
-    public void setArtifactFile(File artifactFile) {
+    public void setArtifactFile(URL artifactFile) {
         checkLocked();
         this.artifactFile = artifactFile;
     }

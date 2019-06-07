@@ -24,9 +24,11 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
+import sun.net.www.protocol.jar.JarURLConnection;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,19 +58,19 @@ public class BundleDescriptorImpl
     private final Manifest manifest;
 
     /** The physical file for analyzing. */
-    private final File artifactFile;
+    private final URL artifactFile;
 
     /** The corresponding artifact from the feature. */
     private final Artifact artifact;
 
     public BundleDescriptorImpl(final Artifact a,
-            final File file,
+            final URL file,
             final int startLevel) throws IOException  {
         super(a.getId().toMvnId());
         this.artifact = a;
         this.artifactFile = file;
         this.startLevel = startLevel;
-        try (final JarFile jarFile = new JarFile(this.artifactFile) ) {
+        try (final JarFile jarFile = ((JarURLConnection) ("jar".equals(this.artifactFile.getProtocol()) ? this.artifactFile : new URL("jar:" + this.artifactFile + "!/")).openConnection()).getJarFile()) {
             this.manifest = jarFile.getManifest();
         }
         if ( this.manifest == null ) {
@@ -106,7 +108,7 @@ public class BundleDescriptorImpl
     }
 
     @Override
-    public File getArtifactFile() {
+    public URL getArtifactFile() {
         return artifactFile;
     }
 

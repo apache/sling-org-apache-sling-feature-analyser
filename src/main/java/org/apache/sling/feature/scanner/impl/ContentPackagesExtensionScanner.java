@@ -26,6 +26,7 @@ import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.Set;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
@@ -56,7 +57,7 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
         final ContainerDescriptor cd = new ContainerDescriptor(feature.getId().toMvnId() + "(" + getId() + ")") {};
 
         for(final Artifact a : extension.getArtifacts()) {
-            final File file = provider.provide(a.getId());
+            final URL file = provider.provide(a.getId());
             if ( file == null ) {
                 throw new IOException("Unable to find file for " + a.getId());
             }
