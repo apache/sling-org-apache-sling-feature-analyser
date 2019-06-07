@@ -145,13 +145,12 @@ public class FelixFrameworkScanner implements FrameworkScanner {
     Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final URL framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
-        
+
         try (final JarFile zipFile = IOUtils.getJarFileFromURL(framework, true, null)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             
             while ( entries.hasMoreElements() ) {
                 final ZipEntry entry = entries.nextElement();
-                
                 try (final InputStream zis = zipFile.getInputStream(entry)) {
                     final String entryName = entry.getName();
                     if ( entryName.endsWith(".properties") ) {

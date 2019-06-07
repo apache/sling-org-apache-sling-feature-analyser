@@ -150,12 +150,13 @@ public class ContentPackageScanner {
 
                             try (
                                     final FileOutputStream fos = new FileOutputStream(newFile);
-                                    final InputStream zis = zipFile.getInputStream(entry);) {
+                                    final InputStream zis = zipFile.getInputStream(entry);
+                            ) {
                                 int len;
                                 while ((len = zis.read(buffer)) > -1) {
                                     fos.write(buffer, 0, len);
                                 }
-                            }
+                            } 
 
                             if (fileType == FileType.BUNDLE) {
                                 int startLevel = 20;
