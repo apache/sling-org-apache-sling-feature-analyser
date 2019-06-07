@@ -148,7 +148,8 @@ public class ContentPackageScanner {
                             final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
                             newFile.getParentFile().mkdirs();
 
-                            try (final FileOutputStream fos = new FileOutputStream(newFile);
+                            try (
+                                    final FileOutputStream fos = new FileOutputStream(newFile);
                                     final InputStream zis = zipFile.getInputStream(entry);) {
                                 int len;
                                 while ((len = zis.read(buffer)) > -1) {
