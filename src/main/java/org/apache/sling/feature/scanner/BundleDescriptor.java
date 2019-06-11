@@ -29,6 +29,7 @@ import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
  * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class BundleDescriptor extends ArtifactDescriptor implements Comparable<BundleDescriptor> {
+
     protected BundleDescriptor(String name) {
         super(name);
     }

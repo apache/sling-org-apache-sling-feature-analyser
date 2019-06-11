@@ -21,12 +21,11 @@ import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.felix.utils.resource.ResourceImpl;
 import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
-import sun.net.www.protocol.jar.JarURLConnection;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -70,7 +69,7 @@ public class BundleDescriptorImpl
         this.artifact = a;
         this.artifactFile = file;
         this.startLevel = startLevel;
-        try (final JarFile jarFile = ((JarURLConnection) ("jar".equals(this.artifactFile.getProtocol()) ? this.artifactFile : new URL("jar:" + this.artifactFile + "!/")).openConnection()).getJarFile()) {
+        try (final JarFile jarFile = IOUtils.getJarFileFromURL(this.artifactFile, true, null)) {
             this.manifest = jarFile.getManifest();
         }
         if ( this.manifest == null ) {
@@ -143,7 +142,8 @@ public class BundleDescriptorImpl
                 ResourceImpl resource = ResourceBuilder.build(null, this.manifest.getMainAttributes().entrySet().stream()
                     .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
                 this.getCapabilities().addAll(resource.getCapabilities(null));
-                this.getRequirements().addAll(resource.getRequirements(null));
+                this.getRequirements().addAll(resource.getRequirements(null).stream()
+                        .map(entry -> new MatchingRequirementImpl(entry)).collect(Collectors.toList()));
             } catch (Exception ex) {
                 throw new IOException(ex);
             }
