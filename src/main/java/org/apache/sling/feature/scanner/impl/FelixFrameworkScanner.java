@@ -33,6 +33,7 @@ import org.osgi.resource.Capability;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             final Map<String,String> frameworkProps,
             final ArtifactProvider provider)
     throws IOException {
-        final File platformFile = provider.provide(framework);
+        final URL platformFile = provider.provide(framework);
         if ( platformFile == null ) {
             throw new IOException("Unable to find file for " + framework.toMvnId());
         }
@@ -82,7 +83,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             }
 
             @Override
-            public File getArtifactFile() {
+            public URL getArtifactFile() {
                 return platformFile;
             }
 
@@ -140,10 +141,10 @@ public class FelixFrameworkScanner implements FrameworkScanner {
 
     private static final String DEFAULT_PROPERTIES = "default.properties";
 
-    Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final File framework)
+    Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final URL framework)
     throws IOException {
         final Map<String, Properties> propsMap = new HashMap<>();
-        try (final ZipInputStream zis = new ZipInputStream(new FileInputStream(framework)) ) {
+        try (final ZipInputStream zis = new ZipInputStream(framework.openStream()) ) {
             boolean done = false;
             while ( !done ) {
                 final ZipEntry entry = zis.getNextEntry();

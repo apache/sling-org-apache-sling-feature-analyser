@@ -16,7 +16,7 @@
  */
 package org.apache.sling.feature.scanner;
 
-import java.io.File;
+import java.net.URL;
 
 import org.apache.sling.feature.Artifact;
 
@@ -38,7 +38,7 @@ public abstract class ArtifactDescriptor extends Descriptor {
      * Get the artifact file
      * @return The artifact file
      */
-    public abstract File getArtifactFile();
+    public abstract URL getArtifactFile();
 
     /**
      * Get the artifact

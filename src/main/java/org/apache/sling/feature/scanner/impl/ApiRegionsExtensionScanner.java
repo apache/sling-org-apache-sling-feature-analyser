@@ -16,8 +16,8 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
@@ -45,7 +45,7 @@ public class ApiRegionsExtensionScanner implements ExtensionScanner {
         FeatureDescriptor featureDescriptor = new FeatureDescriptorImpl(feature);
 
         for (Artifact artifact : feature.getBundles()) {
-            File file = provider.provide(artifact.getId());
+            URL file = provider.provide(artifact.getId());
             BundleDescriptor bundleDescriptor = new BundleDescriptorImpl(artifact, file, artifact.getStartOrder());
             featureDescriptor.getBundleDescriptors().add(bundleDescriptor);
         }

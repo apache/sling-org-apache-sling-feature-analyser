@@ -18,6 +18,7 @@ package org.apache.sling.feature.scanner;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class Scanner {
         final String key = bundle.getId().toMvnId().concat(":").concat(String.valueOf(startLevel));
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
-            final File file = artifactProvider.provide(bundle.getId());
+            final URL file = artifactProvider.provide(bundle.getId());
             if (file == null) {
                 throw new IOException("Unable to find file for " + bundle.getId());
             }

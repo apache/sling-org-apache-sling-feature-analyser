@@ -329,7 +329,7 @@ public class CheckBundleExportsImportsTest {
 
     private void fdAddBundle(FeatureDescriptor fd, String id, String file) throws IOException {
         BundleDescriptor bd1 = new BundleDescriptorImpl(
-                new Artifact(ArtifactId.fromMvnId(id)), new File(resourceRoot, file), 0);
+                new Artifact(ArtifactId.fromMvnId(id)), new File(resourceRoot, file).toURI().toURL(), 0);
         fd.getBundleDescriptors().add(bd1);
     }
 }
