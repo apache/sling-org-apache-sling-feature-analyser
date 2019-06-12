@@ -55,13 +55,13 @@ public class ContentPackageScannerTest {
         test_descriptor = new ContentPackageDescriptor(file.getName());
         test_descriptor.setName("test-content");
         test_descriptor.setArtifact(artifact);
-        test_descriptor.setArtifactFile(file);
+        test_descriptor.setArtifactFile(file.toURI().toURL());
     }
     
     @Test
     public void testScan() throws URISyntaxException, IOException {
         ContentPackageScanner scanner = new ContentPackageScanner();
-        Set<ContentPackageDescriptor> descriptors_a = scanner.scan(artifact, file); 
+        Set<ContentPackageDescriptor> descriptors_a = scanner.scan(artifact, file.toURI().toURL()); 
         assetDescriptor((ContentPackageDescriptor)descriptors_a.toArray()[0]);
     }
     
@@ -72,7 +72,7 @@ public class ContentPackageScannerTest {
     private void assetDescriptor(ContentPackageDescriptor desc) {
         assertEquals(desc.getName(), test_descriptor.getName());
         assertEquals(desc.getArtifact().getId().getArtifactId(), test_descriptor.getArtifact().getId().getArtifactId());
-        assertEquals(desc.getArtifactFile().getAbsolutePath(), test_descriptor.getArtifactFile().getAbsolutePath());
+        assertEquals(desc.getArtifactFile().toString(), test_descriptor.getArtifactFile().toString());
         
         assertTrue(desc.bundles != null && !desc.bundles.isEmpty());
         BundleDescriptor bundles[] = desc.bundles.toArray(new BundleDescriptor[desc.bundles.size()]);
