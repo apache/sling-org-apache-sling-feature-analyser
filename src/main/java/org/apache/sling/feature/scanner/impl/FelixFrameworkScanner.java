@@ -49,7 +49,6 @@ import org.osgi.resource.Capability;
 
 public class FelixFrameworkScanner implements FrameworkScanner {
 
-
     @Override
     public BundleDescriptor scan(final ArtifactId framework,
             final Map<String,String> frameworkProps,
