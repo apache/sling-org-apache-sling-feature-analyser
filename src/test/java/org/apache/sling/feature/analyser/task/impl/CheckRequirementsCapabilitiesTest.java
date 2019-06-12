@@ -16,11 +16,17 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Objects;
+
 import org.apache.felix.utils.resource.CapabilityImpl;
 import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.MatchingRequirement;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
@@ -29,11 +35,7 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-
-import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
+import org.osgi.resource.Resource;
 
 
 public class CheckRequirementsCapabilitiesTest {
@@ -43,7 +45,7 @@ public class CheckRequirementsCapabilitiesTest {
 
         BundleDescriptor bd1 = new BundleDescriptorImpl(
                 new Artifact(ArtifactId.fromMvnId("g:b1:1.2.0")),
-                f, 7);
+                f.toURI().toURL(), 7);
 
         Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
 
@@ -53,7 +55,7 @@ public class CheckRequirementsCapabilitiesTest {
         Capability cap2 = new CapabilityImpl(null,
                 "org.foo.bar", Collections.emptyMap(),
                 Collections.singletonMap("abc", "def"));
-        Requirement req = new RequirementImpl(null,
+        MatchingRequirement req = new MatchingRequirementImpl(null,
                 "org.zzz", "(&(zzz=aaa)(qqq=123))");
 
         feature.getCapabilities().addAll(Arrays.asList(cap1, cap2));
@@ -78,7 +80,7 @@ public class CheckRequirementsCapabilitiesTest {
 
         BundleDescriptor bd1 = new BundleDescriptorImpl(
                 new Artifact(ArtifactId.fromMvnId("g:b1:1.2.0")),
-                f, 7);
+                f.toURI().toURL(), 7);
 
         Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
         FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
@@ -104,7 +106,7 @@ public class CheckRequirementsCapabilitiesTest {
         Capability cap2 = new CapabilityImpl(null,
                 "org.foo.bar", Collections.emptyMap(),
                 Collections.singletonMap("abc", "def"));
-        Requirement req = new RequirementImpl(null,
+        MatchingRequirement req = new MatchingRequirementImpl(null,
                 "org.zzz", "(&(zzz=aaa)(qqq=123))");
 
         feature.getCapabilities().addAll(Arrays.asList(cap1, cap2));
@@ -120,5 +122,26 @@ public class CheckRequirementsCapabilitiesTest {
         crc.execute(ctx);
 
         Mockito.verify(ctx).reportError(Mockito.contains("org.zzz"));
+    }
+
+    private static class MatchingRequirementImpl extends RequirementImpl implements MatchingRequirement {
+
+        public MatchingRequirementImpl(Resource res, String ns, String filter) {
+            super(res, ns, filter);
+        }
+
+        @Override
+        public boolean equals(final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || !(o instanceof RequirementImpl)) {
+                return false;
+            }
+            final RequirementImpl that = (RequirementImpl) o;
+            return Objects.equals(resource, that.getResource()) && Objects.equals(namespace, that.getNamespace())
+                    && Objects.equals(attributes, that.getAttributes())
+                    && Objects.equals(directives, that.getDirectives());
+        }
     }
 }

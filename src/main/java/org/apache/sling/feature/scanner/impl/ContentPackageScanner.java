@@ -28,17 +28,15 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.Reader;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 
 public class ContentPackageScanner {
@@ -53,15 +51,12 @@ public class ContentPackageScanner {
         PACKAGE
     }
 
-    public Set<ContentPackageDescriptor> scan(final Artifact desc, final File file) throws IOException {
-        if (!file.getName().endsWith(".zip") ) {
-            throw new IOException("Artifact seems to be no content package (not a zip file): " + desc.getId().toMvnId());
-        }
+    public Set<ContentPackageDescriptor> scan(final Artifact desc, final URL file) throws IOException {
 
         final Set<ContentPackageDescriptor> contentPackages = new HashSet<>();
-        final ContentPackageDescriptor cp = new ContentPackageDescriptor(file.getName());
-        final int lastDot = file.getName().lastIndexOf(".");
-        cp.setName(file.getName().substring(0, lastDot));
+        final ContentPackageDescriptor cp = new ContentPackageDescriptor(file.getPath());
+        final int lastDot = file.getPath().lastIndexOf(".");
+        cp.setName(file.getPath().substring(file.getPath().lastIndexOf("/") + 1, lastDot));
         cp.setArtifact(desc);
         cp.setArtifactFile(file);
 
@@ -75,61 +70,44 @@ public class ContentPackageScanner {
 
     private void extractContentPackage(final ContentPackageDescriptor cp,
             final Set<ContentPackageDescriptor> infos,
-            final File archive)
+            final URL archive)
     throws IOException {
-        logger.debug("Analyzing Content Package {}", archive.getName());
+        logger.debug("Analyzing Content Package {}", archive);
 
         final File tempDir = Files.createTempDirectory(null).toFile();
         try {
-            final File toDir = new File(tempDir, archive.getName());
+            final File toDir = new File(tempDir, archive.getPath().substring(archive.getPath().lastIndexOf("/") + 1));
             toDir.mkdirs();
 
             final List<File> toProcess = new ArrayList<>();
-            
-            ZipFile zipFile = null;
-            try {
-                zipFile = new ZipFile(archive);
-                Enumeration<? extends ZipEntry> entries = zipFile.entries();
-                
-                while( entries.hasMoreElements() ) {
-                    final ZipEntry entry = entries.nextElement();
-                    final String entryName = entry.getName();
-                    final InputStream zis = zipFile.getInputStream(entry);
-                    
-                    if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
-                        final String contentPath = entryName.substring(8);
 
-                        FileType fileType = null;
+            try (final ZipInputStream zis = new ZipInputStream(archive.openStream()) ) {
+                boolean done = false;
+                while ( !done ) {
+                    final ZipEntry entry = zis.getNextEntry();
+                    if ( entry == null ) {
+                        done = true;
+                    } else {
+                        final String entryName = entry.getName();
+                        if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
+                            final String contentPath = entryName.substring(8);
 
-                        if ( entryName.endsWith(".zip") ) {
-                            // embedded content package
-                            fileType = FileType.PACKAGE;
+                            FileType fileType = null;
 
-                            // check for libs or apps
-                        } else if ( entryName.startsWith("jcr_root/libs/") || entryName.startsWith("jcr_root/apps/") ) {
+                            if ( entryName.endsWith(".zip") ) {
+                                // embedded content package
+                                fileType = FileType.PACKAGE;
 
-                            // check if this is an install folder (I)
-                            // install folders are either named:
-                            // "install" or
-                            // "install.{runmode}"
-                            boolean isInstall = entryName.indexOf("/install/") != -1;
-                            if ( !isInstall ) {
-                                final int pos = entryName.indexOf("/install.");
-                                if ( pos != -1 ) {
-                                    final int endSlashPos = entryName.indexOf('/', pos + 1);
-                                    if ( endSlashPos != -1 ) {
-                                        isInstall = true;
-                                    }
-                                }
-                            }
-                            if ( !isInstall ) {
-                                // check if this is an install folder (II)
-                                // config folders are either named:
-                                // "config" or
-                                // "config.{runmode}"
-                                isInstall = entryName.indexOf("/config/") != -1;
+                                // check for libs or apps
+                            } else if ( entryName.startsWith("jcr_root/libs/") || entryName.startsWith("jcr_root/apps/") ) {
+
+                                // check if this is an install folder (I)
+                                // install folders are either named:
+                                // "install" or
+                                // "install.{runmode}"
+                                boolean isInstall = entryName.indexOf("/install/") != -1;
                                 if ( !isInstall ) {
-                                    final int pos = entryName.indexOf("/config.");
+                                    final int pos = entryName.indexOf("/install.");
                                     if ( pos != -1 ) {
                                         final int endSlashPos = entryName.indexOf('/', pos + 1);
                                         if ( endSlashPos != -1 ) {
@@ -137,75 +115,90 @@ public class ContentPackageScanner {
                                         }
                                     }
                                 }
+                                if ( !isInstall ) {
+                                    // check if this is an install folder (II)
+                                    // config folders are either named:
+                                    // "config" or
+                                    // "config.{runmode}"
+                                    isInstall = entryName.indexOf("/config/") != -1;
+                                    if ( !isInstall ) {
+                                        final int pos = entryName.indexOf("/config.");
+                                        if ( pos != -1 ) {
+                                            final int endSlashPos = entryName.indexOf('/', pos + 1);
+                                            if ( endSlashPos != -1 ) {
+                                                isInstall = true;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (isInstall ) {
+
+                                   if ( entryName.endsWith(".jar") ) {
+                                       fileType = FileType.BUNDLE;
+                                   } else if ( entryName.endsWith(".xml") || entryName.endsWith(".config") ) {
+                                       fileType = FileType.CONFIG;
+                                   }
+                                }
                             }
 
-                            if (isInstall ) {
+                            if ( fileType != null ) {
+                                logger.debug("- extracting : {}", entryName);
+                                final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
+                                newFile.getParentFile().mkdirs();
 
-                               if ( entryName.endsWith(".jar") ) {
-                                   fileType = FileType.BUNDLE;
-                               } else if ( entryName.endsWith(".xml") || entryName.endsWith(".config") ) {
-                                   fileType = FileType.CONFIG;
-                               }
+                                try (final FileOutputStream fos = new FileOutputStream(newFile)) {
+                                    int len;
+                                    while ((len = zis.read(buffer)) > -1) {
+                                        fos.write(buffer, 0, len);
+                                    }
+                                }
+
+                                if ( fileType == FileType.BUNDLE ) {
+                                    int startLevel = 20;
+                                    final int lastSlash = contentPath.lastIndexOf('/');
+                                    final int nextSlash = contentPath.lastIndexOf('/', lastSlash - 1);
+                                    final String part = contentPath.substring(nextSlash + 1, lastSlash);
+                                    try {
+                                        startLevel = Integer.valueOf(part);
+                                    } catch ( final NumberFormatException ignore ) {
+                                        // ignore
+                                    }
+
+                                    final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
+                                    final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(), startLevel);
+                                    bundle.getMetadata().put("content-package", cp.getArtifact().getId().toMvnId());
+                                    bundle.getMetadata().put("content-path", contentPath);
+
+                                    cp.bundles.add(info);
+
+                                } else if ( fileType == FileType.CONFIG ) {
+
+                                    final Configuration configEntry = this.process(newFile, cp.getArtifact(), contentPath);
+                                    if ( configEntry != null ) {
+
+                                        cp.configs.add(configEntry);
+                                    }
+
+                                } else if ( fileType == FileType.PACKAGE ) {
+                                    toProcess.add(newFile);
+                                }
+
                             }
+
                         }
-
-                        if ( fileType != null ) {
-                            logger.debug("- extracting : {}", entryName);
-                            final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
-                            newFile.getParentFile().mkdirs();
-
-                            try (final FileOutputStream fos = new FileOutputStream(newFile)) {
-                                int len;
-                                while ((len = zis.read(buffer)) > -1) {
-                                    fos.write(buffer, 0, len);
-                                }
-                            }
-
-                            if ( fileType == FileType.BUNDLE ) {
-                                int startLevel = 20;
-                                final int lastSlash = contentPath.lastIndexOf('/');
-                                final int nextSlash = contentPath.lastIndexOf('/', lastSlash - 1);
-                                final String part = contentPath.substring(nextSlash + 1, lastSlash);
-                                try {
-                                    startLevel = Integer.valueOf(part);
-                                } catch ( final NumberFormatException ignore ) {
-                                    // ignore
-                                }
-
-                                final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
-                                final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile, startLevel);
-                                bundle.getMetadata().put("content-package", cp.getArtifact().getId().toMvnId());
-                                bundle.getMetadata().put("content-path", contentPath);
-
-                                cp.bundles.add(info);
-
-                            } else if ( fileType == FileType.CONFIG ) {
-
-                                final Configuration configEntry = this.process(newFile, cp.getArtifact(), contentPath);
-                                if ( configEntry != null ) {
-
-                                    cp.configs.add(configEntry);
-                                }
-
-                            } else if ( fileType == FileType.PACKAGE ) {
-                                toProcess.add(newFile);
-                            }
-
-                        }
+                        zis.closeEntry();
                     }
                 }
-                
-            } finally {
-                if(zipFile != null) 
-                    zipFile.close();
+
             }
 
             for(final File f : toProcess) {
-                extractContentPackage(cp, infos, f);
+                extractContentPackage(cp, infos, f.toURI().toURL());
                 final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName());
                 final int lastDot = f.getName().lastIndexOf(".");
                 i.setName(f.getName().substring(0, lastDot));
-                i.setArtifactFile(f);
+                i.setArtifactFile(f.toURI().toURL());
                 i.setContentPackageInfo(cp.getArtifact(), f.getName());
                 infos.add(i);
 

@@ -21,8 +21,12 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Information about a container (feature/application).
- * This is the aggregated information.
+ * Information about a container (feature). This is the aggregated information.
+ *
+ * Note that this implementation is not synchronized. If multiple threads access
+ * a descriptor concurrently, and at least one of the threads modifies the
+ * descriptor structurally, it must be synchronized externally. However, once a
+ * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class ContainerDescriptor extends Descriptor {
 

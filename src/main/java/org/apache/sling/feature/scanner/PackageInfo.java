@@ -17,11 +17,18 @@
 package org.apache.sling.feature.scanner;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.osgi.framework.Version;
 import org.osgi.framework.VersionRange;
 
+/**
+ * A package info object contains information about a package, its name, its
+ * version and the uses constraints.
+ *
+ * A package info object is immutable.
+ */
 public class PackageInfo implements Comparable<PackageInfo> {
 
     private final boolean optional;
@@ -30,14 +37,14 @@ public class PackageInfo implements Comparable<PackageInfo> {
     private final Set<String> uses;
 
     public PackageInfo(final String name, final String version, final boolean optional) {
-        this(name, version, optional, Collections.emptySet());
+        this(name, version, optional, null);
     }
 
     public PackageInfo(final String name, final String version, final boolean optional, Set<String> uses) {
         this.name = name;
         this.version = version;
         this.optional = optional;
-        this.uses = uses;
+        this.uses = uses == null ? Collections.emptySet() : Collections.unmodifiableSet(new HashSet<>(uses));
     }
 
     public String getName() {

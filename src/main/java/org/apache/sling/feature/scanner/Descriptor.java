@@ -16,17 +16,23 @@
  */
 package org.apache.sling.feature.scanner;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
-
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.sling.feature.MatchingRequirement;
+import org.osgi.resource.Capability;
+
 /**
- * A descriptor holds information about requirements and capabilities
+ * A descriptor holds information about requirements and capabilities.
+ *
+ * Note that this implementation is not synchronized. If multiple threads access
+ * a descriptor concurrently, and at least one of the threads modifies the
+ * descriptor structurally, it must be synchronized externally. However, once a
+ * descriptor is locked, it is safe to access it concurrently.
  */
 public abstract class Descriptor  {
+
     private final String name;
 
     private boolean locked;
@@ -37,7 +43,7 @@ public abstract class Descriptor  {
 
     private final Set<PackageInfo> dynImports = new HashSet<>();
 
-    private final Set<Requirement> reqs = new HashSet<>();
+    private final Set<MatchingRequirement> reqs = new HashSet<>();
 
     private final Set<Capability> caps = new HashSet<>();
 
@@ -91,7 +97,7 @@ public abstract class Descriptor  {
      * Return the list of requirements.
      * @return The list of requirements. The list might be empty.
      */
-    public final Set<Requirement> getRequirements() {
+    public final Set<MatchingRequirement> getRequirements() {
         return locked ? Collections.unmodifiableSet(reqs) : reqs;
     }
 

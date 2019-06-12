@@ -38,7 +38,7 @@ public class FelixFrameworkScannerTest {
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
         Map<String,String> kvmap = new HashMap<>();
-        Map<String,String> props = ffs.getFrameworkProperties(kvmap, fwFile);
+        Map<String,String> props = ffs.getFrameworkProperties(kvmap, fwFile.toURI().toURL());
         assertEquals("osgi.service; objectClass:List<String>=org.osgi.service.resolver.Resolver; "
                     + "uses:=org.osgi.service.resolver, "
                 + "osgi.service; objectClass:List<String>=org.osgi.service.startlevel.StartLevel; "
@@ -54,8 +54,7 @@ public class FelixFrameworkScannerTest {
 
     @Test
     public void testGetFrameworkExports() throws Exception {
-        URL url = getClass().getResource("/test-framework.jar");
-        File fwFile = new File(url.toURI());
+        URL fwFile = getClass().getResource("/test-framework.jar");
 
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
@@ -66,7 +65,7 @@ public class FelixFrameworkScannerTest {
                 "6.0.1", null, null), kvmap, new ArtifactProvider() {
 
                     @Override
-                    public File provide(ArtifactId id) {
+                    public URL provide(ArtifactId id) {
                         return fwFile;
                     }
                 });
