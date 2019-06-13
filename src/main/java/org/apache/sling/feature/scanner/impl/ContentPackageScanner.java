@@ -16,13 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -39,11 +32,16 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ContentPackageScanner {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-
-    private final DeleteDirectoryHook deleteDirectoryHook = new DeleteDirectoryHook();
 
     private final byte[] buffer = new byte[65536];
 
@@ -51,10 +49,6 @@ public class ContentPackageScanner {
         BUNDLE,
         CONFIG,
         PACKAGE
-    }
-
-    public ContentPackageScanner() {
-        Runtime.getRuntime().addShutdownHook(deleteDirectoryHook);
     }
 
     public Set<ContentPackageDescriptor> scan(final Artifact desc, final URL file) throws IOException {
@@ -81,7 +75,7 @@ public class ContentPackageScanner {
         logger.debug("Analyzing Content Package {}", archive);
 
         final File tempDir = Files.createTempDirectory(null).toFile();;
-        deleteDirectoryHook.markToBeDeleted(tempDir);
+        tempDir.deleteOnExit();
 
         final File toDir = new File(tempDir, archive.getPath().substring(archive.getPath().lastIndexOf("/") + 1));
         toDir.mkdirs();
