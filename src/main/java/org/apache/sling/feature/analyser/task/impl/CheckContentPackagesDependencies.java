@@ -26,7 +26,6 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
@@ -34,6 +33,7 @@ import org.apache.jackrabbit.vault.packaging.VaultPackage;
 import org.apache.jackrabbit.vault.packaging.impl.PackageManagerImpl;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +74,7 @@ public class CheckContentPackagesDependencies implements AnalyserTask {
 
     private void onDescriptor(AnalyserTaskContext ctx, ArtifactDescriptor descriptor, Map<PackageId, Dependency[]> dependenciesMap) throws Exception {
         URL resourceUrl = descriptor.getArtifactFile();
-        File artifactFile = FileUtils.toFile(resourceUrl);
+        File artifactFile = IOUtils.getFileFromURL(resourceUrl, true, null);
         if (!artifactFile.exists() || !artifactFile.isFile()) {
             ctx.reportError("Artifact file " + artifactFile + " does not exist or it is not a file");
             return;
