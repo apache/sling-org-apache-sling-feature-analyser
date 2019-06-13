@@ -75,7 +75,7 @@ public class ContentPackageScanner {
         logger.debug("Analyzing Content Package {}", archive);
 
         final File tempDir = Files.createTempDirectory(null).toFile();
-        tempDir.deleteOnExit();
+        try {
             final File toDir = new File(tempDir, archive.getPath().substring(archive.getPath().lastIndexOf("/") + 1));
             toDir.mkdirs();
 
@@ -204,6 +204,21 @@ public class ContentPackageScanner {
 
                 i.lock();
             }
+        } finally {
+            deleteOnExitRecursive(tempDir);
+        }
+    }
+
+    private void deleteOnExitRecursive(File file) {
+        file.deleteOnExit();
+        if (file.isDirectory()) {
+            File[] childs = file.listFiles();
+            if (childs != null) {
+                for (File child : childs) {
+                    deleteOnExitRecursive(child);
+                }
+            }
+        }
     }
 
     private ArtifactId extractArtifactId(final File tempDir, final File bundleFile)
