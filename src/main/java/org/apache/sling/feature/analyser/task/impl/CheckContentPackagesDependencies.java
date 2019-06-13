@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.jackrabbit.vault.packaging.Dependency;
 import org.apache.jackrabbit.vault.packaging.PackageId;
 import org.apache.jackrabbit.vault.packaging.PackageManager;
@@ -73,8 +74,7 @@ public class CheckContentPackagesDependencies implements AnalyserTask {
 
     private void onDescriptor(AnalyserTaskContext ctx, ArtifactDescriptor descriptor, Map<PackageId, Dependency[]> dependenciesMap) throws Exception {
         URL resourceUrl = descriptor.getArtifactFile();
-        String filename = resourceUrl.getFile().replace('/', File.separatorChar);
-        File artifactFile = new File(filename);
+        File artifactFile = FileUtils.toFile(resourceUrl);
         if (!artifactFile.exists() || !artifactFile.isFile()) {
             ctx.reportError("Artifact file " + artifactFile + " does not exist or it is not a file");
             return;
