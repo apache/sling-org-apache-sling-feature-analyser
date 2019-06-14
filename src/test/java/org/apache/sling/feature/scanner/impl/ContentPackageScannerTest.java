@@ -93,7 +93,7 @@ public class ContentPackageScannerTest {
     private void printPackageEntries(File archive) throws IOException {
         ZipFile zip = new ZipFile(archive);
         Enumeration<? extends ZipEntry> entries = zip.entries();
-        System.out.println("Archive: " + archive.getAbsolutePath());
+        System.out.println("ZIP Archive: " + zip.getName());
         while(entries.hasMoreElements()) 
             System.out.println("    " + entries.nextElement().getName());
         System.out.println();
