@@ -18,6 +18,7 @@ package org.apache.sling.feature.scanner.impl;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,16 +62,25 @@ public class ContentPackageScannerTest {
     @Test
     public void testScan() throws URISyntaxException, IOException {
         ContentPackageScanner scanner = new ContentPackageScanner();
-        Set<ContentPackageDescriptor> descriptors_a = scanner.scan(artifact, file.toURI().toURL()); 
-        assetDescriptor((ContentPackageDescriptor)descriptors_a.toArray()[0]);
+        Set<ContentPackageDescriptor> descriptors = scanner.scan(artifact, file.toURI().toURL()); 
+        for(ContentPackageDescriptor desc : descriptors) {
+            String name = desc.getName();
+            assertNotNull(name);
+            
+            if(name.equals(test_descriptor.getName())) {
+                assetDescriptor(desc, desc.getName());
+            } else {
+                assertEquals(name, "sub-content");
+            }
+        }
     }
     
     private File getTestFile(String path) throws URISyntaxException {
         return new File(getClass().getResource(path).toURI());
     }
     
-    private void assetDescriptor(ContentPackageDescriptor desc) {
-        assertEquals(desc.getName(), test_descriptor.getName());
+    private void assetDescriptor(ContentPackageDescriptor desc, String descName) {
+        assertEquals(descName, test_descriptor.getName());
         assertEquals(desc.getArtifact().getId().getArtifactId(), test_descriptor.getArtifact().getId().getArtifactId());
         assertEquals(desc.getArtifactFile().toString(), test_descriptor.getArtifactFile().toString());
         
@@ -98,5 +108,5 @@ public class ContentPackageScannerTest {
             System.out.println("    " + entries.nextElement().getName());
         System.out.println();
     }
-   
+    
 }
