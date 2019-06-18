@@ -208,27 +208,19 @@ public class ContentPackageScanner {
                 }
             }
         } finally {
-            deleteRecursive(tempDir);
+            deleteOnExitRecursive(tempDir);
         }
     }
 
-    private boolean deleteRecursive(File file) {
+    private void deleteOnExitRecursive(File file) {
+        file.deleteOnExit();
         if (file.isDirectory()) {
             File[] childs = file.listFiles();
             if (childs != null) {
                 for (File child : childs) {
-                    if (!deleteRecursive(child)) {
-                        return false;
-                    }
+                    deleteOnExitRecursive(child);
                 }
-                return file.delete();
             }
-            else {
-                return false;
-            }
-        }
-        else {
-            return file.delete();
         }
     }
 
