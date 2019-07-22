@@ -8,3 +8,4 @@ org.apache.sling.feature.analyser.task.impl.CheckApiRegionsDependencies
 org.apache.sling.feature.analyser.task.impl.CheckApiRegionsDuplicates
 org.apache.sling.feature.analyser.task.impl.CheckApiRegionsOrder
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesDependencies
+org.apache.sling.feature.analyser.task.impl.CheckJDeps
