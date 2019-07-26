@@ -258,7 +258,9 @@ public class CheckBundleExportsImports implements AnalyserTask {
                 for (Map.Entry<PackageInfo, Map.Entry<Set<String>, Set<String>>> regionInfoEntry : entry.getValue().regionInfo.entrySet()) {
                     PackageInfo pkg = regionInfoEntry.getKey();
                     Map.Entry<Set<String>, Set<String>> regions = regionInfoEntry.getValue();
-                    message.append("\n" + pkg.getName() + " is exported in regions " + regions.getKey() + " but it is imported in regions " + regions.getValue());
+                    if (regions.getKey().size() > 0) {
+                        message.append("\n" + pkg.getName() + " is exported in regions " + regions.getKey() + " but it is imported in regions " + regions.getValue());
+                    }
                 }
                 ctx.reportError(message.toString());
                 errorReported = true;
