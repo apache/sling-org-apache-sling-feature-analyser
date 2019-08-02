@@ -18,7 +18,8 @@ The Analyser can also be run as part of a maven build via the `slingfeature-mave
 
 The following analysers are defined:
 
-* `bundle-packages`: Checks bundle import/export package statements for consistency and completeness.
+* `bundle-packages`: Checks bundle import/export package statements for consistency and completeness. If API Regions are used this analyser includes this 
+information as part of the check, to ensure that bundles don't import packages of which they have no visibility because of API Regions restrictions.
 
 * `bundle-content`: Gives a warning if a bundle container initial content specified with `Sling-Initial-Content`.
 
@@ -33,7 +34,7 @@ There are a number of analysers which relate to API Region definitions in Featur
 
 * `api-regions`: This analyser ensures that packages listed as exports in API-Regions sections are actually exported by a bundle that's part of the feature.
 
-* `api-regions-dependencies`: This analyser checks that packages in API regions listed earlier in the API-Regions declaration have no dependency on API regions listed later in the list. This include `Import-Package` style dependencies and also uses-clause type dependencies. Later declarations also include earlier declarations, but not the other way around.
+* `api-regions-dependencies`: This analyser checks that packages in API regions listed earlier in the API-Regions declaration have no dependency on API regions listed later in the list. This include `Import-Package` style dependencies and also uses-clause type dependencies. Later API regions also include packages from earlier declared API regions, but not the other way around.
   * Configuration parameters:
   * `exporting-apis`: the name of the region that provides the visible APIs.
   * `hiding-apis`: the name of the region that is 'hidden' i.e. not as visible as the exporting one. The
