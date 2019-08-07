@@ -16,6 +16,10 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Set;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
@@ -23,11 +27,6 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.Set;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
 

@@ -18,8 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task;
 
-import org.apache.sling.feature.analyser.Analyser;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,19 +26,32 @@ import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import org.apache.sling.feature.analyser.Analyser;
+
 public final class AnalyzerTaskProvider {
 
     private AnalyzerTaskProvider() {
         // this class must not be instantiated directly
     }
 
+    /**
+     * Get all tasks. Calls {@link #getTasksByIds(null, null)}.
+     *
+     * @return The analyser tasks, array is never {@code null} but might be empty
+     */
     public static AnalyserTask[] getTasks() {
         return getTasksByIds(null, null);
     }
 
-    // includes can be null, means "include everything"
-    // excludes can be null, means "do not exclude anything"
-    // if both includes and excludes are null, method mehaves like getTasks()
+    /**
+     * Get all tasks and obey the includes/excludes rules. If both includes and
+     * excludes are null, method behaves like {@link #getTasks()}
+     *
+     * @param includes includes can be null, means "include everything"
+     * @param excludes excludes can be null, means "do not exclude anything"
+     * @return The analyser tasks, array is never {@code null} but might be empty
+     * @throws IllegalStateException If an included task is not found
+     */
     public static AnalyserTask[] getTasksByIds(Set<String> includes, Set<String> excludes) {
         if (excludes == null)
             excludes = Collections.emptySet();
@@ -68,7 +79,13 @@ public final class AnalyzerTaskProvider {
         return list.toArray(new AnalyserTask[list.size()]);
     }
 
-    // Get tasks from class names
+    /**
+     * Get tasks from class names
+     *
+     * @param taskClassNames The array of class names
+     * @return The analyser tasks, array is never {@code null} but might be empty
+     * @throws IOException If class names is null or loading fails
+     */
     public static AnalyserTask[] getTasksByClassName(String...taskClassNames) throws IOException {
         if (taskClassNames == null) {
             throw new IOException("Impossible to load Tasks from a null string array");
