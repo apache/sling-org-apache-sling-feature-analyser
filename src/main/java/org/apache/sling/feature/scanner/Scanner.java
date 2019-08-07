@@ -109,11 +109,30 @@ public class Scanner {
      * Scan a bundle
      *
      * @param bundle The bundle artifact
+     * @return The bundle descriptor
+     * @throws IOException If something goes wrong or the provided artifact is not a
+     *                     bundle.
+     */
+    public BundleDescriptor scanBundle(final Artifact bundle) throws IOException {
+        return this.doScan(bundle, bundle.getStartOrder());
+    }
+
+    /**
+     * Scan a bundle
+     *
+     * @param bundle     The bundle artifact
      * @param startLevel The start level of the bundle
      * @return The bundle descriptor
-     * @throws IOException If something goes wrong or the provided artifact is not a bundle.
+     * @throws IOException If something goes wrong or the provided artifact is not a
+     *                     bundle.
+     * @deprecated Use {@link #scanBundle(Artifact)}
      */
+    @Deprecated
     public BundleDescriptor scan(final Artifact bundle, final int startLevel) throws IOException {
+        return this.doScan(bundle, startLevel);
+    }
+
+    private BundleDescriptor doScan(final Artifact bundle, final int startLevel) throws IOException {
         final String key = bundle.getId().toMvnId().concat(":").concat(String.valueOf(startLevel));
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
@@ -137,11 +156,9 @@ public class Scanner {
      */
     private void getBundleInfos(final Bundles bundles, final ContainerDescriptor desc)
     throws IOException {
-        for(final Map.Entry<Integer, List<Artifact>> entry : bundles.getBundlesByStartOrder().entrySet()) {
-            for(final Artifact bundle : entry.getValue() ) {
-                final BundleDescriptor bundleDesc = scan(bundle, entry.getKey());
-                desc.getBundleDescriptors().add(bundleDesc);
-            }
+        for (final Artifact bundle : bundles) {
+            final BundleDescriptor bundleDesc = scanBundle(bundle);
+            desc.getBundleDescriptors().add(bundleDesc);
         }
     }
 
@@ -178,7 +195,7 @@ public class Scanner {
 
     /**
      * Compact the container description
-     * 
+     *
      * @param desc The contaier description
      */
     private void compact(final ContainerDescriptor desc) {
