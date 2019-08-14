@@ -16,15 +16,9 @@
  */
 package org.apache.sling.feature.analyser;
 
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.FeatureDescriptor;
-import org.apache.sling.feature.scanner.Scanner;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -35,9 +29,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Analyser {
     /**
@@ -156,9 +156,9 @@ public class Analyser {
             });
         }
 
-        logger.info("Feature '"
+        logger.info("Analyzing feature '"
                     + feature.getId()
-                + "' provisioning model analyzer finished : " + warnings.size() + " warnings, " + errors.size()
+                + "' finished : " + warnings.size() + " warnings, " + errors.size()
                 + " errors.");
 
         return new AnalyserResult() {
