@@ -18,14 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import org.apache.sling.feature.Extension;
-import org.apache.sling.feature.Feature;
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
-import org.osgi.framework.Version;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -44,6 +36,14 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Version;
 
 public class CheckBundleExportsImports implements AnalyserTask {
     private static final String FILE_STORAGE_CONFIG_KEY = "fileStorage";
@@ -129,10 +129,10 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
         final SortedMap<Integer, List<BundleDescriptor>> bundlesMap = new TreeMap<>();
         for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
-            List<BundleDescriptor> list = bundlesMap.get(bi.getBundleStartLevel());
+            List<BundleDescriptor> list = bundlesMap.get(bi.getArtifact().getStartOrder());
             if ( list == null ) {
                 list = new ArrayList<>();
-                bundlesMap.put(bi.getBundleStartLevel(), list);
+                bundlesMap.put(bi.getArtifact().getStartOrder(), list);
             }
             list.add(bi);
         }
@@ -248,12 +248,14 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
             if ( !entry.getValue().missingExports.isEmpty() ) {
                 ctx.reportError(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
-                        String.valueOf(entry.getKey().getBundleStartLevel()) + " but no bundle is exporting these for that start level.");
+                        String.valueOf(entry.getKey().getArtifact().getStartOrder())
+                        + " but no bundle is exporting these for that start level.");
                 errorReported = true;
             }
             if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
                 StringBuilder message = new StringBuilder(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level " +
-                        String.valueOf(entry.getKey().getBundleStartLevel()) + " but no visible bundle is exporting these for that start level in the required version range.");
+                        String.valueOf(entry.getKey().getArtifact().getStartOrder())
+                        + " but no visible bundle is exporting these for that start level in the required version range.");
 
                 for (Map.Entry<PackageInfo, Map.Entry<Set<String>, Set<String>>> regionInfoEntry : entry.getValue().regionInfo.entrySet()) {
                     PackageInfo pkg = regionInfoEntry.getKey();

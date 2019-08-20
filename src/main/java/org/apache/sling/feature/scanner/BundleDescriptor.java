@@ -48,8 +48,11 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
 
     /**
      * Get the start level
+     * 
      * @return The start level.
+     * @deprecated Use start order of the bundle
      */
+    @Deprecated
     public abstract int getBundleStartLevel();
 
     /**

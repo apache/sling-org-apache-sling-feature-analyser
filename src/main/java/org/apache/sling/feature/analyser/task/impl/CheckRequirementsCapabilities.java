@@ -16,6 +16,13 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 import org.apache.felix.utils.resource.CapabilitySet;
 import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
@@ -25,13 +32,6 @@ import org.apache.sling.feature.scanner.Descriptor;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Requirement;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class CheckRequirementsCapabilities implements AnalyserTask {
     private final String format = "Artifact %s requires %s in start level %d but %s";
@@ -50,7 +50,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     public void execute(AnalyserTaskContext ctx) throws Exception {
         final SortedMap<Integer, List<Descriptor>> artifactsMap = new TreeMap<>();
         for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
-            List<Descriptor> list = getDescriptorList(bi.getBundleStartLevel(), artifactsMap);
+            List<Descriptor> list = getDescriptorList(bi.getArtifact().getStartOrder(), artifactsMap);
             list.add(bi);
         }
 
