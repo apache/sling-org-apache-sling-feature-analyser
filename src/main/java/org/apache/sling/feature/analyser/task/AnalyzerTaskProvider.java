@@ -35,7 +35,7 @@ public final class AnalyzerTaskProvider {
     }
 
     /**
-     * Get all tasks. Calls {@link #getTasksByIds(null, null)}.
+     * Get all tasks. Calls {@code getTasksByIds(null, null)}.
      *
      * @return The analyser tasks, array is never {@code null} but might be empty
      */
