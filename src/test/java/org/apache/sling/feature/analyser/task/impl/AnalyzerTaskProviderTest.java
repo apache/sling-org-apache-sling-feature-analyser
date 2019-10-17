@@ -18,18 +18,18 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.junit.Test;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
-import static org.junit.Assert.assertEquals;
+import org.apache.sling.feature.analyser.task.AnalyserTask;
+import org.junit.Test;
 
 public final class AnalyzerTaskProviderTest {
 
@@ -59,30 +59,10 @@ public final class AnalyzerTaskProviderTest {
     }
 
     @Test
-    public void loadCheckApiRegionsonly() throws Exception {
-        int expected = 1;
-        int actual = getTasksByClassName("org.apache.sling.feature.analyser.task.impl.CheckApiRegions").length;
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void includeCheckApiRegionsonly() throws Exception {
-        int expected = 1;
-        int actual = getTasksByIds(Collections.singleton("api-regions"), null).length;
-        assertEquals(expected, actual);
-    }
-
-    @Test
-    public void excludeCheckApiRegionsonly() throws Exception {
-        int expected = allTasks() - 1;
-        int actual = getTasksByIds(null, Collections.singleton("api-regions")).length;
-        assertEquals(expected, actual);
-    }
-
-    @Test
     public void doesNotincludeAnything() throws Exception {
         int expected = 0;
-        int actual = getTasksByIds(Collections.singleton("api-regions"), Collections.singleton("api-regions")).length;
+        int actual = getTasksByIds(Collections.singleton("bundle-packages"),
+                Collections.singleton("bundle-packages")).length;
         assertEquals(expected, actual);
     }
 

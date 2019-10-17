@@ -18,9 +18,18 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
@@ -31,14 +40,6 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
 
 public class CheckBundleExportsImportsTest {
     private static File resourceRoot;
@@ -135,7 +136,7 @@ public class CheckBundleExportsImportsTest {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
         Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
-        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
         ex.setJSON(exJson);
         f.getExtensions().add(ex);
 
@@ -168,7 +169,7 @@ public class CheckBundleExportsImportsTest {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
         Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
-        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
         ex.setJSON(exJson);
         f.getExtensions().add(ex);
 
@@ -206,7 +207,7 @@ public class CheckBundleExportsImportsTest {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
         Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
-        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
         ex.setJSON(exJson);
         f.getExtensions().add(ex);
 
@@ -241,7 +242,7 @@ public class CheckBundleExportsImportsTest {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
         Feature f = new Feature(ArtifactId.fromMvnId("f:f:2"));
-        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
         ex.setJSON(exJson);
         f.getExtensions().add(ex);
 
@@ -274,7 +275,7 @@ public class CheckBundleExportsImportsTest {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
         Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
-        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
         ex.setJSON(exJson);
         f.getExtensions().add(ex);
 
@@ -306,7 +307,7 @@ public class CheckBundleExportsImportsTest {
         CheckBundleExportsImports t = new CheckBundleExportsImports();
 
         Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
-        Extension ex = new Extension(ExtensionType.JSON, "api-regions", false);
+        Extension ex = new Extension(ExtensionType.JSON, "api-regions", ExtensionState.OPTIONAL);
         ex.setJSON(exJson);
         f.getExtensions().add(ex);
 
