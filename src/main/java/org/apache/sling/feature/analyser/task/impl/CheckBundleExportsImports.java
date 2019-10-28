@@ -85,9 +85,9 @@ public class CheckBundleExportsImports implements AnalyserTask {
             if ( info.getImportedPackages() != null ) {
                 for(final PackageInfo i : info.getImportedPackages()) {
                     if ( i.getVersion() == null ) {
-                        // don't report for javax and org.w3c. packages (TODO)
+                        // don't report for javax, org.w3c. and org.xml. packages (TODO)
                         if ( !i.getName().startsWith("javax.")
-                             && !i.getName().startsWith("org.w3c.")) {
+                                && !i.getName().startsWith("org.w3c.") && !i.getName().startsWith("org.xml.")) {
                             getReport(reports, info).importWithoutVersion.add(i);
                         }
                     }
