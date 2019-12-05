@@ -30,6 +30,8 @@ information as part of the check, to ensure that bundles don't import packages o
 * `exported-packages`: Lists all packages in the feature and writes these to a `packages.txt` file. This 
 analyser task is not enabled by default.
 
+* `apis-jar`: validates that the `sourceId` property of a bundle, if defined, is a comma-separated value list of artifact ids.
+
 There are a number of analysers which relate to API Region definitions in Feature Models. 
 
 * `api-regions`: This analyser ensures that packages listed as exports in API-Regions sections are actually exported by a bundle that's part of the feature.
