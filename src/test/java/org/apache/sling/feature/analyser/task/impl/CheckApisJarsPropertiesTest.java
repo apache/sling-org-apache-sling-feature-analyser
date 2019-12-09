@@ -97,7 +97,7 @@ public class CheckApisJarsPropertiesTest {
         public void addArtifactWithSourceId(String artifactId, String sourceId) {
             Artifact artifact = new Artifact(ArtifactId.parse(artifactId));
             if ( sourceId != null )
-                artifact.getMetadata().put("sourceId", sourceId);
+                artifact.getMetadata().put("source-ids", sourceId);
             
             getBundles().add(artifact);
         }
