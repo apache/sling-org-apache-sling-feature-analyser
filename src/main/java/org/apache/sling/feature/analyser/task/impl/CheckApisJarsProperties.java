@@ -37,7 +37,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 public class CheckApisJarsProperties implements AnalyserTask {
     
     // TODO - also defined in ApisJarMojo
-    private static final String SOURCE_ID = "sourceId";
+    private static final String SOURCE_IDS = "source-ids";
 
     @Override
     public String getId() {
@@ -54,12 +54,12 @@ public class CheckApisJarsProperties implements AnalyserTask {
 
         ctx.getFeature().getBundles().getBundlesByStartOrder().values().stream()
             .flatMap( List::stream )
-            .filter ( artifact -> artifact.getMetadata().containsKey(SOURCE_ID) )
+            .filter ( artifact -> artifact.getMetadata().containsKey(SOURCE_IDS) )
             .forEach( artifact -> checkSourceIdValidity(artifact, ctx));
     }
     
     private void checkSourceIdValidity(Artifact a, AnalyserTaskContext ctx) {
-        String sourceId = a.getMetadata().get(SOURCE_ID);
+        String sourceId = a.getMetadata().get(SOURCE_IDS);
         Arrays.stream(sourceId.split(","))
             .map( String::trim )
             .filter( el -> el.length() > 0)
