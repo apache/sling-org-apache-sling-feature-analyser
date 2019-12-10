@@ -24,7 +24,7 @@
     <artifactId>org.apache.sling.feature.analyser</artifactId>
     <version>1.2.3-SNAPSHOT</version>
 
-    <name>Apache Sling Feature Analyser</name>
+    <name>Apache Sling Feature Model Analyser</name>
     <description>
         A feature describes an OSGi system
     </description>
