@@ -30,6 +30,16 @@ import org.apache.sling.feature.scanner.BundleDescriptor;
  */
 public class ContentPackageDescriptor extends ArtifactDescriptor {
 
+    /**
+     * The metadata added to bundles and configurations for the package they are in.
+     */
+    public static final String METADATA_PACKAGE = "content-package";
+
+    /**
+     * The metadata added to bundles and configurations for the path in the package
+     */
+    public static final String METADATA_PATH = "content-path";
+
     /** The content package name. */
     private String name;
 

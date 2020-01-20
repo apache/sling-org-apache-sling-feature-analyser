@@ -16,14 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.io.IOUtils;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -40,6 +32,14 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
+
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
+import org.apache.sling.feature.io.IOUtils;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContentPackageScanner {
 
@@ -89,7 +89,7 @@ public class ContentPackageScanner {
                     final ZipEntry entry = entries.nextElement();
                     final String entryName = entry.getName();
                     logger.debug("Content package entry {}", entryName);
-                    
+
                     if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
                         final String contentPath = entryName.substring(8);
 
@@ -156,7 +156,7 @@ public class ContentPackageScanner {
                                 while ((len = zis.read(buffer)) > -1) {
                                     fos.write(buffer, 0, len);
                                 }
-                            } 
+                            }
 
                             if (fileType == FileType.BUNDLE) {
                                 int startLevel = 20;
@@ -172,8 +172,9 @@ public class ContentPackageScanner {
                                 final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
-                                bundle.getMetadata().put("content-package", cp.getArtifact().getId().toMvnId());
-                                bundle.getMetadata().put("content-path", contentPath);
+                                bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PACKAGE,
+                                        cp.getArtifact().getId().toMvnId());
+                                bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PATH, contentPath);
 
                                 cp.bundles.add(info);
 
@@ -233,10 +234,10 @@ public class ContentPackageScanner {
 
         try (final JarFile zipFile = new JarFile(bundleFile)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            
+
             while ( entries.hasMoreElements() ) {
                 final ZipEntry entry = entries.nextElement();
-                
+
                 final String entryName = entry.getName();
                 if ( !entryName.endsWith("/") && entryName.startsWith("META-INF/maven/") && entryName.endsWith("/pom.properties")) {
                     logger.debug("- extracting : {}", entryName);
@@ -244,7 +245,7 @@ public class ContentPackageScanner {
                     newFile.getParentFile().mkdirs();
 
                     try (
-                            final FileOutputStream fos = new FileOutputStream(newFile); 
+                            final FileOutputStream fos = new FileOutputStream(newFile);
                             final InputStream zis = zipFile.getInputStream(entry)
                     ) {
                         int len;
@@ -348,8 +349,9 @@ public class ContentPackageScanner {
             }
 
             final Configuration cfg = new Configuration(pid);
-            cfg.getProperties().put(Configuration.PROP_PREFIX + "content-path", contentPath);
-            cfg.getProperties().put(Configuration.PROP_PREFIX + "content-package", packageArtifact.getId().toMvnId());
+            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptor.METADATA_PATH, contentPath);
+            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptor.METADATA_PACKAGE,
+                    packageArtifact.getId().toMvnId());
 
             return cfg;
         }

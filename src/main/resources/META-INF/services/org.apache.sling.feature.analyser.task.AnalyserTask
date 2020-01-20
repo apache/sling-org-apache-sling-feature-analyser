@@ -3,5 +3,6 @@ org.apache.sling.feature.analyser.task.impl.CheckBundlesForConnect
 org.apache.sling.feature.analyser.task.impl.CheckBundlesForInitialContent
 org.apache.sling.feature.analyser.task.impl.CheckBundlesForResources
 org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities
+org.apache.sling.feature.analyser.task.impl.CheckContentPackageForInstallables
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesDependencies
 org.apache.sling.feature.analyser.task.impl.CheckApisJarsProperties
