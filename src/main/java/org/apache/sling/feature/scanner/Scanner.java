@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -133,7 +135,9 @@ public class Scanner {
     }
 
     private BundleDescriptor doScan(final Artifact bundle, final int startLevel) throws IOException {
-        final String key = bundle.getId().toMvnId().concat(":").concat(String.valueOf(startLevel));
+        final String key = bundle.getId().toMvnId().concat(":")
+            .concat(String.valueOf(startLevel)).concat(":")
+            .concat(Stream.of(bundle.getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.joining(",")));
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
             final URL file = artifactProvider.provide(bundle.getId());
