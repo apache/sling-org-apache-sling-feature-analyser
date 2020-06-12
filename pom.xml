@@ -121,7 +121,13 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.feature</artifactId>
-            <version>1.1.2</version>
+            <version>1.2.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.cm.json</artifactId>
+            <version>1.0.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -174,12 +180,6 @@
             <artifactId>johnzon-core</artifactId>
             <version>1.1.1</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.feature.io</artifactId>
-            <version>1.2.2</version>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

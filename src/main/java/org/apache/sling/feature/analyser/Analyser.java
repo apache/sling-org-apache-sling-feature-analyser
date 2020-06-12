@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.ExecutionEnvironmentExtension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
@@ -108,8 +109,15 @@ public class Analyser {
 
         final FeatureDescriptor featureDesc = scanner.scan(feature);
         BundleDescriptor bd = null;
-        if ( fwk != null ) {
-            bd = scanner.scan(fwk, feature.getFrameworkProperties());
+        ArtifactId framework = fwk;
+        if ( framework == null ) {
+            final ExecutionEnvironmentExtension ext = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
+            if ( ext != null && ext.getFramework() != null ) {
+                framework = ext.getFramework().getId();
+            }
+        }
+        if ( framework != null ) {
+            bd = scanner.scan(framework, feature.getFrameworkProperties());
         }
         final BundleDescriptor fwkDesc = bd;
 
