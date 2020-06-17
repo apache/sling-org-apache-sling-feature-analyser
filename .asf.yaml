@@ -1,0 +1,8 @@
+github:
+  description: "Apache Sling Feature Model Analyser"
+  homepage: "https://sling.apache.org/"
+  labels:
+    - java
+    - sling
+    - osgi
+    - osgi-feature-model
