@@ -6,3 +6,4 @@ org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities
 org.apache.sling.feature.analyser.task.impl.CheckContentPackageForInstallables
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesDependencies
 org.apache.sling.feature.analyser.task.impl.CheckApisJarsProperties
+org.apache.sling.feature.analyser.task.impl.CheckRepoinit
