@@ -39,6 +39,11 @@ public interface AnalyserTaskContext {
      */
     FeatureDescriptor getFeatureDescriptor();
 
+    /**
+     * Returns a Feature Provider, if present.
+     *
+     * @return the feature provider to use, or {@code null} if not present.
+     */
     FeatureProvider getFeatureProvider();
 
     /**

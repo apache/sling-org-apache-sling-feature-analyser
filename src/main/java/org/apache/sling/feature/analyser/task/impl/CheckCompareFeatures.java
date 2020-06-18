@@ -24,6 +24,7 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.builder.FeatureProvider;
 
 import java.util.Map;
 
@@ -56,7 +57,12 @@ public class CheckCompareFeatures implements AnalyserTask {
 
         boolean strictMetadata = !cfg.getOrDefault("compare-metadata", "false").equalsIgnoreCase("false");
 
-        Feature feat = ctx.getFeatureProvider().provide(ArtifactId.fromMvnId(aid));
+        FeatureProvider featureProvider = ctx.getFeatureProvider();
+        if (featureProvider == null) {
+            throw new Exception("This analyser requires a Feature Provider to be set in the Analyser Task Context.");
+        }
+
+        Feature feat = featureProvider.provide(ArtifactId.fromMvnId(aid));
         if (feat == null)
             throw new Exception("Feature not found: " + aid);
 
