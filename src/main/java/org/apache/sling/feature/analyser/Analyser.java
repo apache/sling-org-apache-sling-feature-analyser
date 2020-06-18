@@ -34,6 +34,7 @@ import org.apache.sling.feature.ExecutionEnvironmentExtension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.Scanner;
@@ -105,6 +106,11 @@ public class Analyser {
     }
 
     public AnalyserResult analyse(final Feature feature, final ArtifactId fwk) throws Exception {
+        return analyse(feature, fwk, null);
+    }
+
+    public AnalyserResult analyse(final Feature feature, final ArtifactId fwk,
+            final FeatureProvider featureProvider) throws Exception {
         logger.info("Starting analyzing feature '{}'...", feature.getId());
 
         final FeatureDescriptor featureDesc = scanner.scan(feature);
@@ -140,6 +146,11 @@ public class Analyser {
                 @Override
                 public FeatureDescriptor getFeatureDescriptor() {
                     return featureDesc;
+                }
+
+                @Override
+                public FeatureProvider getFeatureProvider() {
+                    return featureProvider;
                 }
 
                 @Override

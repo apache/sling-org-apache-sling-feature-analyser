@@ -30,6 +30,7 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.junit.Test;
@@ -77,6 +78,11 @@ public class CheckApisJarsPropertiesTest {
             return Collections.emptyMap();
         }
         
+        @Override
+        public FeatureProvider getFeatureProvider() {
+            return null;
+        }
+
         public List<String> getErrors() {
             return errors;
         }

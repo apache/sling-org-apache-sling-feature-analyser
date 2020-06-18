@@ -32,6 +32,7 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.junit.Test;
@@ -127,6 +128,11 @@ public class CheckRepoinitTest {
 
         @Override
         public Map<String, String> getConfiguration() {
+            return null;
+        }
+
+        @Override
+        public FeatureProvider getFeatureProvider() {
             return null;
         }
 
