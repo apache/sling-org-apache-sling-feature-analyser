@@ -18,8 +18,12 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.io.InputStream;
+import java.io.IOException;
 import java.io.StringReader;
+import java.nio.charset.Charset;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
@@ -35,6 +39,20 @@ public class CheckRepoinit implements AnalyserTask {
     public static final String PID = "org.apache.sling.jcr.repoinit.impl.RepositoryInitializer";
 
     public static final String FACTORY_PID = "org.apache.sling.jcr.repoinit.RepositoryInitializer";
+
+    /** This resource provides the repoinit parser version number */
+    public static final String REPOINIT_VERSION_RESOURCE = "/repoinit-version.txt";
+    private static String repoinitVersion = REPOINIT_VERSION_RESOURCE + " not found??";
+
+    static {
+        try (InputStream is = CheckRepoinit.class.getResourceAsStream(REPOINIT_VERSION_RESOURCE)) {
+            if(is != null) {
+                repoinitVersion = IOUtils.toString(is, Charset.defaultCharset()).trim();
+            }
+        } catch(IOException ignored) {
+        }
+    }
+
     @Override
     public String getName() {
         return "Repoinit Check";
@@ -45,13 +63,17 @@ public class CheckRepoinit implements AnalyserTask {
         return "repoinit";
     }
 
+    private void reportError(AnalyserTaskContext ctx, String error) {
+        ctx.reportError(String.format("(Repoinit Parser V%s) %s", repoinitVersion, error));
+    }
+
     @Override
     public void execute(final AnalyserTaskContext ctx) {
         // check extension
         final Extension ext = ctx.getFeature().getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
         if ( ext != null ) {
             if ( ext.getType() != ExtensionType.TEXT ) {
-                ctx.reportError("Repoinit extension must be of type TEXT");
+                reportError(ctx, "Repoinit extension must be of type TEXT");
             } else  {
                 check(ctx, "extension", ext.getText());
             }
@@ -89,7 +111,7 @@ public class CheckRepoinit implements AnalyserTask {
         try {
             parser.parse(new StringReader(contents));
         } catch ( RepoInitParsingException e) {
-            ctx.reportError("Parsing error in repoinit from ".concat(id).concat(" : ").concat(e.getMessage()));
+            reportError(ctx, "Parsing error in repoinit from ".concat(id).concat(" : ").concat(e.getMessage()));
         }
     }
 }

@@ -31,6 +31,7 @@
 
     <properties>
         <sling.java.version>8</sling.java.version>
+        <repoinit.parser.version>1.6.2</repoinit.parser.version>
     </properties>
 
     <scm>
@@ -41,6 +42,12 @@
    </scm>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources/filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.rat</groupId>
@@ -53,6 +60,7 @@
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.FrameworkScanner</exclude>
                         <exclude>src/test/resources/origins/**</exclude>
                         <exclude>src/test/resources/test-bundle-src/**</exclude>
+                        <exclude>src/main/resources/filtered/repoinit-version.txt</exclude>
                     </excludes>
                 </configuration>
             </plugin>
@@ -160,7 +168,8 @@
         <dependency>
             <groupId>org.apache.sling</groupId>
             <artifactId>org.apache.sling.repoinit.parser</artifactId>
-            <version>1.6.2</version>
+            <!-- variable required to propagate version number in error messages -->
+            <version>${repoinit.parser.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

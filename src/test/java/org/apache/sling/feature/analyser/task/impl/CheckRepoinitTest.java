@@ -16,13 +16,13 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
@@ -39,6 +39,17 @@ import org.junit.Test;
 
 public class CheckRepoinitTest {
 
+    private static final Pattern ERR_PATTERN = Pattern.compile("(.|\n)*Repoinit Parser V[0-9\\.]+(.|\n)*");
+
+    /** Any errors in the context must match the ERR_PATTERN */
+    private void assertParserVersionPresent(AnalyserTaskContextImpl ctx) {
+        ctx.getErrors().forEach(
+            err -> assertTrue(
+                String.format("Expecting error message to match [%s] but got [%s] ", ERR_PATTERN, err),
+                ERR_PATTERN.matcher(err).matches())
+        );
+    }
+
     @Test public void testValidExtension() throws Exception {
         final AnalyserTaskContextImpl ctx = new AnalyserTaskContextImpl();
         final AnalyserTask task = new CheckRepoinit();
@@ -54,6 +65,7 @@ public class CheckRepoinitTest {
 
         task.execute(ctx);
         assertTrue(ctx.getErrors().isEmpty());
+        assertParserVersionPresent(ctx);
     }
 
     @Test public void testInvalidExtension() throws Exception {
@@ -66,6 +78,7 @@ public class CheckRepoinitTest {
 
         task.execute(ctx);
         assertEquals(1, ctx.getErrors().size());
+        assertParserVersionPresent(ctx);
     }
 
     @Test public void testInvalidExtensionRepoinit() throws Exception {
@@ -79,6 +92,7 @@ public class CheckRepoinitTest {
 
         task.execute(ctx);
         assertEquals(1, ctx.getErrors().size());
+        assertParserVersionPresent(ctx);
     }
 
     @Test public void testValidFactoryConfig() throws Exception {
@@ -91,6 +105,7 @@ public class CheckRepoinitTest {
 
         task.execute(ctx);
         assertTrue(ctx.getErrors().isEmpty());
+        assertParserVersionPresent(ctx);
     }
 
     @Test public void testInvalidFactoryConfig() throws Exception {
@@ -103,6 +118,7 @@ public class CheckRepoinitTest {
 
         task.execute(ctx);
         assertEquals(1, ctx.getErrors().size());
+        assertParserVersionPresent(ctx);
     }
 
     public static class AnalyserTaskContextImpl implements AnalyserTaskContext {
