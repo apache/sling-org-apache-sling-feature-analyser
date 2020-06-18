@@ -30,7 +30,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
  * Current checks:
  * 
  * <ol>
- *  <li>The <tt>sourceId</tt> property is a CSV list of valid artifact ids.</li>
+ *   <li>The {@code sourceId} property is a CSV list of valid artifact ids.</li>
  * </ol>
  *
  */
