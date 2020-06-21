@@ -51,7 +51,7 @@ public class CheckContentPackagesDependencies implements AnalyserTask {
 
     @Override
     public String getName() {
-        return "Content-packages dependencies checker";
+        return "Content packages dependencies checker";
     }
 
     @Override
