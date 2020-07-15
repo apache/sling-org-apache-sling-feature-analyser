@@ -46,13 +46,11 @@ public class FrameworkPropertiesGatherer {
         Properties inProps = new Properties();
         inProps.load(new FileReader(args[0]));
 
-
         ServiceLoader<FrameworkFactory> ldr = ServiceLoader.load(FrameworkFactory.class);
         FrameworkFactory ff = ldr.iterator().next();
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
         Framework fwk = ff.newFramework((Map) inProps);
-        System.out.println("Using framework: " + fwk.getSymbolicName() + " version " + fwk.getVersion());
 
         fwk.init();
         fwk.start();

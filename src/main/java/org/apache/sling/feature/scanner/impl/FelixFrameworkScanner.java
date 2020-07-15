@@ -151,7 +151,8 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         try {
             runJava(new ArrayList<>(commandLine), runDir);
         } catch (InterruptedException e) {
-            throw new IOException(e);
+            Thread.currentThread().interrupt();
+            throw new IOException(e);            
         }
 
         Properties gatheredProps = new Properties();
@@ -161,10 +162,11 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         Files.delete(appPropsFile);
         Files.delete(outFile);
 
-        Files.walk(runDir)
-            .sorted(Comparator.reverseOrder())
+        try (Stream<Path> fileStream = Files.walk(runDir)) {
+            fileStream.sorted(Comparator.reverseOrder())
             .map(Path::toFile)
             .forEach(File::delete);
+        }
 
         return (Map) gatheredProps;
     }
