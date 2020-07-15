@@ -16,23 +16,30 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import org.apache.felix.framework.Felix;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.junit.Test;
+import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class FelixFrameworkScannerTest {
     @Test
     public void testGetFrameworkProperties() throws Exception {
-        URL url = getClass().getResource("/test-framework.jar");
+        URL url = getFelixFrameworkJar();
         File fwFile = new File(url.toURI());
 
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
@@ -54,11 +61,12 @@ public class FelixFrameworkScannerTest {
 
     @Test
     public void testGetFrameworkExports() throws Exception {
-        URL fwFile = getClass().getResource("/test-framework.jar");
-
+        URL fwFile = getFelixFrameworkJar();
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
         Map<String,String> kvmap = new HashMap<>();
+        kvmap.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.foo.bar");
+        kvmap.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, "ding.dong;ding.dong=\"yeah!\"");
 
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",
@@ -70,7 +78,26 @@ public class FelixFrameworkScannerTest {
                     }
                 });
 
-        assertFalse(bundleDescriptor.getExportedPackages().isEmpty());
-        assertFalse(bundleDescriptor.getCapabilities().isEmpty());
+        Set<PackageInfo> exportedPackages = bundleDescriptor.getExportedPackages();
+        assertFalse(exportedPackages.isEmpty());
+        boolean foundFooBar = false;
+        for (PackageInfo pi : exportedPackages) {
+            if (pi.getName().equals("org.foo.bar"))
+                foundFooBar = true;
+        }
+        assertTrue(foundFooBar);
+
+        Set<Capability> providedCaps = bundleDescriptor.getCapabilities();
+        assertFalse(providedCaps.isEmpty());
+        boolean foundDingDong = false;
+        for (Capability cap : providedCaps) {
+            if (cap.getNamespace().equals("ding.dong") && "yeah!".equals(cap.getAttributes().get("ding.dong")))
+                foundDingDong = true;
+        }
+        assertTrue(foundDingDong);
+    }
+
+    private URL getFelixFrameworkJar() throws MalformedURLException {
+        return FelixFrameworkScanner.getClasspathForClass(Felix.class).toURI().toURL();
     }
 }

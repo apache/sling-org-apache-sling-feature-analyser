@@ -46,7 +46,7 @@ public class CheckBundleExportsImportsTest {
     public static void setupClass() {
         resourceRoot =
                 new File(CheckBundleExportsImportsTest.class.
-                        getResource("/test-framework.jar").getFile()).getParentFile();
+                        getResource("/test-content.zip").getFile()).getParentFile();
     }
 
     @Test
