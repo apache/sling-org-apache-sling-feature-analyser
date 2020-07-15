@@ -18,8 +18,9 @@ package org.apache.sling.feature.scanner.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -134,7 +135,9 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         Path appPropsFile = Files.createTempFile("appProps", ".properties");
         Properties appPropsProperties = new Properties();
         appPropsProperties.putAll(appProps);
-        appPropsProperties.store(new FileOutputStream(appPropsFile.toFile()), "appProps");
+        try (Writer writer = new FileWriter(appPropsFile.toFile())) {
+            appPropsProperties.store(writer, "appProps");
+        }
 
         File frameworkJar = IOUtils.getFileFromURL(framework, true, null);
         File gathererCP = getGathererClassPath();
