@@ -178,7 +178,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
 
     static File getClasspathForClass(Class<?> cls) throws MalformedURLException {
         String clsName = cls.getName();
-        String resName = "/" + clsName.replace('.', File.separatorChar) + ".class";
+        String resName = "/" + clsName.replace('.', '/') + ".class";
         URL resource = cls.getResource(resName);
         String resURL = resource.toString();
         if (!resURL.startsWith("jar:file:")) {
