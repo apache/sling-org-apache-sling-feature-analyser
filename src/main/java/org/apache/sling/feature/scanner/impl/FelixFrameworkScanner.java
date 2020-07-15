@@ -17,9 +17,10 @@
 package org.apache.sling.feature.scanner.impl;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -160,7 +161,9 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         }
 
         Properties gatheredProps = new Properties();
-        gatheredProps.load(new FileInputStream(outFile.toFile()));
+        try (Reader reader = new FileReader(outFile.toFile())) {
+            gatheredProps.load(reader);
+        }
 
         // after reading, delete all temp files and dirs
         Files.delete(appPropsFile);
