@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -152,7 +153,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             runJava(new ArrayList<>(commandLine), runDir);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IOException(e);            
+            throw new IOException(e);
         }
 
         Properties gatheredProps = new Properties();
@@ -171,11 +172,11 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         return (Map) gatheredProps;
     }
 
-    private File getGathererClassPath() {
+    private File getGathererClassPath() throws MalformedURLException {
         return getClasspathForClass(FrameworkPropertiesGatherer.class);
     }
 
-    static File getClasspathForClass(Class<?> cls) {
+    static File getClasspathForClass(Class<?> cls) throws MalformedURLException {
         String clsName = cls.getName();
         String resName = "/" + clsName.replace('.', File.separatorChar) + ".class";
         URL resource = cls.getResource(resName);
@@ -186,7 +187,8 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         }
 
         int pingSlash = resURL.indexOf("!/");
-        return new File(resURL.substring("jar:file:".length(), pingSlash));
+        String fileURL = resURL.substring("jar:".length(), pingSlash);
+        return new File(new URL(fileURL).getFile());
     }
 
     private static void runJava(List<String> commandLine, Path execDir)
