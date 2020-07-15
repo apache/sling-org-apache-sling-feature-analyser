@@ -20,8 +20,10 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 
-import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.Reader;
+import java.io.Writer;
 import java.util.Dictionary;
 import java.util.Map;
 import java.util.Properties;
@@ -44,7 +46,9 @@ public class FrameworkPropertiesGatherer {
         }
 
         Properties inProps = new Properties();
-        inProps.load(new FileReader(args[0]));
+        try (Reader reader = new FileReader(args[0])) {
+            inProps.load(reader);
+        }
 
         ServiceLoader<FrameworkFactory> ldr = ServiceLoader.load(FrameworkFactory.class);
         FrameworkFactory ff = ldr.iterator().next();
@@ -64,7 +68,9 @@ public class FrameworkPropertiesGatherer {
 
         fwk.stop();
 
-        outProps.store(new FileOutputStream(args[1]), "Framework exports and capabilities");
+        try (Writer writer = new FileWriter(args[1])) {
+            outProps.store(writer, "Framework exports and capabilities");
+        }
 
         fwk.waitForStop(1000);
         System.exit(0); // To be sure
