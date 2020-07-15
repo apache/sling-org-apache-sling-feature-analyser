@@ -143,7 +143,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
 
         List<String> commandLine = Arrays.asList(
                 "-cp",
-                gathererCP + ":" + frameworkJar.getAbsolutePath(),
+                gathererCP + File.pathSeparator + frameworkJar.getAbsolutePath(),
                 FrameworkPropertiesGatherer.class.getName(),
                 appPropsFile.toString(),
                 outFile.toString());
