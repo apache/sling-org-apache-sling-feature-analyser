@@ -84,12 +84,6 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.6</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-json_1.1_spec</artifactId>
             <version>1.0</version>
@@ -192,6 +186,13 @@
             <groupId>org.apache.johnzon</groupId>
             <artifactId>johnzon-core</artifactId>
             <version>1.1.1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <!-- Used by some tests -->
+            <groupId>org.apache.felix</groupId>
+            <artifactId>org.apache.felix.framework</artifactId>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

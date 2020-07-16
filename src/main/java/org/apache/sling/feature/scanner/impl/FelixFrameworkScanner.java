@@ -16,25 +16,30 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
+import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
 
-import org.apache.commons.text.StringSubstitutor;
-import org.apache.commons.text.lookup.StringLookup;
 import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.Artifact;
@@ -43,6 +48,7 @@ import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.impl.fwk.FrameworkPropertiesGatherer;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
@@ -103,120 +109,112 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         return d;
     }
 
-    private List<Capability> calculateSystemCapabilities(final Map<String,String> fwkProps) throws IOException
-    {
-         Map<String, String> mf = new HashMap<>();
-         mf.put(Constants.PROVIDE_CAPABILITY,
-                Stream.of(
-                    fwkProps.get(Constants.FRAMEWORK_SYSTEMCAPABILITIES),
-                    fwkProps.get(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA)
-                )
-                .filter(Objects::nonNull)
-                .collect(Collectors.joining(",")));
-         mf.put(Constants.BUNDLE_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-         mf.put(Constants.BUNDLE_MANIFESTVERSION, "2");
-         try
-         {
-             return ResourceBuilder.build(null, mf).getCapabilities(null);
-         }
-         catch (Exception ex) {
-             throw new IOException(ex);
-         }
+    private List<Capability> calculateSystemCapabilities(final Map<String,String> fwkProps) throws IOException {
+        Map<String, String> mf = new HashMap<>();
+        mf.put(Constants.PROVIDE_CAPABILITY, fwkProps.get(Constants.FRAMEWORK_SYSTEMCAPABILITIES));
+        mf.put(Constants.BUNDLE_SYMBOLICNAME, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+        mf.put(Constants.BUNDLE_MANIFESTVERSION, "2");
+
+        try
+        {
+            return ResourceBuilder.build(null, mf).getCapabilities(null);
+        }
+        catch (Exception ex) {
+            throw new IOException(ex);
+        }
     }
 
     private Set<PackageInfo> calculateSystemPackages(final Map<String,String> fwkProps) {
-        return
-            Stream.of(
-                Parser.parseHeader(
-                    Stream.of(
-                        fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES),
-                        fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA)
-                    ).filter(Objects::nonNull)
-                    .collect(Collectors.joining(","))
-                )
-            ).map(
+        return Stream.of(
+                Parser.parseHeader(fwkProps.get(Constants.FRAMEWORK_SYSTEMPACKAGES)))
+            .map(
                 clause -> new PackageInfo(clause.getName(), clause.getAttribute("version") != null ? clause.getAttribute("version") : "0.0.0", false))
             .collect(Collectors.toSet());
     }
 
-    private static final String DEFAULT_PROPERTIES = "default.properties";
-
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     Map<String,String> getFrameworkProperties(final Map<String,String> appProps, final URL framework)
-    throws IOException {
-        final Map<String, Properties> propsMap = new HashMap<>();
-
-        try (final JarFile zipFile = IOUtils.getJarFileFromURL(framework, true, null)) {
-            Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            
-            while ( entries.hasMoreElements() ) {
-                final ZipEntry entry = entries.nextElement();
-                try (final InputStream zis = zipFile.getInputStream(entry)) {
-                    final String entryName = entry.getName();
-                    if ( entryName.endsWith(".properties") ) {
-                        final Properties props = new Properties();
-                        props.load(zis);
-                        propsMap.put(entryName, props);
-                    }
-                } 
-            }
+            throws IOException {
+        Path appPropsFile = Files.createTempFile("appProps", ".properties");
+        Properties appPropsProperties = new Properties();
+        appPropsProperties.putAll(appProps);
+        try (Writer writer = new FileWriter(appPropsFile.toFile())) {
+            appPropsProperties.store(writer, "appProps");
         }
 
-        final Properties defaultMap = propsMap.get(DEFAULT_PROPERTIES);
-        if ( defaultMap == null ) {
-            return null;
+        File frameworkJar = IOUtils.getFileFromURL(framework, true, null);
+        File gathererCP = getGathererClassPath();
+
+        Path outFile = Files.createTempFile("frameworkCaps", ".properties");
+        Path runDir = Files.createTempDirectory("frameworkCaps");
+
+        List<String> commandLine = Arrays.asList(
+                "-cp",
+                gathererCP + File.pathSeparator + frameworkJar.getAbsolutePath(),
+                FrameworkPropertiesGatherer.class.getName(),
+                appPropsFile.toString(),
+                outFile.toString());
+
+        try {
+            runJava(new ArrayList<>(commandLine), runDir);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException(e);
         }
 
-        final Map<String,String> frameworkProps = new HashMap<>();
-        appProps.forEach((key, value) -> frameworkProps.put(key, value.replace("{dollar}", "$")));
-
-        // replace variables
-        defaultMap.put("java.specification.version","1.8");
-
-        defaultMap.put("felix.detect.java.specification.version", "1.8");
-        defaultMap.put("felix.detect.java.version", "0.0.0.JavaSE_018");
-
-
-
-        StringSubstitutor ss = new StringSubstitutor(new StringLookup() {
-
-            @Override
-            public String lookup(String key) {
-                // Normally if a variable cannot be found, StrSubstitutor will
-                // leave the raw variable in place. We need to replace it with
-                // nothing in that case.
-
-                String val = defaultMap.getProperty(key);
-                return val != null ? val : "";
-            }
-        });
-        ss.setEnableSubstitutionInVariables(true);
-
-        for(final Object name : defaultMap.keySet()) {
-            if ( frameworkProps.get(name.toString()) == null ) {
-                final String value = (String)defaultMap.get(name);
-                final String substValue = ss.replace(value);
-                frameworkProps.put(name.toString(), substValue);
-            }
+        Properties gatheredProps = new Properties();
+        try (Reader reader = new FileReader(outFile.toFile())) {
+            gatheredProps.load(reader);
         }
 
-        ss = new StringSubstitutor(new StringLookup() {
+        // after reading, delete all temp files and dirs
+        Files.delete(appPropsFile);
+        Files.delete(outFile);
 
-            @Override
-            public String lookup(String key) {
-                // Normally if a variable cannot be found, StrSubstitutor will
-                // leave the raw variable in place. We need to replace it with
-                // nothing in that case.
-
-                String val = frameworkProps.get(key);
-                return val != null ? val.replace("{dollar}", "$") : "";
-            }
-        });
-
-        ss.setEnableSubstitutionInVariables(true);
-        for (Map.Entry<String, String> entry : frameworkProps.entrySet()) {
-            entry.setValue(ss.replace(entry.getValue().replace("{dollar}", "$")));
+        try (Stream<Path> fileStream = Files.walk(runDir)) {
+            fileStream.sorted(Comparator.reverseOrder())
+            .map(Path::toFile)
+            .forEach(File::delete);
         }
 
-        return frameworkProps;
+        return (Map) gatheredProps;
+    }
+
+    private File getGathererClassPath() throws IOException {
+        return getClasspathForClass(FrameworkPropertiesGatherer.class);
+    }
+
+    static File getClasspathForClass(Class<?> cls) throws IOException {
+        String clsName = cls.getName();
+        String resName = "/" + clsName.replace('.', '/') + ".class";
+        URL resource = cls.getResource(resName);
+        String resURL = URLDecoder.decode(resource.toString(), StandardCharsets.UTF_8.name());
+        if (!resURL.startsWith("jar:file:")) {
+            String urlFile = resource.getFile();
+            return new File(urlFile.substring(0, urlFile.length() - resName.length()));
+        }
+
+        int pingSlash = resURL.indexOf("!/");
+        String fileURL = resURL.substring("jar:".length(), pingSlash);
+        return new File(new URL(fileURL).getFile());
+    }
+
+    private static void runJava(List<String> commandLine, Path execDir)
+            throws IOException, InterruptedException {
+        String java = System.getProperty("java.home") + "/bin/java";
+        commandLine.add(0, java);
+        runCommand(commandLine, execDir);
+    }
+
+    private static void runCommand(List<String> commandLine, Path execDir)
+            throws IOException, InterruptedException {
+        Process process = new ProcessBuilder(commandLine)
+            .directory(execDir.toFile())
+            .inheritIO()
+            .start();
+        int res = process.waitFor();
+        if (res != 0) {
+            throw new IOException("Process returned with a failure: " + res);
+        }
     }
 }
