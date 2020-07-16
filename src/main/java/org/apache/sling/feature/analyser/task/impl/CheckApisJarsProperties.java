@@ -16,8 +16,9 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
-import java.util.List;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -26,52 +27,105 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 
 /**
  * This analyser validates that the entries related to Apis Jar are valid.
- * 
+ *
  * Current checks:
- * 
+ *
  * <ol>
  *   <li>The {@code sourceId} property is a CSV list of valid artifact ids.</li>
  * </ol>
  *
  */
 public class CheckApisJarsProperties implements AnalyserTask {
-    
-    // TODO - also defined in ApisJarMojo
-    private static final String SOURCE_IDS = "source-ids";
+
+    /** Alternative SCM location. */
+    private static final String SCM_LOCATION = "scm-location";
+
+    /** Alternative IDs for artifact dependencies. */
+    private static final String API_IDS = "api-ids";
+
+    /** Alternative IDS to a source artifact. */
+    private static final String SCM_IDS = "source-ids";
+
+    /** Alternative classifier for the source artifact. */
+    private static final String SCM_CLASSIFIER = "source-classifier";
+
+
+    /** Links for javadocs. */
+    private static final String JAVADOC_LINKS = "javadoc-links";
 
     @Override
     public String getId() {
         return "apis-jar";
     }
-    
+
     @Override
     public String getName() {
         return "APIs jar properties check";
     }
-    
+
     @Override
-    public void execute(AnalyserTaskContext ctx) throws Exception {
-
-        ctx.getFeature().getBundles().getBundlesByStartOrder().values().stream()
-            .flatMap( List::stream )
-            .filter ( artifact -> artifact.getMetadata().containsKey(SOURCE_IDS) )
-            .forEach( artifact -> checkSourceIdValidity(artifact, ctx));
+    public void execute(final AnalyserTaskContext ctx) throws Exception {
+        for(final Artifact artifact : ctx.getFeature().getBundles()) {
+            validateSourceInfo(ctx, artifact);
+            checkIdValidity(ctx, artifact, SCM_IDS);
+            checkIdValidity(ctx, artifact, API_IDS);
+            checkJavadocLinks(ctx, artifact);
+        }
     }
-    
-    private void checkSourceIdValidity(Artifact a, AnalyserTaskContext ctx) {
-        String sourceId = a.getMetadata().get(SOURCE_IDS);
-        Arrays.stream(sourceId.split(","))
-            .map( String::trim )
-            .filter( el -> el.length() > 0)
-            .forEach( el -> {
-                try {
-                    // at the moment we can not validate the availability of the artifact since there is no access to Maven APIs
-                    ArtifactId.parse(el);
-                } catch ( IllegalArgumentException e) {
-                    ctx.reportError("Bundle " + a.getId() + " has invalid sourceId entry '" + el + "' : " + e.getMessage());
+
+    private void checkIdValidity(final AnalyserTaskContext ctx, final Artifact a, final String propName) {
+        final String sourceId = a.getMetadata().get(propName);
+        if  ( sourceId != null ) {
+            Arrays.stream(sourceId.split(","))
+                .map( String::trim )
+                .filter( el -> el.length() > 0)
+                .forEach( el -> {
+                    try {
+                        // at the moment we can not validate the availability of the artifact since there is no access to Maven APIs
+                        ArtifactId.parse(el);
+                    } catch ( IllegalArgumentException e) {
+                        ctx.reportError("Bundle " + a.getId().toMvnId() + " has invalid " + propName + " entry '" + el + "' : " + e.getMessage());
+                    }
+                });
+        }
+    }
+
+    private void checkJavadocLinks(final AnalyserTaskContext ctx, final Artifact a) {
+        final String value = a.getMetadata().get(JAVADOC_LINKS);
+        if ( value != null ) {
+            for(String v : value.split(",") ) {
+                if ( v.endsWith("/") ) {
+                    v = v.substring(0, v.length() - 1);
                 }
-            });
-        
+                try {
+                    new URL(v);
+                } catch ( final MalformedURLException mue) {
+                    ctx.reportError("Bundle " + a.getId().toMvnId() + " has invalid javadoc links URL : " + v);
+                }
+            }
+        }
     }
 
+    /**
+     * Validate that only one source metadata is set
+     */
+    private void validateSourceInfo(final AnalyserTaskContext ctx, final Artifact artifact) {
+        int count = 0;
+        if ( artifact.getMetadata().get(SCM_LOCATION) != null ) {
+            count++;
+        }
+        if ( artifact.getMetadata().get(SCM_CLASSIFIER) != null ) {
+            count++;
+        }
+        if ( artifact.getMetadata().get(SCM_IDS) != null ) {
+            count++;
+        }
+        if ( count > 1 ) {
+            ctx.reportError("Bundle ".concat(artifact.getId().toMvnId())
+                    .concat(" should either define ")
+                    .concat(SCM_LOCATION).concat(", ")
+                    .concat(SCM_CLASSIFIER).concat(", or")
+                    .concat(SCM_IDS).concat(" - but only one of them."));
+        }
+    }
 }
