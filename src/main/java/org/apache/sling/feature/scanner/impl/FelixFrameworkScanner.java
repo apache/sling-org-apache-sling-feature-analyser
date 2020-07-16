@@ -24,6 +24,8 @@ import java.io.Reader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -178,15 +180,15 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         return (Map) gatheredProps;
     }
 
-    private File getGathererClassPath() throws MalformedURLException {
+    private File getGathererClassPath() throws IOException {
         return getClasspathForClass(FrameworkPropertiesGatherer.class);
     }
 
-    static File getClasspathForClass(Class<?> cls) throws MalformedURLException {
+    static File getClasspathForClass(Class<?> cls) throws IOException {
         String clsName = cls.getName();
         String resName = "/" + clsName.replace('.', '/') + ".class";
         URL resource = cls.getResource(resName);
-        String resURL = resource.toString();
+        String resURL = URLDecoder.decode(resource.toString(), StandardCharsets.UTF_8.name());
         if (!resURL.startsWith("jar:file:")) {
             String urlFile = resource.getFile();
             return new File(urlFile.substring(0, urlFile.length() - resName.length()));

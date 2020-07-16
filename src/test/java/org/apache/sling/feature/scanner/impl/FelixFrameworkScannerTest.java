@@ -16,6 +16,17 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.felix.framework.Felix;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.builder.ArtifactProvider;
@@ -24,17 +35,6 @@ import org.apache.sling.feature.scanner.PackageInfo;
 import org.junit.Test;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class FelixFrameworkScannerTest {
     @Test
@@ -97,7 +97,7 @@ public class FelixFrameworkScannerTest {
         assertTrue(foundDingDong);
     }
 
-    private URL getFelixFrameworkJar() throws MalformedURLException {
+    private URL getFelixFrameworkJar() throws IOException {
         return FelixFrameworkScanner.getClasspathForClass(Felix.class).toURI().toURL();
     }
 }
