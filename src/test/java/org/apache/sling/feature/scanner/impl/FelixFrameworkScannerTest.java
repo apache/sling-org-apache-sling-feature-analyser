@@ -91,8 +91,9 @@ public class FelixFrameworkScannerTest {
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
         Map<String,String> kvmap = new HashMap<>();
-        kvmap.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.foo.bar");
+        kvmap.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.foo.bar;version=\"{dollar}{java.specification.version}\"");
         kvmap.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, "ding.dong;ding.dong=\"yeah!\"");
+        kvmap.put("felix.systempackages.substitution", "true");
 
         BundleDescriptor bundleDescriptor = ffs.scan(new ArtifactId("org.apache.felix",
                 "org.apache.felix.framework",
@@ -104,12 +105,16 @@ public class FelixFrameworkScannerTest {
                     }
                 });
 
+        String javaVersion = System.getProperty("java.specification.version");
+
         Set<PackageInfo> exportedPackages = bundleDescriptor.getExportedPackages();
         assertFalse(exportedPackages.isEmpty());
         boolean foundFooBar = false;
         for (PackageInfo pi : exportedPackages) {
-            if (pi.getName().equals("org.foo.bar"))
+            if (pi.getName().equals("org.foo.bar")) {
+                assertTrue(pi.getVersion().startsWith(javaVersion));
                 foundFooBar = true;
+            }
         }
         assertTrue(foundFooBar);
 
