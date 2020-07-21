@@ -22,7 +22,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -137,7 +136,11 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             throws IOException {
         Path appPropsFile = Files.createTempFile("appProps", ".properties");
         Properties appPropsProperties = new Properties();
-        appPropsProperties.putAll(appProps);
+
+        for (Map.Entry<String,String> entry : appProps.entrySet()) {
+            appPropsProperties.put(entry.getKey(), entry.getValue().replace("{dollar}", "$"));
+        }
+
         try (Writer writer = new FileWriter(appPropsFile.toFile())) {
             appPropsProperties.store(writer, "appProps");
         }
