@@ -138,7 +138,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         Properties appPropsProperties = new Properties();
 
         for (Map.Entry<String,String> entry : appProps.entrySet()) {
-            appPropsProperties.put(entry.getKey(), entry.getValue().replaceAll("\\Q{dollar}\\E", "\\$"));
+            appPropsProperties.put(entry.getKey(), entry.getValue().replace("{dollar}", "$"));
         }
 
         try (Writer writer = new FileWriter(appPropsFile.toFile())) {

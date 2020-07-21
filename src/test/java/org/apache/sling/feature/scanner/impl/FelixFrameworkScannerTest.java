@@ -91,7 +91,8 @@ public class FelixFrameworkScannerTest {
         FelixFrameworkScanner ffs = new FelixFrameworkScanner();
 
         Map<String,String> kvmap = new HashMap<>();
-        kvmap.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.foo.bar;version=\"{dollar}{java.specification.version}\"");
+        kvmap.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.foo.bar;version=\"{dollar}{java.specification.version}\","
+                + "org.zaa.zaa;version=\"{dollar}{java.class.version}\"");
         kvmap.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, "ding.dong;ding.dong=\"yeah!\"");
         kvmap.put("felix.systempackages.substitution", "true");
 
@@ -117,6 +118,16 @@ public class FelixFrameworkScannerTest {
             }
         }
         assertTrue(foundFooBar);
+
+        String classVersion = System.getProperty("java.class.version");
+        boolean foundZaaZaa = false;
+        for (PackageInfo pi : exportedPackages) {
+            if (pi.getName().equals("org.zaa.zaa")) {
+                assertTrue(pi.getVersion().startsWith(classVersion));
+                foundZaaZaa = true;
+            }
+        }
+        assertTrue(foundZaaZaa);
 
         Set<Capability> providedCaps = bundleDescriptor.getCapabilities();
         assertFalse(providedCaps.isEmpty());
