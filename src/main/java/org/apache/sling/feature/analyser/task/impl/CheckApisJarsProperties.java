@@ -53,6 +53,9 @@ public class CheckApisJarsProperties implements AnalyserTask {
     /** Links for javadocs. */
     private static final String JAVADOC_LINKS = "javadoc-links";
 
+    /** Additional artifacts for javadoc classpath */
+    private static final String JAVADOC_CLASSPATH = "javadoc-classpath";
+
     @Override
     public String getId() {
         return "apis-jar";
@@ -69,6 +72,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
             validateSourceInfo(ctx, artifact);
             checkIdValidity(ctx, artifact, SCM_IDS);
             checkIdValidity(ctx, artifact, API_IDS);
+            checkIdValidity(ctx, artifact, JAVADOC_CLASSPATH);
             checkJavadocLinks(ctx, artifact);
         }
     }
