@@ -20,8 +20,14 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 
+import javax.json.JsonObject;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 
@@ -56,6 +62,38 @@ public class CheckApisJarsProperties implements AnalyserTask {
     /** Additional artifacts for javadoc classpath */
     private static final String JAVADOC_CLASSPATH = "javadoc-classpath";
 
+    private static final String EXTENSION_NAME = "apis-jar-config";
+
+    private static final String PROP_API_VERSION = "api-version";
+
+    private static final String PROP_JAVADOC_SOURCE_LEVEL = "javadoc-source-level";
+
+    private static final String PROP_LICENSE_REPORT = "license-report";
+
+    private static final String PROP_MANIFEST_ENTRIES = "manifest-entries";
+
+    private static final String PROP_CLASSIFIER_MAPPINGS = "classifier-mappings";
+
+    private static final String PROP_REGION_MAPPINGS = "region-mappings";
+
+    private static final String PROP_BUNDLE_RESOURCES = "bundle-resources";
+
+    private static final String PROP_BUNDLE_RESOURCE_FOLDERS = "bundle-resource-folders";
+
+    private static final String PROP_JAVADOC_CLASSPATH_TOPS = "javadoc-classpath-tops";
+
+    private static final String PROP_JAVADOC_CLASSPATH_HIGHEST_VERSIONS = "javadoc-classpath-highest-versions";
+
+    private static final String PROP_JAVADOC_CLASSPATH_REMOVALS = "javadoc-classpath-removals";
+
+    private static final String PROP_JAVADOC_LINKS = "javadoc-links";
+
+    private static final String PROP_LICENSE_DEFAULTS = "license-defaults";
+
+    private static final String PROP_LICENSE_FOOTER = "license-footer";
+
+    private static final String PROP_LICENSE_HEADER = "license-header";
+
     @Override
     public String getId() {
         return "apis-jar";
@@ -74,6 +112,89 @@ public class CheckApisJarsProperties implements AnalyserTask {
             checkIdValidity(ctx, artifact, API_IDS);
             checkIdValidity(ctx, artifact, JAVADOC_CLASSPATH);
             checkJavadocLinks(ctx, artifact);
+        }
+        checkExtension(ctx);
+    }
+
+    private void checkExtension(final AnalyserTaskContext ctx) {
+        final Extension ext = ctx.getFeature().getExtensions().getByName(EXTENSION_NAME);
+        if ( ext != null ) {
+            if ( ext.getType() != ExtensionType.JSON ) {
+                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" is not of type JSON"));
+            } else {
+                final JsonObject obj = ext.getJSONStructure().asJsonObject();
+                checkStringType(ctx, obj, PROP_API_VERSION);
+                checkStringType(ctx, obj, PROP_JAVADOC_SOURCE_LEVEL);
+                checkStringType(ctx, obj, PROP_LICENSE_REPORT);
+                checkStringArrayType(ctx, obj, PROP_BUNDLE_RESOURCES);
+                checkStringArrayType(ctx, obj, PROP_BUNDLE_RESOURCE_FOLDERS);
+                checkStringArrayType(ctx, obj, PROP_JAVADOC_CLASSPATH_TOPS);
+                checkStringArrayType(ctx, obj, PROP_JAVADOC_CLASSPATH_HIGHEST_VERSIONS);
+                checkStringArrayType(ctx, obj, PROP_JAVADOC_CLASSPATH_REMOVALS);
+                checkStringArrayType(ctx, obj, PROP_JAVADOC_LINKS);
+                checkStringArrayType(ctx, obj, PROP_LICENSE_DEFAULTS);
+                checkStringMapType(ctx, obj, PROP_MANIFEST_ENTRIES);
+                checkStringMapType(ctx, obj, PROP_CLASSIFIER_MAPPINGS);
+                checkStringMapType(ctx, obj, PROP_REGION_MAPPINGS);
+                checkStringOrStringArrayType(ctx, obj, PROP_LICENSE_FOOTER);
+                checkStringOrStringArrayType(ctx, obj, PROP_LICENSE_HEADER);
+            }
+        }
+    }
+
+    private void checkStringType(final AnalyserTaskContext ctx, final JsonObject obj, final String propName) {
+        if ( obj.containsKey(propName) ) {
+            final JsonValue val = obj.get(propName);
+            if ( val.getValueType() != ValueType.STRING ) {
+                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : property ").concat(propName).concat(" is not of type String"));
+            }
+        }
+    }
+
+    private void checkStringArrayType(final AnalyserTaskContext ctx, final JsonObject obj, final String propName) {
+        if ( obj.containsKey(propName) ) {
+            final JsonValue val = obj.get(propName);
+            if ( val.getValueType() != ValueType.ARRAY ) {
+                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : property ").concat(propName).concat(" is not of type Array"));
+            } else {
+                boolean hasNonStringValue = false;
+                for(final JsonValue v : val.asJsonArray()) {
+                    if ( v.getValueType() != ValueType.STRING ) {
+                        hasNonStringValue = true;
+                    }
+                }
+                if ( hasNonStringValue ) {
+                    ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : array ").concat(propName).concat(" contains non string values"));
+                }
+            }
+        }
+    }
+
+    private void checkStringOrStringArrayType(final AnalyserTaskContext ctx, final JsonObject obj, final String propName) {
+        if ( obj.containsKey(propName) ) {
+            final JsonValue val = obj.get(propName);
+            if ( val.getValueType() != ValueType.STRING ) {
+                checkStringArrayType(ctx, obj, propName);
+            }
+        }
+    }
+
+    private void checkStringMapType(final AnalyserTaskContext ctx, final JsonObject obj, final String propName) {
+        if ( obj.containsKey(propName) ) {
+            final JsonValue val = obj.get(propName);
+            if ( val.getValueType() != ValueType.OBJECT ) {
+                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : property ").concat(propName).concat(" is not of type Object"));
+            } else {
+                boolean hasNonStringValue = false;
+                for(final JsonValue v : val.asJsonObject().values()) {
+                    if ( v.getValueType() != ValueType.STRING ) {
+                        hasNonStringValue = true;
+                   }
+                }
+                if ( hasNonStringValue ) {
+                    ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : object ").concat(propName).concat(" contains non string values"));
+                }
+            }
         }
     }
 
