@@ -170,6 +170,7 @@ public class ContentPackageScanner {
                                 }
 
                                 final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
+                                bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
                                 bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PACKAGE,
