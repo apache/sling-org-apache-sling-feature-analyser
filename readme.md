@@ -18,8 +18,7 @@ The Analyser can also be run as part of a maven build via the `slingfeature-mave
 
 The following analysers are defined:
 
-* `bundle-packages`: Checks bundle import/export package statements for consistency and completeness. If API Regions are used this analyser includes this 
-information as part of the check, to ensure that bundles don't import packages of which they have no visibility because of API Regions restrictions.
+* `bundle-packages`: Checks bundle import/export package statements for consistency and completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
 
 * `bundle-content`: Gives a warning if a bundle container initial content specified with `Sling-Initial-Content`.
 
