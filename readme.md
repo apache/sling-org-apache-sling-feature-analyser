@@ -28,7 +28,7 @@ The following analysers are defined:
 
 * `requirements-capabilities`: Checks bundle requirements/capabilities for consistency and completeness.
 
-* `apis-jar`: validates that the `sourceId` property of a bundle, if defined, is a comma-separated value list of artifact ids.
+* `apis-jar`: This analyser validates that the entries related to Apis Jar are valid.
 
 Additional analysers in relation to Feature Model API Regions can be found here: https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions
 
