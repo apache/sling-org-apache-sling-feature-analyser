@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.apache.sling.feature.ArtifactResolution;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -172,13 +171,13 @@ public class CheckBundleExportsImports implements AnalyserTask {
                 ctx.reportWarning(key + " is exporting package(s) " + getPackageInfo(entry.getValue().importWithoutVersion, false) + " without a version.");
             }
 
-            if ( !entry.getValue().missingExports.isEmpty() && entry.getKey().getArtifact().getResolution() == ArtifactResolution.MANDATORY) {
+            if ( !entry.getValue().missingExports.isEmpty() ) {
                 ctx.reportError(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
                         String.valueOf(entry.getKey().getArtifact().getStartOrder())
                         + " but no bundle is exporting these for that start level.");
                 errorReported = true;
             }
-            if ( !entry.getValue().missingExportsWithVersion.isEmpty() && entry.getKey().getArtifact().getResolution() == ArtifactResolution.MANDATORY ) {
+            if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
                 ctx.reportError(key + " is importing package(s) "
                         + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level "
                         + String.valueOf(entry.getKey().getArtifact().getStartOrder())
