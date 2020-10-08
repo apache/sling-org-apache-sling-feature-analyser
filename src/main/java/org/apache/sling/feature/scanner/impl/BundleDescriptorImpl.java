@@ -62,19 +62,31 @@ public class BundleDescriptorImpl
     /** The corresponding artifact from the feature. */
     private final Artifact artifact;
 
+    private static Manifest getManifest(URL file) throws IOException {
+        try (JarFile jarFile = IOUtils.getJarFileFromURL(file, true, null)) {
+            return jarFile.getManifest();
+        }
+    }
+
     public BundleDescriptorImpl(final Artifact a,
             final URL file,
             final int startLevel) throws IOException  {
+        this(a, file, getManifest(file), startLevel);
+    }
+
+    public BundleDescriptorImpl(final Artifact a,
+                                final URL file,
+                                final Manifest manifest,
+                                final int startLevel) throws IOException  {
         super(a.getId().toMvnId());
         this.artifact = a;
-        this.artifactFile = file;
         this.startLevel = startLevel;
-        try (final JarFile jarFile = IOUtils.getJarFileFromURL(this.artifactFile, true, null)) {
-            this.manifest = jarFile.getManifest();
-        }
-        if ( this.manifest == null ) {
+        this.artifactFile = file;
+        if ( manifest == null ) {
             throw new IOException("File has no manifest");
         }
+        this.manifest = new Manifest(manifest);
+
         this.analyze();
         this.lock();
     }
