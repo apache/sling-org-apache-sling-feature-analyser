@@ -18,9 +18,14 @@ package org.apache.sling.feature.analyser;
 
 import java.util.List;
 
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.osgi.annotation.versioning.ProviderType;
+
 /**
  * The result returned by the analyser
  */
+@ProviderType
 public interface AnalyserResult {
 
     /**
@@ -34,4 +39,18 @@ public interface AnalyserResult {
      * @return A list of errors might be empty
      */
     List<String> getErrors();
+
+    /**
+     * Return the feature descriptor created during scanning
+     * @return The feature descriptor
+     * @since 1.2.0
+     */
+    FeatureDescriptor getFeatureDescriptor();
+
+    /**
+     * Return the framework descriptor created during scanning if available
+     * @return The framework descriptor or {@code null}.
+     * @since 1.2.0
+     */
+    BundleDescriptor getFrameworkDescriptor();
 }

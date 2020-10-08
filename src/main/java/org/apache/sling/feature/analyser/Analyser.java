@@ -53,29 +53,29 @@ public class Analyser {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private final Map<String, Map<String,String>> configurations;
+    private final Map<String, Map<String, String>> configurations;
 
     /**
      * Create new analyser with a provided scanner and the tasks to run
+     * 
      * @param scanner The scanner
-     * @param tasks The tasks to run
+     * @param tasks   The tasks to run
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner,
-            final AnalyserTask...tasks) throws IOException {
+    public Analyser(final Scanner scanner, final AnalyserTask... tasks) throws IOException {
         this(scanner, Collections.emptyMap(), tasks);
     }
 
     /**
      * Create a new analyser with a provided scanner, tasks and configurations
-     * @param scanner The scanner
+     * 
+     * @param scanner        The scanner
      * @param configurations The configurations for the tasks
-     * @param tasks The tasks
+     * @param tasks          The tasks
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner,
-            final Map<String, Map<String,String>> configurations,
-            final AnalyserTask...tasks) throws IOException {
+    public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
+            final AnalyserTask... tasks) throws IOException {
         this.tasks = tasks;
         this.configurations = configurations;
         this.scanner = scanner;
@@ -83,63 +83,63 @@ public class Analyser {
 
     /**
      * Create a new analyser with the provided scanner and task class names
-     * @param scanner The scanner
+     * 
+     * @param scanner        The scanner
      * @param taskClassNames The task class names
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner,
-            final String... taskClassNames)
-    throws IOException {
+    public Analyser(final Scanner scanner, final String... taskClassNames) throws IOException {
         this(scanner, Collections.emptyMap(), taskClassNames);
     }
 
-   /**
-     * Create a new analyser with a provided scanner, task class names and configurations
-     * @param scanner The scanner
+    /**
+     * Create a new analyser with a provided scanner, task class names and
+     * configurations
+     * 
+     * @param scanner        The scanner
      * @param configurations The configurations for the tasks
      * @param taskClassNames The task class names
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner,
-            final Map<String, Map<String,String>> configurations,
-            final String... taskClassNames)
-    throws IOException {
+    public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
+            final String... taskClassNames) throws IOException {
         this(scanner, configurations, getTasksByClassName(taskClassNames));
-        if ( this.tasks.length != taskClassNames.length ) {
+        if (this.tasks.length != taskClassNames.length) {
             throw new IOException("Couldn't find all tasks " + Arrays.toString(taskClassNames));
         }
     }
 
     /**
-     * Create a new analyser with a provided scanner and includes/excludes for the task ids
-     * @param scanner The scanner
+     * Create a new analyser with a provided scanner and includes/excludes for the
+     * task ids
+     * 
+     * @param scanner  The scanner
      * @param includes The includes for the task ids
      * @param excludes The excludes for the task ids
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner,
-                    final Set<String> includes,
-                    final Set<String> excludes) throws IOException {
+    public Analyser(final Scanner scanner, final Set<String> includes, final Set<String> excludes) throws IOException {
         this(scanner, Collections.emptyMap(), includes, excludes);
     }
 
-   /**
-     * Create a new analyser with a provided scanner and includes/excludes for the task ids and configuration
-     * @param scanner The scanner
+    /**
+     * Create a new analyser with a provided scanner and includes/excludes for the
+     * task ids and configuration
+     * 
+     * @param scanner        The scanner
      * @param configurations The configurations for the tasks
-     * @param includes The includes for the task ids
-     * @param excludes The excludes for the task ids
+     * @param includes       The includes for the task ids
+     * @param excludes       The excludes for the task ids
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner,
-            final Map<String, Map<String,String>> configurations,
-                    final Set<String> includes,
-                    final Set<String> excludes) throws IOException {
+    public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
+            final Set<String> includes, final Set<String> excludes) throws IOException {
         this(scanner, configurations, getTasksByIds(includes, excludes));
     }
 
     /**
      * Create a new analyser with the provided scanner and use all available tasks
+     * 
      * @param scanner The scanner
      * @throws IOException If setting up the analyser fails
      */
@@ -149,6 +149,7 @@ public class Analyser {
 
     /**
      * Analyse the feature
+     * 
      * @param feature The feature to analyse
      * @return The analyser result
      * @throws Exception If analysing fails
@@ -159,8 +160,9 @@ public class Analyser {
 
     /**
      * Analyse the feature using the provided framework artifact
+     * 
      * @param feature The feature to analyse
-     * @param fwk The OSGi framework artifact
+     * @param fwk     The OSGi framework artifact
      * @return The analyser result
      * @throws Exception If analysing fails
      */
@@ -168,28 +170,30 @@ public class Analyser {
         return analyse(feature, fwk, null);
     }
 
-   /**
+    /**
      * Analyse the feature using the provided framework artifact
-     * @param feature The feature to analyse
-     * @param fwk The OSGi framework artifact
+     * 
+     * @param feature         The feature to analyse
+     * @param fwk             The OSGi framework artifact
      * @param featureProvider Optional provider to resolve features (if required)
      * @return The analyser result
      * @throws Exception If analysing fails
-     */    
-    public AnalyserResult analyse(final Feature feature, final ArtifactId fwk,
-            final FeatureProvider featureProvider) throws Exception {
+     */
+    public AnalyserResult analyse(final Feature feature, final ArtifactId fwk, final FeatureProvider featureProvider)
+            throws Exception {
         logger.info("Starting analyzing feature '{}'...", feature.getId());
 
         final FeatureDescriptor featureDesc = scanner.scan(feature);
         BundleDescriptor bd = null;
         ArtifactId framework = fwk;
-        if ( framework == null ) {
-            final ExecutionEnvironmentExtension ext = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
-            if ( ext != null && ext.getFramework() != null ) {
+        if (framework == null) {
+            final ExecutionEnvironmentExtension ext = ExecutionEnvironmentExtension
+                    .getExecutionEnvironmentExtension(feature);
+            if (ext != null && ext.getFramework() != null) {
                 framework = ext.getFramework().getId();
             }
         }
-        if ( framework != null ) {
+        if (framework != null) {
             bd = scanner.scan(framework, feature.getFrameworkProperties());
         }
         final BundleDescriptor fwkDesc = bd;
@@ -198,10 +202,10 @@ public class Analyser {
         final List<String> errors = new ArrayList<>();
 
         // execute analyser tasks
-        for(final AnalyserTask task : tasks) {
+        for (final AnalyserTask task : tasks) {
             logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
-            final Map<String,String> taskConfiguration = getConfiguration(task.getId());
+            final Map<String, String> taskConfiguration = getConfiguration(task.getId());
 
             task.execute(new AnalyserTaskContext() {
 
@@ -226,7 +230,7 @@ public class Analyser {
                 }
 
                 @Override
-                public Map<String,String> getConfiguration() {
+                public Map<String, String> getConfiguration() {
                     return taskConfiguration;
                 }
 
@@ -242,10 +246,8 @@ public class Analyser {
             });
         }
 
-        logger.info("Analyzing feature '"
-                    + feature.getId()
-                + "' finished : " + warnings.size() + " warnings, " + errors.size()
-                + " errors.");
+        logger.info("Analyzing feature '" + feature.getId() + "' finished : " + warnings.size() + " warnings, "
+                + errors.size() + " errors.");
 
         return new AnalyserResult() {
 
@@ -257,6 +259,16 @@ public class Analyser {
             @Override
             public List<String> getErrors() {
                 return errors;
+            }
+
+            @Override
+            public FeatureDescriptor getFeatureDescriptor() {
+                return featureDesc;
+            }
+
+            @Override
+            public BundleDescriptor getFrameworkDescriptor() {
+                return fwkDesc;
             }
         };
     }
