@@ -16,13 +16,7 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
@@ -30,9 +24,15 @@ import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
+import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.Scanner;
 import org.junit.Test;
 import org.osgi.framework.Version;
+
+import static org.junit.Assert.*;
 
 public class BundleDescriptorImplTest
 {
@@ -59,6 +59,18 @@ public class BundleDescriptorImplTest
         assertEquals(2, infos.size());
         assertPackageInfo(infos ,"org.apache.sling", Version.parseVersion("1.0"));
         assertPackageInfo(infos,"org.apache.felix", Version.parseVersion("2.0"));
+    }
+
+    @Test
+    public void testBundleManifest() throws Exception {
+        Feature feature = FeatureJSONReader.read(new InputStreamReader(getClass().getResourceAsStream("/metadata-feature.json")), null);
+        Scanner scanner = new Scanner(artifactId -> null);
+        FeatureDescriptor descriptor = scanner.scan(feature);
+        assertEquals(feature.getBundles().size(), descriptor.getBundleDescriptors().size());
+        assertNull(descriptor.getBundleDescriptors().iterator().next().getArtifactFile());
+        assertEquals("2.0", descriptor.getBundleDescriptors().stream()
+                .filter(b -> b.getBundleSymbolicName().equals("log4j.over.slf4j")).findFirst().get()
+                .getManifest().getMainAttributes().getValue("Manifest-Version"));
     }
 
     private File createBundle(String manifest) throws IOException

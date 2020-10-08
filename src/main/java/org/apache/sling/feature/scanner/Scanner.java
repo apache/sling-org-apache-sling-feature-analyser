@@ -16,14 +16,12 @@
  */
 package org.apache.sling.feature.scanner;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,6 +35,9 @@ import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+
+import javax.json.JsonObject;
+import javax.json.JsonValue;
 
 /**
  * The scanner is a service that scans items and provides descriptions for
@@ -141,11 +142,14 @@ public class Scanner {
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
             final URL file = artifactProvider.provide(bundle.getId());
-            if (file == null) {
+            if (bundle.getMetadata().containsKey("bundle-manifest")) {
+                Manifest mf = new Manifest(new ByteArrayInputStream(bundle.getMetadata().get("bundle-manifest").getBytes("UTF-8")));
+                desc = new BundleDescriptorImpl(bundle, file, mf, startLevel);
+            } else if (file != null) {
+                desc = new BundleDescriptorImpl(bundle, file, startLevel);
+            } else {
                 throw new IOException("Unable to find file for " + bundle.getId());
             }
-
-            desc = new BundleDescriptorImpl(bundle, file, startLevel);
             this.cache.put(key, desc);
         }
         return desc;
@@ -176,6 +180,9 @@ public class Scanner {
     private void scanExtensions(final Feature f, final ContainerDescriptor desc)
     throws IOException {
         for (final Extension ext : f.getExtensions()) {
+            if (ext.getName().equals("analyser-metadata")) {
+                continue;
+            }
             ContainerDescriptor extDesc = null;
             for(final ExtensionScanner scanner : this.extensionScanners) {
                 extDesc = scanner.scan(f, ext, this.artifactProvider);
@@ -222,6 +229,7 @@ public class Scanner {
         if (desc == null) {
             desc = new FeatureDescriptorImpl(feature);
 
+            populateCache(feature);
             getBundleInfos(feature.getBundles(), desc);
             scanExtensions(feature, desc);
 
@@ -232,6 +240,36 @@ public class Scanner {
             this.cache.put(key, desc);
         }
         return desc;
+    }
+
+
+    private void populateCache(Feature feature) throws IOException {
+        Extension extension = feature.getExtensions().getByName("analyser-metadata");
+        if (extension != null) {
+            JsonObject json = extension.getJSONStructure().asJsonObject();
+            for (Map.Entry<String, JsonValue> entry : json.entrySet()) {
+                ArtifactId id = ArtifactId.fromMvnId(entry.getKey());
+                if (feature.getBundles().containsExact(id)) {
+                    Artifact bundle = feature.getBundles().getExact(id);
+                    final String key = id.toMvnId().concat(":")
+                            .concat(String.valueOf(bundle.getStartOrder())).concat(":")
+                            .concat(Stream.of(bundle.getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.joining(",")));
+                    if (this.cache.get(key) == null) {
+                        JsonObject headers = entry.getValue().asJsonObject();
+                        if (headers.containsKey("manifest")) {
+                            final URL file = artifactProvider.provide(id);
+                            Manifest manifest = new Manifest();
+                            JsonObject manifestHeaders = headers.getJsonObject("manifest");
+                            for (String name : manifestHeaders.keySet()) {
+                                manifest.getMainAttributes().putValue(name, manifestHeaders.getString(name));
+                            }
+                            BundleDescriptor desc = new BundleDescriptorImpl(bundle, file, manifest, bundle.getStartOrder());
+                            this.cache.put(key, desc);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     /**
