@@ -142,14 +142,11 @@ public class Scanner {
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
             final URL file = artifactProvider.provide(bundle.getId());
-            if (bundle.getMetadata().containsKey("bundle-manifest")) {
-                Manifest mf = new Manifest(new ByteArrayInputStream(bundle.getMetadata().get("bundle-manifest").getBytes("UTF-8")));
-                desc = new BundleDescriptorImpl(bundle, file, mf, startLevel);
-            } else if (file != null) {
-                desc = new BundleDescriptorImpl(bundle, file, startLevel);
-            } else {
+            if (file == null) {
                 throw new IOException("Unable to find file for " + bundle.getId());
             }
+
+            desc = new BundleDescriptorImpl(bundle, file, startLevel);
             this.cache.put(key, desc);
         }
         return desc;
