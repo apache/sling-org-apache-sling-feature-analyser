@@ -18,9 +18,20 @@ package org.apache.sling.feature.analyser;
 
 import java.util.List;
 
+/**
+ * The result returned by the analyser
+ */
 public interface AnalyserResult {
 
+    /**
+     * List of warnings. Warnings can be used to improve the feature.
+     * @return A list of warnings might be empty.
+     */
     List<String> getWarnings();
 
+    /**
+     * List of errors. Errors should be fixed in the feature
+     * @return A list of errors might be empty
+     */
     List<String> getErrors();
 }

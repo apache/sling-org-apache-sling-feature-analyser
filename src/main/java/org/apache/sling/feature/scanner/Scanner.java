@@ -16,7 +16,6 @@
  */
 package org.apache.sling.feature.scanner;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
