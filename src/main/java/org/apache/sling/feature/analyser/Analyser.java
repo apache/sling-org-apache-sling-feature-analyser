@@ -114,8 +114,8 @@ public class Analyser {
      * task ids
      * 
      * @param scanner  The scanner
-     * @param includes The includes for the task ids
-     * @param excludes The excludes for the task ids
+     * @param includes The includes for the task ids - can be {@code null}
+     * @param excludes The excludes for the task ids - can be {@code null}
      * @throws IOException If setting up the analyser fails
      */
     public Analyser(final Scanner scanner, final Set<String> includes, final Set<String> excludes) throws IOException {
@@ -128,8 +128,8 @@ public class Analyser {
      * 
      * @param scanner        The scanner
      * @param configurations The configurations for the tasks
-     * @param includes       The includes for the task ids
-     * @param excludes       The excludes for the task ids
+     * @param includes       The includes for the task ids - can be {@code null}
+     * @param excludes       The excludes for the task ids - can be {@code null}
      * @throws IOException If setting up the analyser fails
      */
     public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
