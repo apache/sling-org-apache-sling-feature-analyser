@@ -253,7 +253,13 @@ public class Scanner {
                     if (this.cache.get(key) == null) {
                         JsonObject headers = entry.getValue().asJsonObject();
                         if (headers.containsKey("manifest")) {
-                            final URL file = artifactProvider.provide(id);
+                            URL file;
+                            try {
+                                file = artifactProvider.provide(id);
+                            } catch (Exception ex) {
+                                // Ignore, as we have the metadata cached we assume getting the file is a best effort.
+                                file = null;
+                            }
                             Manifest manifest = new Manifest();
                             JsonObject manifestHeaders = headers.getJsonObject("manifest");
                             for (String name : manifestHeaders.keySet()) {
