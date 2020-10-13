@@ -49,6 +49,8 @@ public class CheckUnusedBundles implements AnalyserTask {
 
                 final Set<PackageInfo> exports = new HashSet<>(info.getExportedPackages());
                 
+                final Set<String> optionalImports = new HashSet<>();
+
                 // find importing bundle
                 for(final BundleDescriptor inner : ctx.getFeatureDescriptor().getBundleDescriptors()) {
                     if ( inner == info ) {
@@ -64,7 +66,11 @@ public class CheckUnusedBundles implements AnalyserTask {
                             
                             if ( expPck.getName().equals(impPck.getName())) {
                                 if ( impPck.getVersion() == null || impPck.getPackageVersionRange().includes(expPck.getPackageVersion()) ) {
-                                    found = true;
+                                    if ( impPck.isOptional() ) {
+                                        optionalImports.add(impPck.getName());
+                                    } else {
+                                        found = true;
+                                    }
                                     break;
                                 }
                             }
@@ -82,7 +88,11 @@ public class CheckUnusedBundles implements AnalyserTask {
                 }
 
                 if ( exports.size() == info.getExportedPackages().size() ) {
-                    ctx.reportWarning("Exports from bundle ".concat(info.getArtifact().getId().toMvnId()).concat(" are not imported by any other bundle."));
+                    if ( !optionalImports.isEmpty() ) {
+                        ctx.reportWarning("Exports from bundle ".concat(info.getArtifact().getId().toMvnId()).concat(" are only imported optionally by other bundles."));
+                    } else {
+                        ctx.reportWarning("Exports from bundle ".concat(info.getArtifact().getId().toMvnId()).concat(" are not imported by any other bundle."));
+                    }
                 }
 
             }
