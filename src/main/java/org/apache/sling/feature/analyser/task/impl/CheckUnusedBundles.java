@@ -89,9 +89,9 @@ public class CheckUnusedBundles implements AnalyserTask {
 
                 if ( exports.size() == info.getExportedPackages().size() ) {
                     if ( !optionalImports.isEmpty() ) {
-                        ctx.reportWarning("Exports from bundle ".concat(info.getArtifact().getId().toMvnId()).concat(" are only imported optionally by other bundles."));
+                        ctx.reportArtifactWarning(info.getArtifact().getId(), "Exports from bundle are only imported optionally by other bundles.");
                     } else {
-                        ctx.reportWarning("Exports from bundle ".concat(info.getArtifact().getId().toMvnId()).concat(" are not imported by any other bundle."));
+                        ctx.reportArtifactWarning(info.getArtifact().getId(), "Exports from bundle are not imported by any other bundle.");
                     }
                 }
 

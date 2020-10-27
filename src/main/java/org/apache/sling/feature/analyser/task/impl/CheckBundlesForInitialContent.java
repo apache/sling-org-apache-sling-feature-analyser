@@ -56,7 +56,7 @@ public class CheckBundlesForInitialContent implements AnalyserTask {
             final List<String> initialContent = extractInitialContent(info.getManifest());
 
             if ( !initialContent.isEmpty() ) {
-                ctx.reportWarning("Found initial content in " + info.getArtifact() + " : " + initialContent);
+                ctx.reportArtifactWarning(info.getArtifact().getId(), "Found initial content : " + initialContent);
             }
         }
     }

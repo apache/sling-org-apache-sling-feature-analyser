@@ -74,20 +74,24 @@ public class CheckContentPackagesDependencies implements AnalyserTask {
 
     private void onDescriptor(AnalyserTaskContext ctx, ArtifactDescriptor descriptor, Map<PackageId, Dependency[]> dependenciesMap) throws Exception {
         URL resourceUrl = descriptor.getArtifactFile();
-        File artifactFile = IOUtils.getFileFromURL(resourceUrl, true, null);
-        if (!artifactFile.exists() || !artifactFile.isFile()) {
-            ctx.reportError("Artifact file " + artifactFile + " does not exist or it is not a file");
-            return;
-        }
+        if (resourceUrl != null) {
+            File artifactFile = IOUtils.getFileFromURL(resourceUrl, true, null);
+            if (!artifactFile.exists() || !artifactFile.isFile()) {
+                ctx.reportArtifactError(descriptor.getArtifact().getId(), "Artifact file " + artifactFile + " does not exist or it is not a file");
+                return;
+            }
 
-        try (VaultPackage vaultPackage = packageManager.open(artifactFile, true)) {
-            PackageId packageId = vaultPackage.getId();
+            try (VaultPackage vaultPackage = packageManager.open(artifactFile, true)) {
+                PackageId packageId = vaultPackage.getId();
 
-            logger.debug("Collecting " + packageId + " dependencies...");
+                logger.debug("Collecting " + packageId + " dependencies...");
 
-            dependenciesMap.put(packageId, vaultPackage.getDependencies());
+                dependenciesMap.put(packageId, vaultPackage.getDependencies());
 
-            logger.debug(packageId + " dependencies collected.");
+                logger.debug(packageId + " dependencies collected.");
+            }
+        } else {
+            ctx.reportArtifactError(descriptor.getArtifact().getId(), "Ignoring " + descriptor.getName() + " as file could not be found");
         }
     }
 

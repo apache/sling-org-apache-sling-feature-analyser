@@ -36,7 +36,7 @@ public abstract class ArtifactDescriptor extends Descriptor {
 
     /**
      * Get the artifact file
-     * @return The artifact file
+     * @return The artifact file or <code>null</code> if not present.
      */
     public abstract URL getArtifactFile();
 

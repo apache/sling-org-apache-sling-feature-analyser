@@ -75,8 +75,8 @@ public class CheckBundleExportsImportsTest {
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
         t.execute(ctx);
 
-        Mockito.verify(ctx, Mockito.times(2)).reportError(Mockito.anyString());
-        Mockito.verify(ctx).reportError(Mockito.contains("org.foo.e"));
+        Mockito.verify(ctx, Mockito.times(1)).reportArtifactError(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx).reportArtifactError(Mockito.any(), Mockito.contains("org.foo.e"));
         Mockito.verify(ctx).reportError(Mockito.contains("marked as 'complete'"));
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
@@ -118,8 +118,8 @@ public class CheckBundleExportsImportsTest {
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
         t.execute(ctx);
 
-        Mockito.verify(ctx).reportError(Mockito.contains("org.foo.e"));
-        Mockito.verify(ctx, Mockito.times(1)).reportError(Mockito.anyString());
+        Mockito.verify(ctx).reportArtifactError(Mockito.any(), Mockito.contains("org.foo.e"));
+        Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
 

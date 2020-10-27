@@ -55,7 +55,7 @@ public class CheckBundlesForResources implements AnalyserTask {
         for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             final List<String> bundleResources = extractBundleResources(info.getManifest());
             if ( !bundleResources.isEmpty() ) {
-                ctx.reportWarning("Found bundle resources in " + info.getArtifact() + " : " + bundleResources);
+                ctx.reportArtifactWarning(info.getArtifact().getId(), "Found bundle resources : " + bundleResources);
             }
         }
     }

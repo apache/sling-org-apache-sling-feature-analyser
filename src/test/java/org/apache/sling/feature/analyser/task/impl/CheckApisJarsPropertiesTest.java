@@ -53,6 +53,30 @@ public class CheckApisJarsPropertiesTest {
         }
 
         @Override
+        public void reportArtifactWarning(ArtifactId artifactId, String message) {
+            System.out.println("[WARN] " + message);
+            warnings.add(message);
+        }
+
+        @Override
+        public void reportArtifactError(ArtifactId artifactId, String message) {
+            System.out.println("[ERROR] " + message);
+            errors.add(message);
+        }
+
+        @Override
+        public void reportExtensionWarning(String extension, String message) {
+            System.out.println("[WARN] " + message);
+            warnings.add(message);
+        }
+
+        @Override
+        public void reportExtensionError(String extension, String message) {
+            System.out.println("[ERROR] " + message);
+            errors.add(message);
+        }
+
+        @Override
         public void reportError(String message) {
             System.out.println("[ERROR] " + message);
             errors.add(message);

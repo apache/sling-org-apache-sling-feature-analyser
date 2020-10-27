@@ -53,12 +53,16 @@ public class CheckContentPackageForInstallables implements AnalyserTask {
         }
 
         for (final ContentPackageDescriptor cp : contentPackages) {
+            if (cp.getArtifactFile() ==  null) {
+                ctx.reportArtifactError(cp.getArtifact().getId(), "Content package " + cp.getName() + " is not resolved and can not be checked.");
+                continue;
+            }
             if (!cp.hasEmbeddedArtifacts() || cp.isEmbeddedInContentPackage()) {
                 continue;
             }
 
-            ctx.reportError("Content package " + cp.getName() + " (" + cp.getArtifact().getId().toMvnId()
-                    + " ) contains " + String.valueOf(cp.bundles.size()) + " bundles and "
+            ctx.reportArtifactError(cp.getArtifact().getId(), "Content package " + cp.getName() +
+                    " contains " + String.valueOf(cp.bundles.size()) + " bundles and "
                     + String.valueOf(cp.configs.size()) + " configurations.");
 
         }

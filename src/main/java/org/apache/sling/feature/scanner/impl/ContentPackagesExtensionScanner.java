@@ -27,9 +27,11 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
-
+    private static final Logger logger = LoggerFactory.getLogger(ContentPackageScanner.class);
     @Override
     public String getId() {
         return Extension.EXTENSION_NAME_CONTENT_PACKAGES;
@@ -56,15 +58,27 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
         final ContainerDescriptor cd = new ContainerDescriptor(feature.getId().toMvnId() + "(" + getId() + ")") {};
 
         for(final Artifact a : extension.getArtifacts()) {
-            final URL file = provider.provide(a.getId());
-            if ( file == null ) {
-                throw new IOException("Unable to find file for " + a.getId());
+            URL file = null;
+            try {
+                file = provider.provide(a.getId());
+            } catch (Exception ex) {
+                logger.debug("Unable to get artifact file for: " + a.getId(), ex);
             }
 
-            final Set<ContentPackageDescriptor> pcks = scanner.scan(a, file);
-            for(final ContentPackageDescriptor desc : pcks) {
+            if (file != null) {
+                final Set<ContentPackageDescriptor> pcks = scanner.scan(a, file);
+                for (final ContentPackageDescriptor desc : pcks) {
+                    cd.getArtifactDescriptors().add(desc);
+                    cd.getBundleDescriptors().addAll(desc.bundles);
+                }
+            }
+            else {
+                ContentPackageDescriptor desc = new ContentPackageDescriptor(a.getId().toMvnUrl());
+                final int lastDot = a.getId().toMvnPath().lastIndexOf(".");
+                desc.setName(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot));
+                desc.setArtifact(a);
+                desc.lock();
                 cd.getArtifactDescriptors().add(desc);
-                cd.getBundleDescriptors().addAll(desc.bundles);
             }
         }
 

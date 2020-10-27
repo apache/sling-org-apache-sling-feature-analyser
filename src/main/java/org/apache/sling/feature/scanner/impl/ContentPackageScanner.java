@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class ContentPackageScanner {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger logger = LoggerFactory.getLogger(ContentPackageScanner.class);
 
     private final byte[] buffer = new byte[65536];
 
@@ -54,18 +54,19 @@ public class ContentPackageScanner {
     }
 
     public Set<ContentPackageDescriptor> scan(final Artifact desc, final URL file) throws IOException {
-
         final Set<ContentPackageDescriptor> contentPackages = new HashSet<>();
-        final ContentPackageDescriptor cp = new ContentPackageDescriptor(file.getPath());
-        final int lastDot = file.getPath().lastIndexOf(".");
-        cp.setName(file.getPath().substring(file.getPath().lastIndexOf("/") + 1, lastDot));
-        cp.setArtifact(desc);
-        cp.setArtifactFile(file);
+        if (file != null) {
+            final ContentPackageDescriptor cp = new ContentPackageDescriptor(file.getPath());
+            final int lastDot = file.getPath().lastIndexOf(".");
+            cp.setName(file.getPath().substring(file.getPath().lastIndexOf("/") + 1, lastDot));
+            cp.setArtifact(desc);
+            cp.setArtifactFile(file);
 
-        extractContentPackage(cp, contentPackages, file);
+            extractContentPackage(cp, contentPackages, file);
 
-        contentPackages.add(cp);
-        cp.lock();
+            contentPackages.add(cp);
+            cp.lock();
+        }
 
         return contentPackages;
     }

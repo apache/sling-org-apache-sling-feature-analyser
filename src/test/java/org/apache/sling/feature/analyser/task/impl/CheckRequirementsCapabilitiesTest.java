@@ -93,7 +93,7 @@ public class CheckRequirementsCapabilitiesTest {
         CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
         crc.execute(ctx);
 
-        Mockito.verify(ctx).reportError(Mockito.contains("org.foo.bar"));
+        Mockito.verify(ctx).reportArtifactError(Mockito.any(), Mockito.contains("org.foo.bar"));
     }
 
     @Test

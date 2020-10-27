@@ -44,7 +44,7 @@ public class CheckBundleNativeCode implements AnalyserTask {
 
             final String nativeCode = mf.getMainAttributes().getValue(Constants.BUNDLE_NATIVECODE);
             if ( nativeCode != null ) {
-                ctx.reportError("Found native code instruction in bundle ".concat(descriptor.getArtifact().getId().toMvnId()).concat(" : ").concat(nativeCode) );
+                ctx.reportArtifactError(descriptor.getArtifact().getId(), "Found native code instruction in bundle: ".concat(nativeCode) );
             }
         }
     }
