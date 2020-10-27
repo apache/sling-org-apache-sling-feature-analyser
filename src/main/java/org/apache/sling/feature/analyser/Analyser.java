@@ -244,42 +244,42 @@ public class Analyser {
 
                 @Override
                 public void reportWarning(final String message) {
-                    if (analyserMetaDataExtension != null && analyserMetaDataExtension.reportWarning(feature.getId())) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
                         globalWarnings.add(new AnalyserResult.GlobalReport(message));
                     }
                 }
 
                 @Override
                 public void reportArtifactWarning(ArtifactId artifactId, String message) {
-                    if (analyserMetaDataExtension != null && analyserMetaDataExtension.reportWarning(artifactId) && analyserMetaDataExtension.reportWarning(feature.getId())) {
+                    if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportWarning(artifactId) && analyserMetaDataExtension.reportWarning(feature.getId()))) {
                         artifactWarnings.add(new AnalyserResult.ArtifactReport(artifactId, message));
                     }
                 }
 
                 @Override
                 public void reportArtifactError(ArtifactId artifactId, String message) {
-                    if (analyserMetaDataExtension != null && analyserMetaDataExtension.reportError(artifactId)&& analyserMetaDataExtension.reportError(feature.getId())) {
+                    if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportError(artifactId) && analyserMetaDataExtension.reportError(feature.getId()))) {
                         artifactErrors.add(new AnalyserResult.ArtifactReport(artifactId, message));
                     }
                 }
 
                 @Override
                 public void reportExtensionWarning(String extension, String message) {
-                    if (analyserMetaDataExtension != null && analyserMetaDataExtension.reportWarning(feature.getId())) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
                         extensionWarnings.add(new AnalyserResult.ExtensionReport(extension, message));
                     }
                 }
 
                 @Override
                 public void reportExtensionError(String extension, String message) {
-                    if (analyserMetaDataExtension != null && analyserMetaDataExtension.reportError(feature.getId())) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportError(feature.getId())) {
                         extensionErrors.add(new AnalyserResult.ExtensionReport(extension, message));
                     }
                 }
 
                 @Override
                 public void reportError(final String message) {
-                    if (analyserMetaDataExtension != null && analyserMetaDataExtension.reportError(feature.getId())) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportError(feature.getId())) {
                         globalErrors.add(new AnalyserResult.GlobalReport(message));
                     }
                 }
