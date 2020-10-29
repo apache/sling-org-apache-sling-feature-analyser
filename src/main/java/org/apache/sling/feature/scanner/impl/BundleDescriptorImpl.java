@@ -21,10 +21,13 @@ import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.resource.ResourceBuilder;
 import org.apache.felix.utils.resource.ResourceImpl;
 import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
@@ -44,6 +47,11 @@ import java.util.stream.Collectors;
 public class BundleDescriptorImpl
     extends BundleDescriptor {
 
+    private static final Logger logger = LoggerFactory.getLogger(BundleDescriptorImpl.class);
+
+    /** The provider to use if now file is given up-front **/
+    private final ArtifactProvider artifactProvider;
+
     /** The bundle symbolic name. */
     private String symbolicName;
 
@@ -59,6 +67,7 @@ public class BundleDescriptorImpl
     /** The physical file for analyzing. */
     private final URL artifactFile;
 
+
     /** The corresponding artifact from the feature. */
     private final Artifact artifact;
 
@@ -71,17 +80,26 @@ public class BundleDescriptorImpl
     public BundleDescriptorImpl(final Artifact a,
             final URL file,
             final int startLevel) throws IOException  {
-        this(a, file, getManifest(file), startLevel);
+        this(a, file, null, getManifest(file), startLevel);
+    }
+
+    public BundleDescriptorImpl(final Artifact a,
+                                final ArtifactProvider provider,
+                                final Manifest manifest,
+                                final int startLevel) throws IOException {
+        this(a, null, provider, manifest, startLevel);
     }
 
     public BundleDescriptorImpl(final Artifact a,
                                 final URL file,
+                                final ArtifactProvider provider,
                                 final Manifest manifest,
                                 final int startLevel) throws IOException  {
         super(a.getId().toMvnId());
         this.artifact = a;
         this.startLevel = startLevel;
         this.artifactFile = file;
+        this.artifactProvider = provider;
         if ( manifest == null ) {
             throw new IOException("File has no manifest");
         }
@@ -120,7 +138,16 @@ public class BundleDescriptorImpl
 
     @Override
     public URL getArtifactFile() {
-        return artifactFile;
+        URL result = null;
+        if (artifactFile == null && artifactProvider != null) {
+            try {
+                result = artifactProvider.provide(artifact.getId());
+            } catch (Exception ex) {
+                // Ignore, we assume this is a best effort and callers can handle a null.
+                logger.debug("Unable to get artifact file for: " + artifact.getId(), ex);
+            }
+        }
+        return result;
     }
 
     @Override

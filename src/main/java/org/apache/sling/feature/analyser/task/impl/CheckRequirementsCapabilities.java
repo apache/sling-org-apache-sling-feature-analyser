@@ -27,6 +27,7 @@ import org.apache.felix.utils.resource.CapabilitySet;
 import org.apache.felix.utils.resource.RequirementImpl;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
+import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.Descriptor;
 import org.osgi.framework.wiring.BundleRevision;
@@ -105,7 +106,12 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                             {
                                 if (!RequirementImpl.isOptional(requirement))
                                 {
-                                    ctx.reportError(String.format(format, info.getName(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level."));
+                                    String message = String.format(format, info.getName(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level.");
+                                    if (info instanceof ArtifactDescriptor) {
+                                        ctx.reportArtifactError(((ArtifactDescriptor) info).getArtifact().getId(), message);
+                                    } else {
+                                        ctx.reportError(message);
+                                    }
                                     errorReported = true;
                                 }
                                 else

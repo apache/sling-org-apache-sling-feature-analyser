@@ -120,7 +120,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
         final Extension ext = ctx.getFeature().getExtensions().getByName(EXTENSION_NAME);
         if ( ext != null ) {
             if ( ext.getType() != ExtensionType.JSON ) {
-                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" is not of type JSON"));
+                ctx.reportExtensionError(EXTENSION_NAME,"is not of type JSON");
             } else {
                 final JsonObject obj = ext.getJSONStructure().asJsonObject();
                 checkStringType(ctx, obj, PROP_API_VERSION);
@@ -146,7 +146,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
         if ( obj.containsKey(propName) ) {
             final JsonValue val = obj.get(propName);
             if ( val.getValueType() != ValueType.STRING ) {
-                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : property ").concat(propName).concat(" is not of type String"));
+                ctx.reportExtensionError(EXTENSION_NAME,"property ".concat(propName).concat(" is not of type String"));
             }
         }
     }
@@ -155,7 +155,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
         if ( obj.containsKey(propName) ) {
             final JsonValue val = obj.get(propName);
             if ( val.getValueType() != ValueType.ARRAY ) {
-                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : property ").concat(propName).concat(" is not of type Array"));
+                ctx.reportExtensionError(EXTENSION_NAME,"property ".concat(propName).concat(" is not of type Array"));
             } else {
                 boolean hasNonStringValue = false;
                 for(final JsonValue v : val.asJsonArray()) {
@@ -164,7 +164,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
                     }
                 }
                 if ( hasNonStringValue ) {
-                    ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : array ").concat(propName).concat(" contains non string values"));
+                    ctx.reportExtensionError(EXTENSION_NAME,"array ".concat(propName).concat(" contains non string values"));
                 }
             }
         }
@@ -183,7 +183,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
         if ( obj.containsKey(propName) ) {
             final JsonValue val = obj.get(propName);
             if ( val.getValueType() != ValueType.OBJECT ) {
-                ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : property ").concat(propName).concat(" is not of type Object"));
+                ctx.reportExtensionError(EXTENSION_NAME,"property ".concat(propName).concat(" is not of type Object"));
             } else {
                 boolean hasNonStringValue = false;
                 for(final JsonValue v : val.asJsonObject().values()) {
@@ -192,7 +192,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
                    }
                 }
                 if ( hasNonStringValue ) {
-                    ctx.reportError("Extension ".concat(EXTENSION_NAME).concat(" : object ").concat(propName).concat(" contains non string values"));
+                    ctx.reportExtensionError(EXTENSION_NAME,"object ".concat(propName).concat(" contains non string values"));
                 }
             }
         }
@@ -209,7 +209,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
                         // at the moment we can not validate the availability of the artifact since there is no access to Maven APIs
                         ArtifactId.parse(el);
                     } catch ( IllegalArgumentException e) {
-                        ctx.reportError("Bundle " + a.getId().toMvnId() + " has invalid " + propName + " entry '" + el + "' : " + e.getMessage());
+                        ctx.reportArtifactError(a.getId()," has invalid " + propName + " entry '" + el + "' : " + e.getMessage());
                     }
                 });
         }
@@ -225,7 +225,7 @@ public class CheckApisJarsProperties implements AnalyserTask {
                 try {
                     new URL(v);
                 } catch ( final MalformedURLException mue) {
-                    ctx.reportError("Bundle " + a.getId().toMvnId() + " has invalid javadoc links URL : " + v);
+                    ctx.reportArtifactError(a.getId(),"has invalid javadoc links URL : " + v);
                 }
             }
         }
@@ -246,9 +246,8 @@ public class CheckApisJarsProperties implements AnalyserTask {
             count++;
         }
         if ( count > 1 ) {
-            ctx.reportError("Bundle ".concat(artifact.getId().toMvnId())
-                    .concat(" should either define ")
-                    .concat(SCM_LOCATION).concat(", ")
+            ctx.reportArtifactError(artifact.getId(),
+                    "should either define ".concat(SCM_LOCATION).concat(", ")
                     .concat(SCM_CLASSIFIER).concat(", or")
                     .concat(SCM_IDS).concat(" - but only one of them."));
         }

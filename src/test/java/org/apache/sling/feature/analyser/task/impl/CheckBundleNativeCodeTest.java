@@ -68,7 +68,7 @@ public class CheckBundleNativeCodeTest {
         fdAddBundle(fd, "g:b1:1", "something");
         task.execute(ctx);
 
-        Mockito.verify(ctx, Mockito.times(1)).reportError(Mockito.anyString());
+        Mockito.verify(ctx, Mockito.times(1)).reportArtifactError(Mockito.any(), Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
 

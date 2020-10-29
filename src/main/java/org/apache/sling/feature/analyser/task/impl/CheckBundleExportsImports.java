@@ -165,20 +165,20 @@ public class CheckBundleExportsImports implements AnalyserTask {
             final String key = "Bundle " + entry.getKey().getArtifact().getId().getArtifactId() + ":" + entry.getKey().getArtifact().getId().getVersion();
 
             if ( !entry.getValue().importWithoutVersion.isEmpty() ) {
-                ctx.reportWarning(key + " is importing package(s) " + getPackageInfo(entry.getValue().importWithoutVersion, false) + " without specifying a version range.");
+                ctx.reportArtifactWarning(entry.getKey().getArtifact().getId(), " is importing package(s) " + getPackageInfo(entry.getValue().importWithoutVersion, false) + " without specifying a version range.");
             }
             if ( !entry.getValue().exportWithoutVersion.isEmpty() ) {
-                ctx.reportWarning(key + " is exporting package(s) " + getPackageInfo(entry.getValue().importWithoutVersion, false) + " without a version.");
+                ctx.reportArtifactWarning(entry.getKey().getArtifact().getId(), " is exporting package(s) " + getPackageInfo(entry.getValue().importWithoutVersion, false) + " without a version.");
             }
 
             if ( !entry.getValue().missingExports.isEmpty() ) {
-                ctx.reportError(key + " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
+                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
                         String.valueOf(entry.getKey().getArtifact().getStartOrder())
                         + " but no bundle is exporting these for that start level.");
                 errorReported = true;
             }
             if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
-                ctx.reportError(key + " is importing package(s) "
+                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), " is importing package(s) "
                         + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level "
                         + String.valueOf(entry.getKey().getArtifact().getStartOrder())
                         + " but no bundle is exporting these for that start level in the required version range.");

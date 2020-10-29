@@ -29,14 +29,12 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
-
-import javax.json.JsonObject;
-import javax.json.JsonValue;
 
 /**
  * The scanner is a service that scans items and provides descriptions for
@@ -176,7 +174,7 @@ public class Scanner {
     private void scanExtensions(final Feature f, final ContainerDescriptor desc)
     throws IOException {
         for (final Extension ext : f.getExtensions()) {
-            if (ext.getName().equals("analyser-metadata")) {
+            if (AnalyserMetaDataExtension.isAnalyserMetaDataExtension(ext)) {
                 continue;
             }
             ContainerDescriptor extDesc = null;
@@ -240,34 +238,21 @@ public class Scanner {
 
 
     private void populateCache(Feature feature) throws IOException {
-        Extension extension = feature.getExtensions().getByName("analyser-metadata");
+        AnalyserMetaDataExtension extension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(feature);
+
         if (extension != null) {
-            JsonObject json = extension.getJSONStructure().asJsonObject();
-            for (Map.Entry<String, JsonValue> entry : json.entrySet()) {
-                ArtifactId id = ArtifactId.fromMvnId(entry.getKey());
-                if (feature.getBundles().containsExact(id)) {
-                    Artifact bundle = feature.getBundles().getExact(id);
-                    final String key = id.toMvnId().concat(":")
-                            .concat(String.valueOf(bundle.getStartOrder())).concat(":")
-                            .concat(Stream.of(bundle.getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.joining(",")));
-                    if (this.cache.get(key) == null) {
-                        JsonObject headers = entry.getValue().asJsonObject();
-                        if (headers.containsKey("manifest")) {
-                            URL file;
-                            try {
-                                file = artifactProvider.provide(id);
-                            } catch (Exception ex) {
-                                // Ignore, as we have the metadata cached we assume getting the file is a best effort.
-                                file = null;
-                            }
-                            Manifest manifest = new Manifest();
-                            JsonObject manifestHeaders = headers.getJsonObject("manifest");
-                            for (String name : manifestHeaders.keySet()) {
-                                manifest.getMainAttributes().putValue(name, manifestHeaders.getString(name));
-                            }
-                            BundleDescriptor desc = new BundleDescriptorImpl(bundle, file, manifest, bundle.getStartOrder());
-                            this.cache.put(key, desc);
-                        }
+            for (Artifact bundle : feature.getBundles()) {
+                ArtifactId id = bundle.getId();
+                final String key = id.toMvnId().concat(":")
+                        .concat(String.valueOf(bundle.getStartOrder())).concat(":")
+                        .concat(Stream.of(bundle.getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.joining(",")));
+                if (this.cache.get(key) == null) {
+                    Map<String, String> headers = extension.getManifest(id);
+                    if (headers != null) {
+                        Manifest manifest = new Manifest();
+                        headers.forEach(manifest.getMainAttributes()::putValue);
+                        BundleDescriptor desc = new BundleDescriptorImpl(bundle, artifactProvider, manifest, bundle.getStartOrder());
+                        this.cache.put(key, desc);
                     }
                 }
             }

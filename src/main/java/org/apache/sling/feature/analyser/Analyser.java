@@ -32,6 +32,7 @@ import java.util.Set;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.ExecutionEnvironmentExtension;
 import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.builder.FeatureProvider;
@@ -198,8 +199,15 @@ public class Analyser {
         }
         final BundleDescriptor fwkDesc = bd;
 
-        final List<String> warnings = new ArrayList<>();
-        final List<String> errors = new ArrayList<>();
+        final List<AnalyserResult.GlobalReport> globalWarnings = new ArrayList<>();
+        final List<AnalyserResult.ArtifactReport> artifactWarnings = new ArrayList<>();
+        final List<AnalyserResult.ExtensionReport> extensionWarnings = new ArrayList<>();
+
+        final List<AnalyserResult.GlobalReport> globalErrors = new ArrayList<>();
+        final List<AnalyserResult.ArtifactReport> artifactErrors = new ArrayList<>();
+        final List<AnalyserResult.ExtensionReport> extensionErrors = new ArrayList<>();
+
+        AnalyserMetaDataExtension analyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(feature);
 
         // execute analyser tasks
         for (final AnalyserTask task : tasks) {
@@ -236,29 +244,80 @@ public class Analyser {
 
                 @Override
                 public void reportWarning(final String message) {
-                    warnings.add(message);
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
+                        globalWarnings.add(new AnalyserResult.GlobalReport(message));
+                    }
+                }
+
+                @Override
+                public void reportArtifactWarning(ArtifactId artifactId, String message) {
+                    if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportWarning(artifactId) && analyserMetaDataExtension.reportWarning(feature.getId()))) {
+                        artifactWarnings.add(new AnalyserResult.ArtifactReport(artifactId, message));
+                    }
+                }
+
+                @Override
+                public void reportArtifactError(ArtifactId artifactId, String message) {
+                    if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportError(artifactId) && analyserMetaDataExtension.reportError(feature.getId()))) {
+                        artifactErrors.add(new AnalyserResult.ArtifactReport(artifactId, message));
+                    }
+                }
+
+                @Override
+                public void reportExtensionWarning(String extension, String message) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
+                        extensionWarnings.add(new AnalyserResult.ExtensionReport(extension, message));
+                    }
+                }
+
+                @Override
+                public void reportExtensionError(String extension, String message) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportError(feature.getId())) {
+                        extensionErrors.add(new AnalyserResult.ExtensionReport(extension, message));
+                    }
                 }
 
                 @Override
                 public void reportError(final String message) {
-                    errors.add(message);
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportError(feature.getId())) {
+                        globalErrors.add(new AnalyserResult.GlobalReport(message));
+                    }
                 }
             });
         }
 
-        logger.info("Analyzing feature '" + feature.getId() + "' finished : " + warnings.size() + " warnings, "
-                + errors.size() + " errors.");
+        logger.info("Analyzing feature '" + feature.getId() + "' finished : " + globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size()  + " warnings, "
+                + globalErrors.size() + artifactErrors.size() + extensionErrors.size() + " errors.");
 
         return new AnalyserResult() {
-
             @Override
-            public List<String> getWarnings() {
-                return warnings;
+            public List<GlobalReport> getGlobalWarnings() {
+                return globalWarnings;
             }
 
             @Override
-            public List<String> getErrors() {
-                return errors;
+            public List<ArtifactReport> getArtifactWarnings() {
+                return artifactWarnings;
+            }
+
+            @Override
+            public List<ExtensionReport> getExtensionWarnings() {
+                return extensionWarnings;
+            }
+
+            @Override
+            public List<GlobalReport> getGlobalErrors() {
+                return globalErrors;
+            }
+
+            @Override
+            public List<ArtifactReport> getArtifactErrors() {
+                return artifactErrors;
+            }
+
+            @Override
+            public List<ExtensionReport> getExtensionErrors() {
+                return extensionErrors;
             }
 
             @Override

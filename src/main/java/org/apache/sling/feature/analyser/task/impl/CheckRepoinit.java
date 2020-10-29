@@ -51,7 +51,7 @@ public class CheckRepoinit implements AnalyserTask {
         final Extension ext = ctx.getFeature().getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
         if ( ext != null ) {
             if ( ext.getType() != ExtensionType.TEXT ) {
-                ctx.reportError("Repoinit extension must be of type TEXT");
+                ctx.reportExtensionError(Extension.EXTENSION_NAME_REPOINIT, "Repoinit extension must be of type TEXT");
             } else  {
                 check(ctx, "extension", ext.getText());
             }
@@ -89,7 +89,7 @@ public class CheckRepoinit implements AnalyserTask {
         try {
             parser.parse(new StringReader(contents));
         } catch ( RepoInitParsingException e) {
-            ctx.reportError("Parsing error in repoinit from ".concat(id).concat(" : ").concat(e.getMessage()));
+            ctx.reportExtensionError(Extension.EXTENSION_NAME_REPOINIT, "Parsing error in repoinit from ".concat(id).concat(" : ").concat(e.getMessage()));
         }
     }
 }

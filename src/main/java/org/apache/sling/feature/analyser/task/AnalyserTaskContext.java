@@ -16,6 +16,7 @@
  */
 package org.apache.sling.feature.analyser.task;
 
+import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -61,16 +62,50 @@ public interface AnalyserTaskContext {
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report
-     * a warning.
+     * a global warning.
      * @param message The message.
      */
     void reportWarning(String message);
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report
-     * an error.
+     * an artifact warning.
+     * @param artifactId the artifactid
+     * @param message The message.
+     */
+    void reportArtifactWarning(ArtifactId artifactId, String message);
+
+    /**
+     * This method is invoked by a {@link AnalyserTask} to report
+     * an artifact error.
+     * @param artifactId the artifactid
+     * @param message The message.
+     */
+    void reportArtifactError(ArtifactId artifactId, String message);
+
+    /**
+     * This method is invoked by a {@link AnalyserTask} to report
+     * an extension warning.
+     * @param extension the extension.
+     * @param message The message.
+     */
+    void reportExtensionWarning(String extension, String message);
+
+    /**
+     * This method is invoked by a {@link AnalyserTask} to report
+     * an extension error.
+     * @param extension the extension.
+     * @param message The message.
+     */
+    void reportExtensionError(String extension, String message);
+
+    /**
+     * This method is invoked by a {@link AnalyserTask} to report
+     * a global error.
      * @param message The message.
      */
     void reportError(String message);
+
+
 }
 

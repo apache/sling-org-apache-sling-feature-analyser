@@ -141,6 +141,26 @@ public class CheckRepoinitTest {
         }
 
         @Override
+        public void reportArtifactWarning(ArtifactId artifactId, String message) {
+
+        }
+
+        @Override
+        public void reportArtifactError(ArtifactId artifactId, String message) {
+            errors.add(message);
+        }
+
+        @Override
+        public void reportExtensionWarning(String extension, String message) {
+
+        }
+
+        @Override
+        public void reportExtensionError(String extension, String message) {
+            errors.add(message);
+        }
+
+        @Override
         public void reportError(String message) {
             errors.add(message);
         }

@@ -31,7 +31,7 @@ import java.util.ServiceLoader;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.junit.Test;
 
-public final class AnalyzerTaskProviderTest {
+public final class AnalyserTaskProviderTest {
 
     private static int allTasks() {
         int size = 0;
