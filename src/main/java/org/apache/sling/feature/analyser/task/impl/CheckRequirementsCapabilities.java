@@ -116,12 +116,22 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                                 }
                                 else
                                 {
-                                    ctx.reportWarning(String.format(format, info.getName(), requirement.toString(), entry.getKey(), "while the requirement is optional no artifact is providing a matching capability in this start level."));
+                                    String message = String.format(format, info.getName(), requirement.toString(), entry.getKey(), "while the requirement is optional no artifact is providing a matching capability in this start level.");
+                                    if (info instanceof ArtifactDescriptor) {
+                                        ctx.reportArtifactWarning(((ArtifactDescriptor) info).getArtifact().getId(), message);
+                                    } else {
+                                        ctx.reportWarning(message);
+                                    }
                                 }
                             }
                             else if (candidates.size() > 1)
                             {
-                                ctx.reportWarning(String.format(format, info.getName(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level: " + candidates));
+                                String message = String.format(format, info.getName(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level: " + candidates);
+                                if (info instanceof ArtifactDescriptor) {
+                                    ctx.reportArtifactWarning(((ArtifactDescriptor) info).getArtifact().getId(), message);
+                                } else {
+                                    ctx.reportWarning(message);
+                                }
                             }
                         }
                     }
