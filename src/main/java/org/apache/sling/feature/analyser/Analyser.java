@@ -58,7 +58,7 @@ public class Analyser {
 
     /**
      * Create new analyser with a provided scanner and the tasks to run
-     * 
+     *
      * @param scanner The scanner
      * @param tasks   The tasks to run
      * @throws IOException If setting up the analyser fails
@@ -69,7 +69,7 @@ public class Analyser {
 
     /**
      * Create a new analyser with a provided scanner, tasks and configurations
-     * 
+     *
      * @param scanner        The scanner
      * @param configurations The configurations for the tasks
      * @param tasks          The tasks
@@ -84,7 +84,7 @@ public class Analyser {
 
     /**
      * Create a new analyser with the provided scanner and task class names
-     * 
+     *
      * @param scanner        The scanner
      * @param taskClassNames The task class names
      * @throws IOException If setting up the analyser fails
@@ -96,7 +96,7 @@ public class Analyser {
     /**
      * Create a new analyser with a provided scanner, task class names and
      * configurations
-     * 
+     *
      * @param scanner        The scanner
      * @param configurations The configurations for the tasks
      * @param taskClassNames The task class names
@@ -113,7 +113,7 @@ public class Analyser {
     /**
      * Create a new analyser with a provided scanner and includes/excludes for the
      * task ids
-     * 
+     *
      * @param scanner  The scanner
      * @param includes The includes for the task ids - can be {@code null}
      * @param excludes The excludes for the task ids - can be {@code null}
@@ -126,7 +126,7 @@ public class Analyser {
     /**
      * Create a new analyser with a provided scanner and includes/excludes for the
      * task ids and configuration
-     * 
+     *
      * @param scanner        The scanner
      * @param configurations The configurations for the tasks
      * @param includes       The includes for the task ids - can be {@code null}
@@ -140,7 +140,7 @@ public class Analyser {
 
     /**
      * Create a new analyser with the provided scanner and use all available tasks
-     * 
+     *
      * @param scanner The scanner
      * @throws IOException If setting up the analyser fails
      */
@@ -150,7 +150,7 @@ public class Analyser {
 
     /**
      * Analyse the feature
-     * 
+     *
      * @param feature The feature to analyse
      * @return The analyser result
      * @throws Exception If analysing fails
@@ -161,7 +161,7 @@ public class Analyser {
 
     /**
      * Analyse the feature using the provided framework artifact
-     * 
+     *
      * @param feature The feature to analyse
      * @param fwk     The OSGi framework artifact
      * @return The analyser result
@@ -173,7 +173,7 @@ public class Analyser {
 
     /**
      * Analyse the feature using the provided framework artifact
-     * 
+     *
      * @param feature         The feature to analyse
      * @param fwk             The OSGi framework artifact
      * @param featureProvider Optional provider to resolve features (if required)
@@ -286,8 +286,11 @@ public class Analyser {
             });
         }
 
-        logger.info("Analyzing feature '" + feature.getId() + "' finished : " + globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size()  + " warnings, "
-                + globalErrors.size() + artifactErrors.size() + extensionErrors.size() + " errors.");
+        int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size();
+        int allErrors = globalErrors.size() + artifactErrors.size() + extensionErrors.size();
+        logger.info("Analyzing feature '" + feature.getId() + "' finished : "
+                + allWarnings + " warnings, "
+                + allErrors + " errors.");
 
         return new AnalyserResult() {
             @Override
