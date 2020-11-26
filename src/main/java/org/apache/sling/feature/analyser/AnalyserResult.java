@@ -39,10 +39,10 @@ public interface AnalyserResult {
             this.key = key;
             this.value = value;
         }
-        T getKey() {
+        public T getKey() {
             return key;
         }
-        String getValue() {
+        public String getValue() {
             return value;
         }
     }
