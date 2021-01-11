@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.ExecutionEnvironmentExtension;
@@ -216,6 +217,13 @@ public class Analyser {
             final Map<String, String> taskConfiguration = getConfiguration(task.getId());
 
             task.execute(new AnalyserTaskContext() {
+                private final FeatureProvider cachingFeatureProvider = featureProvider != null ? new FeatureProvider() {
+                    private final ConcurrentHashMap<ArtifactId, Feature> cache = new ConcurrentHashMap<>();
+                    @Override
+                    public Feature provide(ArtifactId artifactId) {
+                        return cache.computeIfAbsent(artifactId, key -> featureProvider.provide(artifactId));
+                    }
+                }: null;
 
                 @Override
                 public Feature getFeature() {
@@ -229,7 +237,7 @@ public class Analyser {
 
                 @Override
                 public FeatureProvider getFeatureProvider() {
-                    return featureProvider;
+                    return cachingFeatureProvider;
                 }
 
                 @Override
