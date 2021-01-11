@@ -28,7 +28,9 @@ The following analysers are defined:
 
 * `requirements-capabilities`: Checks bundle requirements/capabilities for consistency and completeness.
 
-* `apis-jar`: This analyser validates that the entries related to Apis Jar are valid.
+* `apis-jar`: Validates that the entries related to Apis Jar are valid.
+
+* `repoinit`: Checks the syntax of all repoinit sections.
 
 Additional analysers in relation to Feature Model API Regions can be found here: https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions
 
