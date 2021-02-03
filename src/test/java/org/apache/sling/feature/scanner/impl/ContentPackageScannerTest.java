@@ -96,7 +96,7 @@ public class ContentPackageScannerTest {
 
     private void assertConfiguration(Configuration c) {
         Dictionary<String, Object> props = c.getProperties();
-        String contentPath = (String) props.get(":configurator:feature:content-path");
-        assertEquals(contentPath, "/libs/config/com.example.some.Component.xml");
+        String contentPath = (String) props.get(":configurator:feature-content-path");
+        assertEquals("/libs/config/com.example.some.Component.xml", contentPath);
     }
 }
