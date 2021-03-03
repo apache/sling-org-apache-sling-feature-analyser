@@ -29,8 +29,14 @@ import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -72,9 +78,25 @@ public class BundleDescriptorImpl
     private final Artifact artifact;
 
     private static Manifest getManifest(URL file) throws IOException {
-        try (JarFile jarFile = IOUtils.getJarFileFromURL(file, true, null)) {
-            return jarFile.getManifest();
+        Manifest manifest = null;
+        try {
+            if ("file".equals(file.getProtocol()) && new File(file.toURI()).isDirectory()) {
+                // it's a directory
+                Path manifestPath = Paths.get(file.toURI()).resolve("META-INF/MANIFEST.MF");
+                if (Files.exists(manifestPath)) {
+                    try (FileInputStream is = new FileInputStream(manifestPath.toFile())) {
+                        manifest = new Manifest(is);
+                    }
+                }
+            } else {
+                try (JarFile jarFile = IOUtils.getJarFileFromURL(file, true, null)) {
+                    manifest = jarFile.getManifest();
+                }
+            }
+        } catch (URISyntaxException e) {
+            throw new IOException("Failed to determine if the file is a directory", e);
         }
+        return manifest;
     }
 
     public BundleDescriptorImpl(final Artifact a,
