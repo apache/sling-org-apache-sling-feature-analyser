@@ -52,6 +52,9 @@ import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
 import org.osgi.resource.Capability;
 
+/**
+ * A scanner for the Apache Felix OSGi framework
+ */
 public class FelixFrameworkScanner implements FrameworkScanner {
 
     @Override

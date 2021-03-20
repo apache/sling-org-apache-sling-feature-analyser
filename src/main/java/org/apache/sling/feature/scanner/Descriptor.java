@@ -47,24 +47,43 @@ public abstract class Descriptor  {
 
     private final Set<Capability> caps = new HashSet<>();
 
+    /**
+     * Constructor for a new descriptor
+     * @param name Name
+     */
     protected Descriptor(String name) {
         this.name = name;
     }
 
+    /**
+     * Lock the descriptor. Once invoked no changes can be made to the descriptor.
+     */
     public void lock() {
         this.locked = true;
     }
 
+    /**
+     * Check if the descriptor is locked
+     * @return {@code true} if locked.
+     */
     public final boolean isLocked() {
         return this.locked;
     }
 
+    /**
+     * Internal method for checking locked state
+     * @throws IllegalStateException If locked
+     */
     protected void checkLocked() {
         if (this.locked) {
             throw new IllegalStateException("Descriptor is locked.");
         }
     }
 
+    /**
+     * Aggregate with data from provided descriptor
+     * @param d The other descriptor
+     */
     protected void aggregate(final Descriptor d) {
         reqs.addAll(d.getRequirements());
         caps.addAll(d.getCapabilities());
@@ -73,14 +92,26 @@ public abstract class Descriptor  {
         exports.addAll(d.getExportedPackages());
     }
 
+    /**
+     * Return a set of exported packages
+     * @return The exported packages. Might be empty.
+     */
     public final Set<PackageInfo> getExportedPackages() {
         return locked ? Collections.unmodifiableSet(exports) : exports;
     }
 
+    /**
+     * Return a set of imported packages
+     * @return The imported packages. Might be empty.
+     */
     public final Set<PackageInfo> getImportedPackages() {
         return locked ? Collections.unmodifiableSet(imports) : imports;
     }
 
+    /**
+     * Return a set of dynamic imported packages
+     * @return The dynamic imported packages. Might be empty.
+     */
     public final Set<PackageInfo> getDynamicImportedPackages() {
         return locked ? Collections.unmodifiableSet(dynImports) : dynImports;
     }

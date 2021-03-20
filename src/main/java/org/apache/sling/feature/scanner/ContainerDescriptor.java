@@ -34,6 +34,10 @@ public abstract class ContainerDescriptor extends Descriptor {
 
     private final Set<ArtifactDescriptor> artifacts = new HashSet<>();
 
+    /**
+     * Constructor for a new descriptor
+     * @param name The name
+     */
     protected ContainerDescriptor(String name) {
         super(name);
     }

@@ -30,17 +30,25 @@ public abstract class FeatureDescriptor extends ContainerDescriptor {
 
     private final Feature feature;
 
-    protected FeatureDescriptor(Feature f) {
+    /**
+     * Constructor for a feature descriptor
+     * @param f The feature
+     */
+    protected FeatureDescriptor(final Feature f) {
         super(f.getId().toMvnId());
         feature = f;
         analyze(f);
     }
 
-    private void analyze(Feature f) {
+    private void analyze(final Feature f) {
         getCapabilities().addAll(f.getCapabilities());
         getRequirements().addAll(f.getRequirements());
     }
 
+    /**
+     * Return the feature
+     * @return The feature
+     */
     public Feature getFeature() {
         return feature;
     }

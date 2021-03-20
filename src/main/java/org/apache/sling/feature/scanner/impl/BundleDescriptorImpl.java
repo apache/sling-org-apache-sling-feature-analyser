@@ -16,19 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import org.apache.felix.utils.manifest.Clause;
-import org.apache.felix.utils.manifest.Parser;
-import org.apache.felix.utils.resource.ResourceBuilder;
-import org.apache.felix.utils.resource.ResourceImpl;
-import org.apache.sling.feature.Artifact;
-import org.apache.sling.feature.builder.ArtifactProvider;
-import org.apache.sling.feature.io.IOUtils;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.PackageInfo;
-import org.osgi.framework.Constants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -46,6 +33,19 @@ import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
+import org.apache.felix.utils.resource.ResourceBuilder;
+import org.apache.felix.utils.resource.ResourceImpl;
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.io.IOUtils;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Constants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Information about a bundle
@@ -77,7 +77,7 @@ public class BundleDescriptorImpl
     /** The corresponding artifact from the feature. */
     private final Artifact artifact;
 
-    private static Manifest getManifest(URL file) throws IOException {
+    static Manifest getManifest(URL file) throws IOException {
         Manifest manifest = null;
         try {
             if ("file".equals(file.getProtocol()) && new File(file.toURI()).isDirectory()) {
@@ -99,28 +99,52 @@ public class BundleDescriptorImpl
         return manifest;
     }
 
-    public BundleDescriptorImpl(final Artifact a,
-            final URL file,
+    /**
+     * Constructor for a new descriptor
+     * @param artifact The artifact
+     * @param url The URL
+     * @param startLevel The start level
+     * @throws IOException If the manifest can't be get
+     */
+    public BundleDescriptorImpl(final Artifact artifact,
+            final URL url,
             final int startLevel) throws IOException  {
-        this(a, file, null, getManifest(file), startLevel);
+        this(artifact, url, null, getManifest(url), startLevel);
     }
 
-    public BundleDescriptorImpl(final Artifact a,
+    /**
+     * Constructor for a new descriptor
+     * @param artifact The artifact
+     * @param provider The artifact provider
+     * @param manifest The manifest
+     * @param startLevel The start level
+     * @throws IOException If the manifest can't be get
+     */
+    public BundleDescriptorImpl(final Artifact artifact,
                                 final ArtifactProvider provider,
                                 final Manifest manifest,
                                 final int startLevel) throws IOException {
-        this(a, null, provider, manifest, startLevel);
+        this(artifact, null, provider, manifest, startLevel);
     }
 
-    public BundleDescriptorImpl(final Artifact a,
-                                final URL file,
+    /**
+     * Constructor for a new descriptor
+     * @param artifact The artifact
+     * @param url The URL
+     * @param provider The artifact provider
+     * @param manifest The manifest
+     * @param startLevel The start level
+     * @throws IOException If the manifest can't be get
+     */
+    public BundleDescriptorImpl(final Artifact artifact,
+                                final URL url,
                                 final ArtifactProvider provider,
                                 final Manifest manifest,
                                 final int startLevel) throws IOException  {
-        super(a.getId().toMvnId());
-        this.artifact = a;
+        super(artifact.getId().toMvnId());
+        this.artifact = artifact;
         this.startLevel = startLevel;
-        this.artifactFile = file;
+        this.artifactFile = url;
         this.artifactProvider = provider;
         if ( manifest == null ) {
             throw new IOException("File has no manifest");
@@ -182,7 +206,7 @@ public class BundleDescriptorImpl
         return this.manifest;
     }
 
-    protected void analyze() throws IOException {
+    private void analyze() throws IOException {
         final String name = this.manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
         if ( name != null ) {
             final String version = this.manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
@@ -213,7 +237,7 @@ public class BundleDescriptorImpl
         }
     }
 
-    public static List<PackageInfo> extractPackages(final Manifest m,
+    private static List<PackageInfo> extractPackages(final Manifest m,
         final String headerName,
         final String defaultVersion,
         final boolean checkOptional) {
@@ -259,15 +283,15 @@ public class BundleDescriptorImpl
         return Collections.emptyList();
     }
 
-    public static List<PackageInfo> extractExportedPackages(final Manifest m) {
+    private static List<PackageInfo> extractExportedPackages(final Manifest m) {
         return extractPackages(m, Constants.EXPORT_PACKAGE, "0.0.0", false);
     }
 
-    public static List<PackageInfo> extractImportedPackages(final Manifest m) {
+    private static List<PackageInfo> extractImportedPackages(final Manifest m) {
         return extractPackages(m, Constants.IMPORT_PACKAGE, null, true);
     }
 
-    public static List<PackageInfo> extractDynamicImportedPackages(final Manifest m) {
+    private static List<PackageInfo> extractDynamicImportedPackages(final Manifest m) {
         return extractPackages(m, Constants.DYNAMICIMPORT_PACKAGE, null, false);
     }
 }

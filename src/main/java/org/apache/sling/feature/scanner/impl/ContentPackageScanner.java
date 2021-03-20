@@ -41,6 +41,9 @@ import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Scan the contents of a content package.
+ */
 public class ContentPackageScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(ContentPackageScanner.class);
@@ -53,16 +56,20 @@ public class ContentPackageScanner {
         PACKAGE
     }
 
-    public Set<ContentPackageDescriptor> scan(final Artifact desc, final URL file) throws IOException {
+    /**
+     * Scan the content package for embedded artifacts
+     * @param artifact The content package
+     * @param url The url to the binary
+     * @return A set of artifacts
+     * @throws IOException If processing fails
+     */
+    public Set<ContentPackageDescriptor> scan(final Artifact artifact, final URL url) throws IOException {
         final Set<ContentPackageDescriptor> contentPackages = new HashSet<>();
-        if (file != null) {
-            final ContentPackageDescriptor cp = new ContentPackageDescriptor(file.getPath());
-            final int lastDot = file.getPath().lastIndexOf(".");
-            cp.setName(file.getPath().substring(file.getPath().lastIndexOf("/") + 1, lastDot));
-            cp.setArtifact(desc);
-            cp.setArtifactFile(file);
+        if (url != null) {
+            final int lastDot = url.getPath().lastIndexOf(".");
+            final ContentPackageDescriptor cp = new ContentPackageDescriptor(url.getPath().substring(url.getPath().lastIndexOf("/") + 1, lastDot), artifact, url);
 
-            extractContentPackage(cp, contentPackages, file);
+            extractContentPackage(cp, contentPackages, url);
 
             contentPackages.add(cp);
             cp.lock();
@@ -200,10 +207,8 @@ public class ContentPackageScanner {
 
                 for (final File f : toProcess) {
                     extractContentPackage(cp, infos, f.toURI().toURL());
-                    final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName());
                     final int lastDot = f.getName().lastIndexOf(".");
-                    i.setName(f.getName().substring(0, lastDot));
-                    i.setArtifactFile(f.toURI().toURL());
+                    final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName().substring(0, lastDot), null, f.toURI().toURL());
                     i.setContentPackageInfo(cp.getArtifact(), f.getName());
                     infos.add(i);
 

@@ -36,10 +36,23 @@ public class PackageInfo implements Comparable<PackageInfo> {
     private final String version;
     private final Set<String> uses;
 
+    /**
+     * Constructor for a package info
+     * @param name package name
+     * @param version package version
+     * @param optional is the package optional
+     */
     public PackageInfo(final String name, final String version, final boolean optional) {
         this(name, version, optional, null);
     }
 
+    /**
+     * Constructor for a package info
+     * @param name package name
+     * @param version package version
+     * @param optional is the package optional
+     * @param uses Optional uses constraints
+     */
     public PackageInfo(final String name, final String version, final boolean optional, Set<String> uses) {
         this.name = name;
         this.version = version;
@@ -47,18 +60,34 @@ public class PackageInfo implements Comparable<PackageInfo> {
         this.uses = uses == null ? Collections.emptySet() : Collections.unmodifiableSet(new HashSet<>(uses));
     }
 
+    /**
+     * The package name
+     * @return The package name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Return the package version
+     * @return The package version
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Return whether the package is optional
+     * @return {@code true} if it is optional
+     */
     public boolean isOptional() {
         return optional;
     }
 
+    /**
+     * Return the package version as a {@link Version} object
+     * @return The version
+     */
     public Version getPackageVersion() {
         if (this.version == null)
             return null;
@@ -66,6 +95,10 @@ public class PackageInfo implements Comparable<PackageInfo> {
         return new Version(this.version);
     }
 
+    /**
+     * Return the version as a version range
+     * @return The version range
+     */
     public VersionRange getPackageVersionRange() {
         if (this.version == null)
             return null;
@@ -73,6 +106,10 @@ public class PackageInfo implements Comparable<PackageInfo> {
         return new VersionRange(this.version);
     }
 
+    /**
+     * Return the uses constraints
+     * @return Optional uses constraints, might be empty
+     */
     public Set<String> getUses() {
         return uses;
     }

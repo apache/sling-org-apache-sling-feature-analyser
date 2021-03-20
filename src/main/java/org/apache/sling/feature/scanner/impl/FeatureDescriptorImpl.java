@@ -26,6 +26,10 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 public class FeatureDescriptorImpl
     extends FeatureDescriptor {
 
+    /**
+     * Constructor for the feature descriptor
+     * @param feature The feature
+     */
     public FeatureDescriptorImpl(final Feature feature) {
         super(feature);
     }

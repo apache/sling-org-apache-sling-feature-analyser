@@ -30,7 +30,11 @@ import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
  */
 public abstract class BundleDescriptor extends ArtifactDescriptor implements Comparable<BundleDescriptor> {
 
-    protected BundleDescriptor(String name) {
+    /**
+     * Constructor for a new descriptor
+     * @param name The name
+     */
+    protected BundleDescriptor(final String name) {
         super(name);
     }
 
@@ -47,8 +51,15 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
     public abstract String getBundleVersion();
 
     /**
+     * Return the bundle manifest
+     * @return The manifest
+     */
+    @Override
+    public abstract Manifest getManifest();
+
+    /**
      * Get the start level
-     * 
+     *
      * @return The start level.
      * @deprecated Use start order of the bundle
      */
@@ -56,11 +67,10 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
     public abstract int getBundleStartLevel();
 
     /**
-     * If the artifact has a manifest, return it
-     * @return The manifest
+     * Is the bundle exporting a package?
+     * @param packageName Package name
+     * @return {@code true} if that package is exported.
      */
-    public abstract Manifest getManifest();
-
     public boolean isExportingPackage(final String packageName) {
         for(final PackageInfo i : getExportedPackages()) {
             if ( i.getName().equals(packageName) ) {
@@ -70,6 +80,11 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
         return false;
     }
 
+    /**
+     * Is the bundle exporting a package?
+     * @param info Package info
+     * @return {@code true} if that package is exported.
+     */
     public boolean isExportingPackage(final PackageInfo info) {
         for(final PackageInfo i : getExportedPackages()) {
             if ( i.getName().equals(info.getName())

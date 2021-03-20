@@ -17,6 +17,7 @@
 package org.apache.sling.feature.scanner;
 
 import java.net.URL;
+import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
 
@@ -30,9 +31,20 @@ import org.apache.sling.feature.Artifact;
  */
 public abstract class ArtifactDescriptor extends Descriptor {
 
-    protected ArtifactDescriptor(String name) {
+    /**
+     * Constructor for a new descriptor
+     * @param name The name
+     */
+    protected ArtifactDescriptor(final String name) {
         super(name);
     }
+
+    /**
+     * If the artifact has a manifest, return it
+     * @return The manifest
+     * @since 2.2.0
+     */
+    public abstract Manifest getManifest();
 
     /**
      * Get the artifact file

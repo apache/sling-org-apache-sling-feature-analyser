@@ -30,7 +30,11 @@ import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Scanner for the content package extension
+ */
 public class ContentPackagesExtensionScanner implements ExtensionScanner {
+
     private static final Logger logger = LoggerFactory.getLogger(ContentPackageScanner.class);
     @Override
     public String getId() {
@@ -58,25 +62,23 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
         final ContainerDescriptor cd = new ContainerDescriptor(feature.getId().toMvnId() + "(" + getId() + ")") {};
 
         for(final Artifact a : extension.getArtifacts()) {
-            URL file = null;
+            URL url = null;
             try {
-                file = provider.provide(a.getId());
+                url = provider.provide(a.getId());
             } catch (Exception ex) {
                 logger.debug("Unable to get artifact file for: " + a.getId(), ex);
             }
 
-            if (file != null) {
-                final Set<ContentPackageDescriptor> pcks = scanner.scan(a, file);
+            if (url != null) {
+                final Set<ContentPackageDescriptor> pcks = scanner.scan(a, url);
                 for (final ContentPackageDescriptor desc : pcks) {
                     cd.getArtifactDescriptors().add(desc);
                     cd.getBundleDescriptors().addAll(desc.bundles);
                 }
             }
             else {
-                ContentPackageDescriptor desc = new ContentPackageDescriptor(a.getId().toMvnUrl());
                 final int lastDot = a.getId().toMvnPath().lastIndexOf(".");
-                desc.setName(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot));
-                desc.setArtifact(a);
+                ContentPackageDescriptor desc = new ContentPackageDescriptor(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot), a, url);
                 desc.lock();
                 cd.getArtifactDescriptors().add(desc);
             }

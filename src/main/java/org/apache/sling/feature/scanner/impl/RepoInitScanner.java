@@ -27,6 +27,9 @@ import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.scanner.ContainerDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 
+/**
+ * A scanner for repo init instructions
+ */
 public class RepoInitScanner implements ExtensionScanner {
     private static final MatchingRequirement REQUIREMENT_REPOINIT = new MatchingRequirementImpl(null,
             "osgi.implementation",

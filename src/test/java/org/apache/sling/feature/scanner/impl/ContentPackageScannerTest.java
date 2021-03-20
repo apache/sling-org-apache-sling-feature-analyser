@@ -50,10 +50,7 @@ public class ContentPackageScannerTest {
 
         artifact = new Artifact(TEST_PACKAGE_AID_A_10);
 
-        test_descriptor = new ContentPackageDescriptor(file.getName());
-        test_descriptor.setName("test-content");
-        test_descriptor.setArtifact(artifact);
-        test_descriptor.setArtifactFile(file.toURI().toURL());
+        test_descriptor = new ContentPackageDescriptor("test-content", artifact, file.toURI().toURL());
     }
 
     @Test
@@ -69,6 +66,7 @@ public class ContentPackageScannerTest {
             } else {
                 assertEquals(name, "sub-content");
             }
+            assertNotNull(desc.getManifest());
         }
     }
 

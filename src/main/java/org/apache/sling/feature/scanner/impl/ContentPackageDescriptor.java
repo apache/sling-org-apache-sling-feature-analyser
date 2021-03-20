@@ -16,19 +16,19 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.scanner.ArtifactDescriptor;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 
 /**
  * Information about a content package.
  */
-public class ContentPackageDescriptor extends ArtifactDescriptor {
+public class ContentPackageDescriptor extends ArtifactDescriptorImpl {
 
     /**
      * The metadata added to bundles and configurations for the package they are in.
@@ -40,64 +40,30 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
      */
     public static final String METADATA_PATH = "content-path";
 
-    /** The content package name. */
-    private String name;
-
     /** Bundles in the content package. */
     public final List<BundleDescriptor> bundles = new ArrayList<>();
 
     /** Configurations in the content package. */
     public final List<Configuration> configs = new ArrayList<>();
 
-    private URL artifactFile;
-
-    private Artifact artifact;
-
-    public ContentPackageDescriptor(String name) {
-        super(name);
-    }
-
-    /**
-     * Get the artifact file
-     * @return The artifact file
-     */
-    @Override
-    public URL getArtifactFile() {
-        return artifactFile;
-    }
-
-    /**
-     * Get the artifact
-     * @return The artifact
-     */
-    @Override
-    public Artifact getArtifact() {
-        return artifact;
-    }
-
-    /**
-     * Set the artifact
-     * @param artifact The artifact
-     */
-    public void setArtifact(Artifact artifact) {
-        checkLocked();
-        this.artifact = artifact;
-    }
-
-    /**
-     * Set the artifact file
-     * @param artifactFile The artifact file
-     */
-    public void setArtifactFile(URL artifactFile) {
-        checkLocked();
-        this.artifactFile = artifactFile;
-    }
-
     /** Optional: the artifact of the content package. */
     private Artifact contentPackage;
 
     /** Optional: the path inside of the content package. */
     private String contentPath;
+
+    /**
+     * Constructor for the descriptor
+     * @param name The name
+     * @param artifact The artifact
+     * @param url The url to the binary
+     * @throws IOException If processing fails
+     */
+    public ContentPackageDescriptor(final String name,
+            final Artifact artifact,
+            final URL url) throws IOException  {
+        super(name, artifact, url, true);
+    }
 
     /**
      * Get the content package
@@ -134,24 +100,17 @@ public class ContentPackageDescriptor extends ArtifactDescriptor {
         this.contentPath = path;
     }
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    public void setName(final String value) {
-        checkLocked();
-        this.name = value;
-    }
-
-
+    /**
+     * Check whether the package has embedded artifacts
+     * @return {@code true} if the package has embedded artifacts
+     */
     public boolean hasEmbeddedArtifacts() {
         return !this.bundles.isEmpty() || !this.configs.isEmpty();
     }
 
     @Override
     public String toString() {
-        return "ContentPackage [" + name + "]";
+        return "ContentPackage [" + getName() + "]";
     }
 }
 
