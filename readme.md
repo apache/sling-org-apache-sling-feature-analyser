@@ -32,6 +32,8 @@ The following analysers are defined:
 
 * `repoinit`: Checks the syntax of all repoinit sections.
 
+* `feature-id`: Checks if the used feature id matches one of the given Maven coordinates.
+
 Additional analysers in relation to Feature Model API Regions can be found here: https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions
 
 For further documentation see: https://github.com/apache/sling-org-apache-sling-feature/blob/master/readme.md
@@ -49,3 +51,13 @@ This analyser requires additional configuration:
 `compare-extension` | extension name | If this configuration is absent, the feature's bundles are compared. Otherwise the extensions with the specified name are compared. These extensions must be of type `ARTIFACTS`.
 `compare-mode` | `SAME` or `DIFFERENT` | Whether the sections must be the same or must be different. Defaults to `SAME`.
 `compare-metadata` | `true` or `false` | Whether to include the artifact metadata in the comparison. Defaults to `false`.
+
+## `feature-id`
+
+This analyser checks that the feature id matches one of the given accepted feature ids. If it doesn't it will emit an error.
+
+This analyser requires additional configuration:
+
+ Configuration key | Allowed values | Description 
+ ----- | ----- | -----
+`accepted-feature-ids` | comma-separated list of Maven IDs | The Maven ID/coordinates have the format `groupId:artifactId[:packaging[:classifier]]:version`. Each item is either a string which must be equal to the according item of the feature id, or a `*` which acts as wildcard (i.e. everything matches).

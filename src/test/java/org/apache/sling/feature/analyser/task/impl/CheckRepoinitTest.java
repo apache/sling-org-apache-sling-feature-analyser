@@ -20,21 +20,11 @@ package org.apache.sling.feature.analyser.task.impl;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
-import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.builder.FeatureProvider;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.junit.Test;
 
 public class CheckRepoinitTest {
@@ -103,70 +93,5 @@ public class CheckRepoinitTest {
 
         task.execute(ctx);
         assertEquals(1, ctx.getErrors().size());
-    }
-
-    public static class AnalyserTaskContextImpl implements AnalyserTaskContext {
-
-        private final Feature f = new Feature(ArtifactId.parse("g:a:1"));
-
-        private final List<String> errors = new ArrayList<>();
-
-        @Override
-        public Feature getFeature() {
-            return f;
-        }
-
-        @Override
-        public FeatureDescriptor getFeatureDescriptor() {
-            return null;
-        }
-
-        @Override
-        public BundleDescriptor getFrameworkDescriptor() {
-            return null;
-        }
-
-        @Override
-        public Map<String, String> getConfiguration() {
-            return null;
-        }
-
-        @Override
-        public FeatureProvider getFeatureProvider() {
-            return null;
-        }
-
-        @Override
-        public void reportWarning(String message) {
-        }
-
-        @Override
-        public void reportArtifactWarning(ArtifactId artifactId, String message) {
-
-        }
-
-        @Override
-        public void reportArtifactError(ArtifactId artifactId, String message) {
-            errors.add(message);
-        }
-
-        @Override
-        public void reportExtensionWarning(String extension, String message) {
-
-        }
-
-        @Override
-        public void reportExtensionError(String extension, String message) {
-            errors.add(message);
-        }
-
-        @Override
-        public void reportError(String message) {
-            errors.add(message);
-        }
-
-        public List<String> getErrors() {
-            return this.errors;
-        }
     }
 }
