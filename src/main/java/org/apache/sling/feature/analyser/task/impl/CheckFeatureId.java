@@ -80,7 +80,7 @@ public class CheckFeatureId implements AnalyserTask {
         if (!expectedArtifactId.getVersion().equals(artifactId.getVersion()) && !expectedArtifactId.getVersion().equals("*")) {
             return false;
         }
-        if (!expectedArtifactId.getType().equals(artifactId.getType()) && !expectedArtifactId.getVersion().equals("*")) {
+        if (!expectedArtifactId.getType().equals(artifactId.getType()) && !expectedArtifactId.getType().equals("*")) {
             return false;
         }
         // classifier is optional
