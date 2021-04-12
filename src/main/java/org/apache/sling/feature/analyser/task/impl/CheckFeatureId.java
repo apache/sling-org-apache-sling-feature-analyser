@@ -84,7 +84,8 @@ public class CheckFeatureId implements AnalyserTask {
             return false;
         }
         // classifier is optional
-        if (expectedArtifactId.getClassifier() != null && !expectedArtifactId.getClassifier().equals(artifactId.getClassifier()) && !expectedArtifactId.getClassifier().equals("*")) {
+        if ( (expectedArtifactId.getClassifier() == null && artifactId.getClassifier() != null) || 
+             (expectedArtifactId.getClassifier() != null && !expectedArtifactId.getClassifier().equals(artifactId.getClassifier()) && !expectedArtifactId.getClassifier().equals("*"))) {
             return false;
         }
         return true;

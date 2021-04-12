@@ -65,19 +65,27 @@ public class CheckFeatureIdTest {
 
     @Test
     public void checkMatches() {
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("*:myArtifactId:1.0.0")));
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:*:1.0.0")));
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:*")));
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0")));
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:*")));
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:*:1.0.0")));
-        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:*:1.0.0")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("*:myArtifactId:1.0.0")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:*:1.0.0")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:*")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:*")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:*:1.0.0")));
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:*:1.0.0")));
         
-        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("*:myOtherArtifactId:1.0.0")));
-        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myOtherGroupId:*:1.0.0")));
-        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myOtherArtifactId:*")));
-        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:someothertype:*")));
-        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:*:1.1.0")));
-        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:myClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:*:*:1.1.0")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("*:myOtherArtifactId:1.0.0")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myOtherGroupId:*:1.0.0")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myOtherArtifactId:*")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:someothertype:*")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar:*:1.1.0")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:*:*:1.1.0")));
+        
+        // enforce no classifier
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar::1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar::1.0.0")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:jar:invalidClassifier:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:jar::1.0.0")));
+        
+        // enforce default type
+        assertTrue(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:1.0.0")));
+        assertFalse(CheckFeatureId.matches(ArtifactId.parse("myGroupId:myArtifactId:othertype:1.0.0"), ArtifactId.parse("myGroupId:myArtifactId:1.0.0")));
     }
 }
