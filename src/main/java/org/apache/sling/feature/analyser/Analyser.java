@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.ExecutionEnvironmentExtension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension;
@@ -203,10 +204,12 @@ public class Analyser {
         final List<AnalyserResult.GlobalReport> globalWarnings = new ArrayList<>();
         final List<AnalyserResult.ArtifactReport> artifactWarnings = new ArrayList<>();
         final List<AnalyserResult.ExtensionReport> extensionWarnings = new ArrayList<>();
+        final List<AnalyserResult.ConfigurationReport> configurationWarnings = new ArrayList<>();
 
         final List<AnalyserResult.GlobalReport> globalErrors = new ArrayList<>();
         final List<AnalyserResult.ArtifactReport> artifactErrors = new ArrayList<>();
         final List<AnalyserResult.ExtensionReport> extensionErrors = new ArrayList<>();
+        final List<AnalyserResult.ConfigurationReport> configurationErrors = new ArrayList<>();
 
         AnalyserMetaDataExtension analyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(feature);
 
@@ -291,6 +294,20 @@ public class Analyser {
                         globalErrors.add(new AnalyserResult.GlobalReport(message));
                     }
                 }
+
+                @Override
+                public void reportConfigurationError(Configuration cfg, String message) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
+                        configurationErrors.add(new AnalyserResult.ConfigurationReport(cfg, message));
+                    }
+                }
+
+                @Override
+                public void reportConfigurationWarning(Configuration cfg, String message) {
+                    if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
+                        configurationWarnings.add(new AnalyserResult.ConfigurationReport(cfg, message));
+                    }
+                }
             });
         }
 
@@ -339,6 +356,16 @@ public class Analyser {
             @Override
             public BundleDescriptor getFrameworkDescriptor() {
                 return fwkDesc;
+            }
+
+            @Override
+            public List<ConfigurationReport> getConfigurationErrors() {
+                return configurationErrors;
+            }
+
+            @Override
+            public List<ConfigurationReport> getConfigurationWarnings() {
+                return configurationWarnings;
             }
         };
     }

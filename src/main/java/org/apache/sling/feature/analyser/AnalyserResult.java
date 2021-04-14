@@ -17,6 +17,7 @@
 package org.apache.sling.feature.analyser;
 
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.osgi.annotation.versioning.ProviderType;
@@ -32,9 +33,10 @@ import java.util.stream.Stream;
 @ProviderType
 public interface AnalyserResult {
 
-    class Report<T> {
+    public class Report<T> {
         private final T key;
         private final String value;
+        
         Report(T key, String value) {
             this.key = key;
             this.value = value;
@@ -42,39 +44,63 @@ public interface AnalyserResult {
         public T getKey() {
             return key;
         }
+        
         public String getValue() {
             return value;
         }
+        
+        public String toString() {
+            return this.getKey().toString().concat(": ").concat(this.getValue());
+        }
     }
 
-    class ArtifactReport extends Report<ArtifactId> {
+    /**
+     * Report about a configuration
+     * @since 1.4.0
+     */
+    public class ConfigurationReport extends Report<Configuration> {
+        ConfigurationReport(Configuration key, String value) {
+            super(key, value);
+        }
+
+        public String toString() {
+            return "Configuration ".concat(this.getKey().getPid()).concat(": ").concat(this.getValue());
+        }
+    }
+
+    public class ArtifactReport extends Report<ArtifactId> {
         ArtifactReport(ArtifactId key, String value) {
             super(key, value);
         }
     }
 
-    class ExtensionReport extends Report<String> {
+    public class ExtensionReport extends Report<String> {
         ExtensionReport(String key, String value) {
             super(key, value);
         }
     }
 
-    class GlobalReport extends Report<Void> {
+    public class GlobalReport extends Report<Void> {
 
         GlobalReport(String value) {
             super(null, value);
+        }
+
+        public String toString() {
+            return this.getValue();
         }
     }
 
     /**
      * List of warnings. Warnings can be used to improve the feature.
      * @return A list of warnings might be empty.
-     * @deprecated - use {@link #getGlobalWarnings()} ()}, {@link #getArtifactWarnings()} ()}, and {@link #getExtensionWarnings()} ()} instead.
+     * @deprecated - use {@link #getGlobalWarnings()}, {@link #getArtifactWarnings()}, {@link #getExtensionWarnings()}, and {@link #getConfigurationWarnings()} instead.
      */
     default List<String> getWarnings() {
-        return Stream.of(getGlobalWarnings().stream().map(Report::getValue),
-                getArtifactWarnings().stream().map(report -> report.getKey() + ": " + report.getValue()),
-                getExtensionWarnings().stream().map(report -> report.getKey() + ": " + report.getValue()))
+        return Stream.of(getGlobalWarnings().stream().map(GlobalReport::toString),
+                getArtifactWarnings().stream().map(Report::toString),
+                getExtensionWarnings().stream().map(Report::toString),
+                getConfigurationWarnings().stream().map(Report::toString))
                 .flatMap(Function.identity())
                 .collect(Collectors.toList());
     }
@@ -98,14 +124,22 @@ public interface AnalyserResult {
     List<ExtensionReport> getExtensionWarnings();
 
     /**
+     * List of warnings for configurations. Warnings can be used to improve the feature.
+     * @return A list of warnings might be empty.
+     * @since 1.4.0
+     */
+    List<ConfigurationReport> getConfigurationWarnings();
+
+    /**
      * List of errors. Errors should be fixed in the feature
      * @return A list of errors might be empty
-     * @deprecated - use {@link #getGlobalErrors()}, {@link #getArtifactErrors()}, and {@link #getExtensionErrors()} instead.
+     * @deprecated - use {@link #getGlobalErrors()}, {@link #getArtifactErrors()}, {@link #getExtensionErrors()}, and {@link #getConfigurationErrors()} instead.
      */
     default List<String> getErrors() {
-        return Stream.of(getGlobalErrors().stream().map(Report::getValue),
-                getArtifactErrors().stream().map(report -> report.getKey() + ": " + report.getValue()),
-                getExtensionErrors().stream().map(report -> report.getKey() + ": " + report.getValue()))
+        return Stream.of(getGlobalErrors().stream().map(Report::toString),
+                getArtifactErrors().stream().map(Report::toString),
+                getExtensionErrors().stream().map(Report::toString),
+                getConfigurationErrors().stream().map(Report::toString))
                 .flatMap(Function.identity())
                 .collect(Collectors.toList());
     }
@@ -127,6 +161,13 @@ public interface AnalyserResult {
      * @return A list of errors might be empty
      */
     List<ExtensionReport> getExtensionErrors();
+
+    /**
+     * List of errors for configurations. Errors should be fixed in the feature
+     * @return A list of errors might be empty
+     * @since 1.4.0
+     */
+    List<ConfigurationReport> getConfigurationErrors();
 
     /**
      * Return the feature descriptor created during scanning

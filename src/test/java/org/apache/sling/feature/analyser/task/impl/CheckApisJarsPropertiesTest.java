@@ -28,6 +28,7 @@ import java.util.Map;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.builder.FeatureProvider;
@@ -113,6 +114,18 @@ public class CheckApisJarsPropertiesTest {
         
         public List<String> getWarnings() {
             return warnings;
+        }
+
+        @Override
+        public void reportConfigurationError(Configuration cfg, String message) {
+            System.out.println("[WARN] " + message);
+            errors.add(message);
+        }
+
+        @Override
+        public void reportConfigurationWarning(Configuration cfg, String message) {
+            System.out.println("[ERROR] " + message);
+            warnings.add(message);
         }
     }
     

@@ -17,6 +17,7 @@
 package org.apache.sling.feature.analyser.task;
 
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
@@ -98,6 +99,24 @@ public interface AnalyserTaskContext {
      * @param message The message.
      */
     void reportExtensionError(String extension, String message);
+
+    /**
+     * This method is invoked by a {@link AnalyserTask} to report
+     * a configuration warning.
+     * @param cfg the configuration.
+     * @param message The message.
+     * @since 1.3.0
+     */
+    void reportConfigurationWarning(Configuration cfg, String message);
+
+    /**
+     * This method is invoked by a {@link AnalyserTask} to report
+     * a configuration error.
+     * @param cfg the configuration.
+     * @param message The message.
+     * @since 1.3.0
+     */
+    void reportConfigurationError(Configuration cfg, String message);
 
     /**
      * This method is invoked by a {@link AnalyserTask} to report
