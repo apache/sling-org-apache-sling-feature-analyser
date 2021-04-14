@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Configuration;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.builder.FeatureProvider;
@@ -105,5 +106,15 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
 
     public List<String> getErrors() {
         return this.errors;
+    }
+
+    @Override
+    public void reportConfigurationError(Configuration cfg, String message) {
+        errors.add(message);
+    }
+
+    @Override
+    public void reportConfigurationWarning(Configuration cfg, String message) {
+        
     }
 }
