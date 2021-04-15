@@ -28,11 +28,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * The result returned by the analyser
+ * The result returned by the {@code Analyser}.
+ * A result of an analyser run might contain warnings and or errors.
  */
 @ProviderType
 public interface AnalyserResult {
 
+    /**
+     * Base class for a warning or an error.
+     */
     public class Report<T> {
         private final T key;
         private final String value;
@@ -41,14 +45,24 @@ public interface AnalyserResult {
             this.key = key;
             this.value = value;
         }
+
+        /**
+         * The key for the message
+         * @return The key. Might be {@code null}
+         */
         public T getKey() {
             return key;
         }
         
+        /**
+         * The message
+         * @return The message
+         */
         public String getValue() {
             return value;
         }
         
+        @Override
         public String toString() {
             return this.getKey().toString().concat(": ").concat(this.getValue());
         }
@@ -63,29 +77,40 @@ public interface AnalyserResult {
             super(key, value);
         }
 
+        @Override
         public String toString() {
             return "Configuration ".concat(this.getKey().getPid()).concat(": ").concat(this.getValue());
         }
     }
 
+    /**
+     * Report about an artifact, for example a bundle.
+     */
     public class ArtifactReport extends Report<ArtifactId> {
         ArtifactReport(ArtifactId key, String value) {
             super(key, value);
         }
     }
 
+    /**
+     * Report about an extension
+     */
     public class ExtensionReport extends Report<String> {
         ExtensionReport(String key, String value) {
             super(key, value);
         }
     }
 
+    /**
+     * Report about the feature in general
+     */
     public class GlobalReport extends Report<Void> {
 
         GlobalReport(String value) {
             super(null, value);
         }
 
+        @Override
         public String toString() {
             return this.getValue();
         }
@@ -93,8 +118,10 @@ public interface AnalyserResult {
 
     /**
      * List of warnings. Warnings can be used to improve the feature.
-     * @return A list of warnings might be empty.
-     * @deprecated - use {@link #getGlobalWarnings()}, {@link #getArtifactWarnings()}, {@link #getExtensionWarnings()}, and {@link #getConfigurationWarnings()} instead.
+     * This method returns all warnings, if more detailed information about the warnings is desired,
+     * use {@link #getGlobalWarnings()}, {@link #getArtifactWarnings()}, {@link #getExtensionWarnings()}, 
+     * and {@link #getConfigurationWarnings()} instead.
+     * @return A list of warnings, might be empty.
      */
     default List<String> getWarnings() {
         return Stream.of(getGlobalWarnings().stream().map(GlobalReport::toString),
@@ -107,33 +134,35 @@ public interface AnalyserResult {
 
     /**
      * List of global warnings. Warnings can be used to improve the feature.
-     * @return A list of warnings might be empty.
+     * @return A list of warnings, might be empty.
      */
     List<GlobalReport> getGlobalWarnings();
 
     /**
      * List of warnings for artifact ids. Warnings can be used to improve the feature.
-     * @return A list of warnings might be empty.
+     * @return A list of warnings, might be empty.
      */
     List<ArtifactReport> getArtifactWarnings();
 
     /**
      * List of warnings for extension names. Warnings can be used to improve the feature.
-     * @return A list of warnings might be empty.
+     * @return A list of warnings, might be empty.
      */
     List<ExtensionReport> getExtensionWarnings();
 
     /**
      * List of warnings for configurations. Warnings can be used to improve the feature.
-     * @return A list of warnings might be empty.
+     * @return A list of warnings, might be empty.
      * @since 1.4.0
      */
     List<ConfigurationReport> getConfigurationWarnings();
 
     /**
      * List of errors. Errors should be fixed in the feature
-     * @return A list of errors might be empty
-     * @deprecated - use {@link #getGlobalErrors()}, {@link #getArtifactErrors()}, {@link #getExtensionErrors()}, and {@link #getConfigurationErrors()} instead.
+     * This method returns all errors, if more detailed information about the errors is desired,
+     * use {@link #getGlobalErrors()}, {@link #getArtifactErrors()}, {@link #getExtensionErrors ()}, 
+     * and {@link #getConfigurationErrors()} instead.
+     * @return A list of errors, might be empty.
      */
     default List<String> getErrors() {
         return Stream.of(getGlobalErrors().stream().map(Report::toString),
@@ -146,25 +175,25 @@ public interface AnalyserResult {
 
     /**
      * List of global errors. Errors should be fixed in the feature
-     * @return A list of errors might be empty
+     * @return A list of error,s might be empty
      */
     List<GlobalReport> getGlobalErrors();
 
     /**
-     * List of errors for artifact ids. Errors should be fixed in the feature
-     * @return A list of errors might be empty
+     * List of errors for artifact ids. Errors should be fixed in the feature.
+     * @return A list of errors, might be empty
      */
     List<ArtifactReport> getArtifactErrors();
 
     /**
      * List of errors for extension names. Errors should be fixed in the feature
-     * @return A list of errors might be empty
+     * @return A list of errors, might be empty
      */
     List<ExtensionReport> getExtensionErrors();
 
     /**
      * List of errors for configurations. Errors should be fixed in the feature
-     * @return A list of errors might be empty
+     * @return A list of errors, might be empty
      * @since 1.4.0
      */
     List<ConfigurationReport> getConfigurationErrors();
