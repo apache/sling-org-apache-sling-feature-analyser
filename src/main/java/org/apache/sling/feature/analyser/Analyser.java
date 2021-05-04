@@ -311,8 +311,8 @@ public class Analyser {
             });
         }
 
-        int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size();
-        int allErrors = globalErrors.size() + artifactErrors.size() + extensionErrors.size();
+        int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size() + configurationWarnings.size();
+        int allErrors = globalErrors.size() + artifactErrors.size() + extensionErrors.size()  + configurationErrors.size();
         logger.info("Analyzing feature '" + feature.getId() + "' finished : "
                 + allWarnings + " warnings, "
                 + allErrors + " errors.");
