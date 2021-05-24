@@ -25,7 +25,8 @@ import org.osgi.framework.VersionRange;
 
 /**
  * A package info object contains information about a package, its name, its
- * version and the uses constraints.
+ * version and the uses constraints. For example, it is used to return
+ * the information about bundle exports and imports.
  *
  * A package info object is immutable.
  */
@@ -70,7 +71,7 @@ public class PackageInfo implements Comparable<PackageInfo> {
 
     /**
      * Return the package version
-     * @return The package version
+     * @return The package version or {code null}
      */
     public String getVersion() {
         return version;
@@ -85,8 +86,12 @@ public class PackageInfo implements Comparable<PackageInfo> {
     }
 
     /**
-     * Return the package version as a {@link Version} object
-     * @return The version
+     * Return the package version as a {@link Version} object.
+     * If this package info is used to return info about an import
+     * package statement, don't use this method but rather use
+     * {@link #getPackageVersionRange()}
+     * @return The version or {@code null}
+     * @throws IllegalArgumentException If the version is not well formed.
      */
     public Version getPackageVersion() {
         if (this.version == null)
@@ -97,7 +102,11 @@ public class PackageInfo implements Comparable<PackageInfo> {
 
     /**
      * Return the version as a version range
-     * @return The version range
+     * If this package info is used to return info about an export
+     * package statement, don't use this method but rather use
+     * {@link #getPackageVersion()}
+     * @return The version range or {@code null}
+     * @throws IllegalArgumentException If the range is not well formed.
      */
     public VersionRange getPackageVersionRange() {
         if (this.version == null)
