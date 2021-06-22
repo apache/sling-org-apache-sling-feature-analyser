@@ -71,7 +71,7 @@ public class BundleDescriptorImpl
     private final Manifest manifest;
 
     /** The physical file for analyzing. */
-    private final URL artifactFile;
+    private URL artifactFile;
 
 
     /** The corresponding artifact from the feature. */
@@ -184,16 +184,15 @@ public class BundleDescriptorImpl
 
     @Override
     public URL getArtifactFile() {
-        URL result = null;
         if (artifactFile == null && artifactProvider != null) {
             try {
-                result = artifactProvider.provide(artifact.getId());
+                artifactFile = artifactProvider.provide(artifact.getId());
             } catch (Exception ex) {
                 // Ignore, we assume this is a best effort and callers can handle a null.
                 logger.debug("Unable to get artifact file for: " + artifact.getId(), ex);
             }
         }
-        return result;
+        return artifactFile;
     }
 
     @Override
@@ -224,7 +223,8 @@ public class BundleDescriptorImpl
             this.getImportedPackages().addAll(extractImportedPackages(this.manifest));
             this.getDynamicImportedPackages().addAll(extractDynamicImportedPackages(this.manifest));
             try {
-                ResourceImpl resource = ResourceBuilder.build(null, this.manifest.getMainAttributes().entrySet().stream()
+                final URL url = this.getArtifactFile();
+                ResourceImpl resource = ResourceBuilder.build(url == null ? null : url.toURI().toString(), this.manifest.getMainAttributes().entrySet().stream()
                     .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
                 this.getCapabilities().addAll(resource.getCapabilities(null));
                 this.getRequirements().addAll(resource.getRequirements(null).stream()
