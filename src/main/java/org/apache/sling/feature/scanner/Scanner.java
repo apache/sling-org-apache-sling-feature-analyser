@@ -18,7 +18,11 @@ package org.apache.sling.feature.scanner;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -184,17 +188,16 @@ public class Scanner {
                     break;
                 }
             }
-            if ( extDesc == null ) {
-                throw new IOException("No extension scanner found for extension named " + ext.getName() + " of type " + ext.getType().name());
-            }
-            desc.getRequirements().addAll(extDesc.getRequirements());
-            desc.getCapabilities().addAll(extDesc.getCapabilities());
-            desc.getExportedPackages().addAll(extDesc.getExportedPackages());
-            desc.getImportedPackages().addAll(extDesc.getImportedPackages());
-            desc.getDynamicImportedPackages().addAll(extDesc.getDynamicImportedPackages());
+            if ( extDesc != null ) {
+                desc.getRequirements().addAll(extDesc.getRequirements());
+                desc.getCapabilities().addAll(extDesc.getCapabilities());
+                desc.getExportedPackages().addAll(extDesc.getExportedPackages());
+                desc.getImportedPackages().addAll(extDesc.getImportedPackages());
+                desc.getDynamicImportedPackages().addAll(extDesc.getDynamicImportedPackages());
 
-            desc.getArtifactDescriptors().addAll(extDesc.getArtifactDescriptors());
-            desc.getBundleDescriptors().addAll(extDesc.getBundleDescriptors());
+                desc.getArtifactDescriptors().addAll(extDesc.getArtifactDescriptors());
+                desc.getBundleDescriptors().addAll(extDesc.getBundleDescriptors());
+            }
         }
     }
 
