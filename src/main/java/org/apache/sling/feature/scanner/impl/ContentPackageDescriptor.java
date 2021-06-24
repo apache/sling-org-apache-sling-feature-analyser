@@ -62,7 +62,7 @@ public class ContentPackageDescriptor extends ArtifactDescriptorImpl {
     public ContentPackageDescriptor(final String name,
             final Artifact artifact,
             final URL url) throws IOException  {
-        super(name, artifact, url, true);
+        super(name, artifact, url, true, true);
     }
 
     /**

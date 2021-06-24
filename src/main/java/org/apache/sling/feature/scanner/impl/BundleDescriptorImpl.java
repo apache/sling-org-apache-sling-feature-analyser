@@ -91,6 +91,9 @@ public class BundleDescriptorImpl
             } else {
                 try (JarFile jarFile = IOUtils.getJarFileFromURL(file, true, null)) {
                     manifest = jarFile.getManifest();
+                } catch ( final IOException ioe) {
+                    // rethrow with more info
+                    throw new IOException(file + " : " + ioe.getMessage(), ioe);
                 }
             }
         } catch (URISyntaxException e) {

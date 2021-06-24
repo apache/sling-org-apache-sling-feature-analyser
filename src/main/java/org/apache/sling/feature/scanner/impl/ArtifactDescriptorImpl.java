@@ -44,17 +44,29 @@ public class ArtifactDescriptorImpl
      * @param artifact Optional artifact
      * @param url Optional url
      * @param hasManifest Whether that artifact must have a metafest
+     * @param isManifestOptional Whether the manifest is optional
      * @throws IOException If processing fails
      */
     public ArtifactDescriptorImpl(
             final String name,
             final Artifact artifact,
             final URL url,
-            final boolean hasManifest) throws IOException  {
+            final boolean hasManifest,
+            final boolean isManifestOptional) throws IOException  {
         super(name != null ? name : artifact.getId().toMvnId());
         this.artifact = artifact;
         this.artifactFile = url;
-        this.manifest = hasManifest ? new Manifest(BundleDescriptorImpl.getManifest(url)) : null;
+        Manifest mf = null;
+        if ( hasManifest ) {
+            try {
+                mf = new Manifest(BundleDescriptorImpl.getManifest(url));
+            } catch ( final IOException ioe) {
+                if ( !isManifestOptional ) {
+                    throw ioe;
+                }
+            }
+        }
+        this.manifest = mf;
     }
 
     @Override
