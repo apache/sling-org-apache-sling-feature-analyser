@@ -59,7 +59,12 @@ public class ArtifactDescriptorImpl
         Manifest mf = null;
         if ( hasManifest ) {
             try {
-                mf = new Manifest(BundleDescriptorImpl.getManifest(url));
+                final Manifest origMf = BundleDescriptorImpl.getManifest(url);
+                if ( origMf != null ) {
+                    mf = new Manifest(origMf);
+                } else if ( !isManifestOptional ) {
+                    throw new IOException(url + " : No manifest found.");
+                }
             } catch ( final IOException ioe) {
                 if ( !isManifestOptional ) {
                     throw ioe;
