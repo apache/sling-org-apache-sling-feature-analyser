@@ -100,6 +100,7 @@ public class ContentPackageScanner {
 
                     if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
                         final String contentPath = entryName.substring(8);
+                        cp.paths.add(contentPath);
 
                         FileType fileType = null;
 
@@ -108,17 +109,17 @@ public class ContentPackageScanner {
                             fileType = FileType.PACKAGE;
 
                             // check for libs or apps
-                        } else if (entryName.startsWith("jcr_root/libs/") || entryName.startsWith("jcr_root/apps/")) {
+                        } else if (contentPath.startsWith("/libs/") || contentPath.startsWith("/apps/")) {
 
                             // check if this is an install folder (I)
                             // install folders are either named:
                             // "install" or
                             // "install.{runmode}"
-                            boolean isInstall = entryName.indexOf("/install/") != -1;
+                            boolean isInstall = contentPath.indexOf("/install/") != -1;
                             if (!isInstall) {
-                                final int pos = entryName.indexOf("/install.");
+                                final int pos = contentPath.indexOf("/install.");
                                 if (pos != -1) {
-                                    final int endSlashPos = entryName.indexOf('/', pos + 1);
+                                    final int endSlashPos = contentPath.indexOf('/', pos + 1);
                                     if (endSlashPos != -1) {
                                         isInstall = true;
                                     }
@@ -129,11 +130,11 @@ public class ContentPackageScanner {
                                 // config folders are either named:
                                 // "config" or
                                 // "config.{runmode}"
-                                isInstall = entryName.indexOf("/config/") != -1;
+                                isInstall = contentPath.indexOf("/config/") != -1;
                                 if (!isInstall) {
-                                    final int pos = entryName.indexOf("/config.");
+                                    final int pos = contentPath.indexOf("/config.");
                                     if (pos != -1) {
-                                        final int endSlashPos = entryName.indexOf('/', pos + 1);
+                                        final int endSlashPos = contentPath.indexOf('/', pos + 1);
                                         if (endSlashPos != -1) {
                                             isInstall = true;
                                         }
@@ -143,9 +144,9 @@ public class ContentPackageScanner {
 
                             if (isInstall) {
 
-                                if (entryName.endsWith(".jar")) {
+                                if (contentPath.endsWith(".jar")) {
                                     fileType = FileType.BUNDLE;
-                                } else if (entryName.endsWith(".xml") || entryName.endsWith(".config")) {
+                                } else if (contentPath.endsWith(".xml") || contentPath.endsWith(".config") || contentPath.endsWith(".cfg.json")) {
                                     fileType = FileType.CONFIG;
                                 }
                             }

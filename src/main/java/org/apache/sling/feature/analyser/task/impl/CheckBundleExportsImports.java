@@ -162,8 +162,6 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
         boolean errorReported = false;
         for(final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
-            final String key = "Bundle " + entry.getKey().getArtifact().getId().getArtifactId() + ":" + entry.getKey().getArtifact().getId().getVersion();
-
             if ( !entry.getValue().importWithoutVersion.isEmpty() ) {
                 ctx.reportArtifactWarning(entry.getKey().getArtifact().getId(), " is importing package(s) " + getPackageInfo(entry.getValue().importWithoutVersion, false) + " without specifying a version range.");
             }

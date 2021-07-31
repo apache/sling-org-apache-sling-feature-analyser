@@ -14,7 +14,7 @@ java org.apache.sling.feature.analyser.main.Main
 
 # Feature Model Analyser as a Maven Plugin
 
-The Analyser can also be run as part of a maven build via the `slingfeature-maven-plugin`: https://github.com/apache/sling-slingfeature-maven-plugin
+The Analyser can also be run as part of a maven build via the [slingfeature-maven-plugin](https://github.com/apache/sling-slingfeature-maven-plugin)
 
 The following analysers are defined:
 
@@ -34,9 +34,9 @@ The following analysers are defined:
 
 * `feature-id`: Checks if the used feature id matches one of the given Maven coordinates.
 
-Additional analysers in relation to Feature Model API Regions can be found here: https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions
+Additional analysers in relation to Feature Model API Regions can be found here: [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions)
 
-For further documentation see: https://github.com/apache/sling-org-apache-sling-feature/blob/master/readme.md
+For further documentation see: [Feature Model](https://github.com/apache/sling-org-apache-sling-feature/blob/master/readme.md)
 
 ## `compare-features`
 
@@ -44,7 +44,7 @@ This analyser compares certain sections of two feature models.
 
 This analyser requires additional configuration:
 
- Configuration key | Allowed values | Description 
+ Configuration key | Allowed values | Description
  ----- | ----- | -----
 `compare-type` | `ARTIFACTS` | The types of entities being compared. Currently only artifacts can be compared.
 `compare-with` | Maven ID, e.g. `mygroup:myart:1.2.3` | The _golden_ feature to compare the features selected for the analyser with.
@@ -58,6 +58,15 @@ This analyser checks that the feature id matches one of the given accepted featu
 
 This analyser requires additional configuration:
 
- Configuration key | Allowed values | Description 
+ Configuration key | Allowed values | Description
  ----- | ----- | -----
 `accepted-feature-ids` | comma-separated list of Maven IDs | The Maven ID/coordinates have the format `groupId:artifactId[:packaging[:classifier]]:version`. Each item is either a string which must be equal to the according item of the feature id, or a `*` which acts as wildcard (i.e. everything matches).
+
+## `content-packages-paths`
+
+This analyser checks for allowed and denied paths inside content packages. This analyser requires additional configuration:
+
+ Configuration key | Allowed values | Description
+ ----- | ----- | -----
+`includes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must match at least one of these.
+`excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the contant package must not match any of these.

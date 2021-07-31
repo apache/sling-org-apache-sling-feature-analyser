@@ -46,6 +46,9 @@ public class ContentPackageDescriptor extends ArtifactDescriptorImpl {
     /** Configurations in the content package. */
     public final List<Configuration> configs = new ArrayList<>();
 
+    /** Paths in the content package. */
+    public final List<String> paths = new ArrayList<>();
+
     /** Optional: the artifact of the content package. */
     private Artifact contentPackage;
 
