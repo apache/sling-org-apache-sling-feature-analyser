@@ -4,43 +4,57 @@
 
 # Feature Model Analyser
 
-The Analyser can analyse features for completeness and correctness. The analyser is pluggable and can also perform other checks.
+The Analyser can analyse features for completeness and correctness. The analyser is pluggable and can perform custom checks.
+
+## Running the Analyser as a Maven Plugin
+
+The Analyser can also be run as part of a Maven build via the [slingfeature-maven-plugin](https://github.com/apache/sling-slingfeature-maven-plugin)
+
+## Running the Analyser from the Commandlien
 
 The analyser can be run from the commandline by running the following main class:
 
-```
+```bash
 java org.apache.sling.feature.analyser.main.Main
 ```
 
-# Feature Model Analyser as a Maven Plugin
+# Analyser Tasks
 
-The Analyser can also be run as part of a maven build via the [slingfeature-maven-plugin](https://github.com/apache/sling-slingfeature-maven-plugin)
-
-The following analysers are defined:
-
-* `bundle-packages`: Checks bundle import/export package statements for consistency and completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
-
-* `bundle-content`: Gives a warning if a bundle container initial content specified with `Sling-Initial-Content`.
-
-* `bundle-resources`: Gives a warning if a bundle contains resources specified with `Sling-Bundle-Resources`.
-
-* `compare-features`: Compares the artifacts in the bundles sections or in an extension between two feature models. For more information see [below](#compare-features).
-
-* `requirements-capabilities`: Checks bundle requirements/capabilities for consistency and completeness.
-
-* `apis-jar`: Validates that the entries related to Apis Jar are valid.
-
-* `repoinit`: Checks the syntax of all repoinit sections.
-
-* `feature-id`: Checks if the used feature id matches one of the given Maven coordinates.
-
-Additional analysers in relation to Feature Model API Regions can be found here: [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions)
+Below is a list of built-in analysers. Additional analysers in relation to Feature Model API Regions can be found here: [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions)
 
 For further documentation see: [Feature Model](https://github.com/apache/sling-org-apache-sling-feature/blob/master/readme.md)
 
+## `apis-jar`
+
+This analyser task validates the metadata in the feature model for the `apis-jar` goal of the [slingfeature-maven-plugin](https://github.com/apache/sling-slingfeature-maven-plugin).
+
+## `bundle-connect`
+
+Checks whether the feature is ready for [OSGi connect](http://docs.osgi.org/specification/osgi.core/8.0.0/framework.connect.html). Bundle with embedded jars are not allowed and packages between bundles must not overlap.
+
+## `bundle-content`
+
+Gives a warning if a bundle contains initial content specified with `Sling-Initial-Content`.
+
+## `bundle-nativecode`
+
+Checks for native code instructions in bundles and errors if found.
+
+## `bundle-packages`
+
+Checks bundle import/export package statements for consistency and completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
+
+## `bundle-resources`
+
+Gives a warning if a bundle contains resources specified with `Sling-Bundle-Resources`.
+
+## `check-unused-bundles`
+
+Checks for unused bundles, bundles with exports which are not imported.
+
 ## `compare-features`
 
-This analyser compares certain sections of two feature models.
+Compares the artifacts in the bundles sections or in an extension between two feature models.
 
 This analyser requires additional configuration:
 
@@ -52,6 +66,27 @@ This analyser requires additional configuration:
 `compare-mode` | `SAME` or `DIFFERENT` | Whether the sections must be the same or must be different. Defaults to `SAME`.
 `compare-metadata` | `true` or `false` | Whether to include the artifact metadata in the comparison. Defaults to `false`.
 
+## `content-packages-dependencies`
+
+Checks the dependencies between content packages.
+
+## `content-packages-installables`
+
+Checks that content packages do not contain installables for the OSGi installer like bundles or configurations.
+
+## `content-packages-paths`
+
+This analyser checks for allowed and denied paths inside content packages. This analyser requires additional configuration:
+
+ Configuration key | Allowed values | Description
+ ----- | ----- | -----
+`includes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must match at least one of these.
+`excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the contant package must not match any of these.
+
+## `duplicate-symbolic-names`
+
+Checks if there are duplicates of symbolic names for bundles.
+
 ## `feature-id`
 
 This analyser checks that the feature id matches one of the given accepted feature ids. If it doesn't it will emit an error.
@@ -62,11 +97,10 @@ This analyser requires additional configuration:
  ----- | ----- | -----
 `accepted-feature-ids` | comma-separated list of Maven IDs | The Maven ID/coordinates have the format `groupId:artifactId[:packaging[:classifier]]:version`. Each item is either a string which must be equal to the according item of the feature id, or a `*` which acts as wildcard (i.e. everything matches).
 
-## `content-packages-paths`
+## `repoinit`
 
-This analyser checks for allowed and denied paths inside content packages. This analyser requires additional configuration:
+Checks the syntax of all repoinit sections.
 
- Configuration key | Allowed values | Description
- ----- | ----- | -----
-`includes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must match at least one of these.
-`excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the contant package must not match any of these.
+## `requirements-capabilities`
+
+Checks bundle requirements/capabilities for consistency and completeness.
