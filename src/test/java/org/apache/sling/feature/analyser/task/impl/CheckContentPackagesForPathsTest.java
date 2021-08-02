@@ -31,11 +31,11 @@ import org.apache.sling.feature.scanner.impl.ContentPackageDescriptor;
 import org.junit.Test;
 
 public class CheckContentPackagesForPathsTest {
-    
+
     @Test public void testNoRulesConfiguration() {
         final CheckContentPackagesForPaths analyser = new CheckContentPackagesForPaths();
         final AnalyserTaskContext ctx = new AnalyserTaskContextImpl();
-        
+
         assertNull(analyser.getRules(ctx));
     }
 
@@ -70,7 +70,7 @@ public class CheckContentPackagesForPathsTest {
         ctx.getConfiguration().put("includes", "/ab,/b");
 
         final Rules r = analyser.getRules(ctx);
-        final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")), 
+        final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")),
             new URL("https://sling.apache.org"));
         desc.paths.add("/b/foo");
         desc.paths.add("/a");
@@ -80,10 +80,28 @@ public class CheckContentPackagesForPathsTest {
         desc.paths.add("/c");
 
         analyser.checkPackage(ctx, desc, r);
-        
+
         assertEquals(3, ctx.getErrors().size());
         assertTrue(ctx.getErrors().get(0), ctx.getErrors().get(0).endsWith(" /a"));
         assertTrue(ctx.getErrors().get(1), ctx.getErrors().get(1).endsWith(" /a/foo"));
         assertTrue(ctx.getErrors().get(2), ctx.getErrors().get(2).endsWith(" /c"));
+    }
+
+    @Test public void testPathsCheckLongestMatching() throws IOException {
+        final CheckContentPackagesForPaths analyser = new CheckContentPackagesForPaths();
+        final AnalyserTaskContextImpl ctx = new AnalyserTaskContextImpl();
+        ctx.getConfiguration().put("excludes", "/a");
+        ctx.getConfiguration().put("includes", "/a/foo");
+
+        final Rules r = analyser.getRules(ctx);
+        final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")),
+            new URL("https://sling.apache.org"));
+        desc.paths.add("/a/foo");
+        desc.paths.add("/a/bar");
+
+        analyser.checkPackage(ctx, desc, r);
+
+        assertEquals(1, ctx.getErrors().size());
+        assertTrue(ctx.getErrors().get(0), ctx.getErrors().get(0).endsWith(" /a/bar"));
     }
 }

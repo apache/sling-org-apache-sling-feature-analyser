@@ -44,13 +44,13 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
     public void execute(final AnalyserTaskContext ctx)
     throws Exception {
         final Rules rules = getRules(ctx);
-        
+
         if (rules != null ) {
             for (final ArtifactDescriptor d : ctx.getFeatureDescriptor().getArtifactDescriptors()) {
                 if (d instanceof ContentPackageDescriptor) {
                     checkPackage(ctx, (ContentPackageDescriptor) d, rules);
                 }
-            }    
+            }
         } else {
             ctx.reportError("Configuration for task " + getId() + " is missing.");
         }
@@ -64,7 +64,7 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
     Rules getRules(final AnalyserTaskContext ctx) {
         final String inc = ctx.getConfiguration().get(PROP_INCLUDES);
         final String exc = ctx.getConfiguration().get(PROP_EXCLUDES);
-        
+
         if ( inc != null || exc != null ) {
             final Rules r = new Rules();
             r.includes = inc == null ? null : inc.split(",");
@@ -86,17 +86,19 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
     void checkPackage(final AnalyserTaskContext ctx, final ContentPackageDescriptor desc, final Rules rules) {
         for(final String path : desc.paths) {
             boolean isAllowed = rules.includes == null;
+            int matchLength = 0;
             if ( !isAllowed ) {
                 for(final String i : rules.includes) {
                     if ( path.equals(i) || path.startsWith(i.concat("/")) ) {
                         isAllowed = true;
+                        matchLength = i.length();
                         break;
                     }
                 }
             }
             if ( isAllowed && rules.excludes != null ) {
                 for(final String i : rules.excludes) {
-                    if ( path.equals(i) || path.startsWith(i.concat("/")) ) {
+                    if ( path.equals(i) || path.startsWith(i.concat("/")) && i.length() > matchLength ) {
                         isAllowed = false;
                         break;
                     }

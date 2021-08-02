@@ -81,7 +81,7 @@ This analyser checks for allowed and denied paths inside content packages. This 
  Configuration key | Allowed values | Description
  ----- | ----- | -----
 `includes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must match at least one of these.
-`excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the contant package must not match any of these.
+`excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must not match any of these - except it matches an include.
 
 ## `duplicate-symbolic-names`
 
