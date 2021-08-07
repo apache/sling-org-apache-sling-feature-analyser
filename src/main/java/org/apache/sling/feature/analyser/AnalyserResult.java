@@ -40,10 +40,12 @@ public interface AnalyserResult {
     public class Report<T> {
         private final T key;
         private final String value;
-        
-        Report(T key, String value) {
+        private final String taskId;
+
+        Report(T key, String value, String taskId) {
             this.key = key;
             this.value = value;
+            this.taskId = taskId;
         }
 
         /**
@@ -62,9 +64,18 @@ public interface AnalyserResult {
             return value;
         }
         
+        /**
+         * Return the task id of the analyser task issuing this report
+         * @return The task id
+         * @since 1.5.0
+         */
+        public String getTaskId() {
+            return this.taskId;
+        }
+
         @Override
         public String toString() {
-            return this.getKey().toString().concat(": ").concat(this.getValue());
+            return "[".concat(this.getTaskId()).concat("] ").concat(this.getKey().toString()).concat(": ").concat(this.getValue());
         }
     }
 
@@ -73,13 +84,13 @@ public interface AnalyserResult {
      * @since 1.4.0
      */
     public class ConfigurationReport extends Report<Configuration> {
-        ConfigurationReport(Configuration key, String value) {
-            super(key, value);
+        ConfigurationReport(Configuration key, String value, String taskId) {
+            super(key, value, taskId);
         }
 
         @Override
         public String toString() {
-            return "Configuration ".concat(this.getKey().getPid()).concat(": ").concat(this.getValue());
+            return "[".concat(this.getTaskId()).concat("] Configuration ").concat(this.getKey().getPid()).concat(": ").concat(this.getValue());
         }
     }
 
@@ -87,8 +98,8 @@ public interface AnalyserResult {
      * Report about an artifact, for example a bundle.
      */
     public class ArtifactReport extends Report<ArtifactId> {
-        ArtifactReport(ArtifactId key, String value) {
-            super(key, value);
+        ArtifactReport(ArtifactId key, String value, String taskId) {
+            super(key, value, taskId);
         }
     }
 
@@ -96,8 +107,8 @@ public interface AnalyserResult {
      * Report about an extension
      */
     public class ExtensionReport extends Report<String> {
-        ExtensionReport(String key, String value) {
-            super(key, value);
+        ExtensionReport(String key, String value, String taskId) {
+            super(key, value, taskId);
         }
     }
 
@@ -106,13 +117,13 @@ public interface AnalyserResult {
      */
     public class GlobalReport extends Report<Void> {
 
-        GlobalReport(String value) {
-            super(null, value);
+        GlobalReport(String value, String taskId) {
+            super(null, value, taskId);
         }
 
         @Override
         public String toString() {
-            return this.getValue();
+            return "[".concat(this.getTaskId()).concat("] ").concat(this.getValue());
         }
     }
 

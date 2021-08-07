@@ -69,6 +69,10 @@ public class AnalyserTest {
         final Scanner scanner = new Scanner(null);
         final Analyser a = new Analyser(scanner, new AnalyserTask(){
 
+            public String getId() {
+                return "mytask";
+            }
+
             @Override
             public void execute(AnalyserTaskContext ctx) throws Exception {
                 ctx.reportArtifactError(bundle.getId(), "artifact-error");
@@ -85,54 +89,62 @@ public class AnalyserTest {
         assertNotNull(result);
 
         assertEquals(4, result.getErrors().size());
-        assertEquals(Arrays.asList("global-error",
-            bundle.getId().toString()+": artifact-error",
-            "name: extension-error", 
-            "Configuration " + c.getPid() + ": config-error"), result.getErrors());
+        assertEquals(Arrays.asList("[mytask] global-error",
+            "[mytask] " + bundle.getId().toString()+": artifact-error",
+            "[mytask] name: extension-error", 
+            "[mytask] Configuration " + c.getPid() + ": config-error"), result.getErrors());
         assertEquals(4, result.getWarnings().size());
-        assertEquals(Arrays.asList("global-warn",
-            bundle.getId().toString()+": artifact-warn",
-            "name: extension-warn", 
-            "Configuration " + c.getPid() + ": config-warn"), result.getWarnings());
+        assertEquals(Arrays.asList("[mytask] global-warn",
+            "[mytask] " + bundle.getId().toString()+": artifact-warn",
+            "[mytask] name: extension-warn", 
+            "[mytask] Configuration " + c.getPid() + ": config-warn"), result.getWarnings());
 
         assertEquals(1, result.getGlobalErrors().size());
-        assertEquals("global-error", result.getGlobalErrors().get(0).toString());
+        assertEquals("[mytask] global-error", result.getGlobalErrors().get(0).toString());
         assertEquals("global-error", result.getGlobalErrors().get(0).getValue());
+        assertEquals("mytask", result.getGlobalErrors().get(0).getTaskId());
         assertNull(result.getGlobalErrors().get(0).getKey());
 
         assertEquals(1, result.getGlobalWarnings().size());
-        assertEquals("global-warn", result.getGlobalWarnings().get(0).toString());
+        assertEquals("[mytask] global-warn", result.getGlobalWarnings().get(0).toString());
         assertEquals("global-warn", result.getGlobalWarnings().get(0).getValue());
+        assertEquals("mytask", result.getGlobalWarnings().get(0).getTaskId());
         assertNull(result.getGlobalWarnings().get(0).getKey());
 
         assertEquals(1, result.getArtifactErrors().size());
-        assertEquals(bundle.getId().toString()+": artifact-error", result.getArtifactErrors().get(0).toString());
+        assertEquals("[mytask] " + bundle.getId().toString()+": artifact-error", result.getArtifactErrors().get(0).toString());
         assertEquals("artifact-error", result.getArtifactErrors().get(0).getValue());
+        assertEquals("mytask", result.getArtifactErrors().get(0).getTaskId());
         assertEquals(bundle.getId(), result.getArtifactErrors().get(0).getKey());
 
         assertEquals(1, result.getArtifactWarnings().size());
-        assertEquals(bundle.getId().toString()+": artifact-warn", result.getArtifactWarnings().get(0).toString());
+        assertEquals("[mytask] " + bundle.getId().toString()+": artifact-warn", result.getArtifactWarnings().get(0).toString());
         assertEquals("artifact-warn", result.getArtifactWarnings().get(0).getValue());
+        assertEquals("mytask", result.getArtifactWarnings().get(0).getTaskId());
         assertEquals(bundle.getId(), result.getArtifactWarnings().get(0).getKey());
 
         assertEquals(1, result.getExtensionErrors().size());
-        assertEquals("name: extension-error", result.getExtensionErrors().get(0).toString());
+        assertEquals("[mytask] name: extension-error", result.getExtensionErrors().get(0).toString());
         assertEquals("extension-error", result.getExtensionErrors().get(0).getValue());
+        assertEquals("mytask", result.getExtensionErrors().get(0).getTaskId());
         assertEquals("name", result.getExtensionErrors().get(0).getKey());
 
         assertEquals(1, result.getExtensionWarnings().size());
-        assertEquals("name: extension-warn", result.getExtensionWarnings().get(0).toString());
+        assertEquals("[mytask] name: extension-warn", result.getExtensionWarnings().get(0).toString());
         assertEquals("extension-warn", result.getExtensionWarnings().get(0).getValue());
+        assertEquals("mytask", result.getExtensionWarnings().get(0).getTaskId());
         assertEquals("name", result.getExtensionWarnings().get(0).getKey());
 
         assertEquals(1, result.getConfigurationErrors().size());
-        assertEquals("Configuration " + c.getPid() + ": config-error", result.getConfigurationErrors().get(0).toString());
+        assertEquals("[mytask] Configuration " + c.getPid() + ": config-error", result.getConfigurationErrors().get(0).toString());
         assertEquals("config-error", result.getConfigurationErrors().get(0).getValue());
+        assertEquals("mytask", result.getConfigurationErrors().get(0).getTaskId());
         assertEquals(c, result.getConfigurationErrors().get(0).getKey());
 
         assertEquals(1, result.getConfigurationWarnings().size());
-        assertEquals("Configuration " + c.getPid() + ": config-warn", result.getConfigurationWarnings().get(0).toString());
+        assertEquals("[mytask] Configuration " + c.getPid() + ": config-warn", result.getConfigurationWarnings().get(0).toString());
         assertEquals("config-warn", result.getConfigurationWarnings().get(0).getValue());
+        assertEquals("mytask", result.getConfigurationWarnings().get(0).getTaskId());
         assertEquals(c, result.getConfigurationWarnings().get(0).getKey());
     }
 }
