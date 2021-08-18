@@ -226,8 +226,7 @@ public class BundleDescriptorImpl
             this.getImportedPackages().addAll(extractImportedPackages(this.manifest));
             this.getDynamicImportedPackages().addAll(extractDynamicImportedPackages(this.manifest));
             try {
-                final URL url = this.getArtifactFile();
-                ResourceImpl resource = ResourceBuilder.build(url == null ? null : url.toURI().toString(), this.manifest.getMainAttributes().entrySet().stream()
+                ResourceImpl resource = ResourceBuilder.build(this.artifact.getId().toMvnUrl(), this.manifest.getMainAttributes().entrySet().stream()
                     .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
                 this.getCapabilities().addAll(resource.getCapabilities(null));
                 this.getRequirements().addAll(resource.getRequirements(null).stream()
