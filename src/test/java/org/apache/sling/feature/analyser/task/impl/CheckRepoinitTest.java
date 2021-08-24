@@ -29,6 +29,9 @@ import org.junit.Test;
 
 public class CheckRepoinitTest {
 
+    public static final String VALID_STATEMENT = "create path /acltest/A/B \n delete ACL for testing";
+    public static final String INVALID_STATEMENT = "create spaceship";
+
     @Test public void testValidExtension() throws Exception {
         final AnalyserTaskContextImpl ctx = new AnalyserTaskContextImpl();
         final AnalyserTask task = new CheckRepoinit();
@@ -40,7 +43,7 @@ public class CheckRepoinitTest {
         // create valid extension
         final Extension ext = new Extension(ExtensionType.TEXT, Extension.EXTENSION_NAME_REPOINIT, ExtensionState.OPTIONAL);
         ctx.getFeature().getExtensions().add(ext);
-        ext.setText("create path /acltest/A/B");
+        ext.setText(VALID_STATEMENT);
 
         task.execute(ctx);
         assertTrue(ctx.getErrors().isEmpty());
@@ -64,7 +67,7 @@ public class CheckRepoinitTest {
 
         // invalid repoinit
         final Extension ext = new Extension(ExtensionType.TEXT, Extension.EXTENSION_NAME_REPOINIT, ExtensionState.OPTIONAL);
-        ext.setText("create spaceship");
+        ext.setText(INVALID_STATEMENT);
         ctx.getFeature().getExtensions().add(ext);
 
         task.execute(ctx);
@@ -76,7 +79,7 @@ public class CheckRepoinitTest {
         final AnalyserTask task = new CheckRepoinit();
 
         final Configuration cfg = new Configuration(CheckRepoinit.FACTORY_PID.concat("~name"));
-        cfg.getProperties().put("scripts", "create path /acltest/A/B");
+        cfg.getProperties().put("scripts", VALID_STATEMENT);
         ctx.getFeature().getConfigurations().add(cfg);
 
         task.execute(ctx);
@@ -88,7 +91,7 @@ public class CheckRepoinitTest {
         final AnalyserTask task = new CheckRepoinit();
 
         final Configuration cfg = new Configuration(CheckRepoinit.FACTORY_PID.concat("~name"));
-        cfg.getProperties().put("scripts", "create spaceship");
+        cfg.getProperties().put("scripts", INVALID_STATEMENT);
         ctx.getFeature().getConfigurations().add(cfg);
 
         task.execute(ctx);
