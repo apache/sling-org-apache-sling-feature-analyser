@@ -33,6 +33,7 @@ public abstract class FeatureDescriptor extends ContainerDescriptor {
     /**
      * Constructor for a feature descriptor
      * @param f The feature
+     * @throws NullPointerException If feature is {@code null}
      */
     protected FeatureDescriptor(final Feature f) {
         super(f.getId().toMvnId());

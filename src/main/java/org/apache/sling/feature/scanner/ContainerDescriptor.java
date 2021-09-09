@@ -37,8 +37,9 @@ public abstract class ContainerDescriptor extends Descriptor {
     /**
      * Constructor for a new descriptor
      * @param name The name
+     * @throws IllegalArgumentException if name is {@code null}
      */
-    protected ContainerDescriptor(String name) {
+    protected ContainerDescriptor(final String name) {
         super(name);
     }
 

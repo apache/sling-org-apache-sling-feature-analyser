@@ -24,6 +24,8 @@ import org.apache.sling.feature.Artifact;
 /**
  * Information about an artifact.
  *
+ * At a minimumm the descriptor returns the artifact.
+ *
  * Note that this implementation is not synchronized. If multiple threads access
  * a descriptor concurrently, and at least one of the threads modifies the
  * descriptor structurally, it must be synchronized externally. However, once a
@@ -34,6 +36,7 @@ public abstract class ArtifactDescriptor extends Descriptor {
     /**
      * Constructor for a new descriptor
      * @param name The name
+     * @throws IllegalArgumentException if name is {@code null}
      */
     protected ArtifactDescriptor(final String name) {
         super(name);
@@ -41,14 +44,14 @@ public abstract class ArtifactDescriptor extends Descriptor {
 
     /**
      * If the artifact has a manifest, return it
-     * @return The manifest
+     * @return The manifest or {@code null}
      * @since 2.2.0
      */
     public abstract Manifest getManifest();
 
     /**
      * Get the artifact file
-     * @return The artifact file or <code>null</code> if not present.
+     * @return The artifact URL or {@code null} if not present.
      */
     public abstract URL getArtifactFile();
 

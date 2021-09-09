@@ -50,9 +50,13 @@ public abstract class Descriptor  {
     /**
      * Constructor for a new descriptor
      * @param name Name
+     * @throws IllegalArgumentException if name is {@code null}
      */
-    protected Descriptor(String name) {
+    protected Descriptor(final String name) {
         this.name = name;
+        if ( name == null ) {
+            throw new IllegalArgumentException("name must not be null");
+        }
     }
 
     /**

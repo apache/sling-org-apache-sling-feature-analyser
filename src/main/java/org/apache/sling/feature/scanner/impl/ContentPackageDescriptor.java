@@ -61,6 +61,7 @@ public class ContentPackageDescriptor extends ArtifactDescriptorImpl {
      * @param artifact The artifact
      * @param url The url to the binary
      * @throws IOException If processing fails
+     * @throws NullPointerException If artifact is {@code null}
      */
     public ContentPackageDescriptor(final String name,
             final Artifact artifact,

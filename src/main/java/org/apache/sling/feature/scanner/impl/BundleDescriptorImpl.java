@@ -108,6 +108,7 @@ public class BundleDescriptorImpl
      * @param url The URL
      * @param startLevel The start level
      * @throws IOException If the manifest can't be get
+     * @throws NullPointerException If artifact is {@code null}
      */
     public BundleDescriptorImpl(final Artifact artifact,
             final URL url,
@@ -122,6 +123,7 @@ public class BundleDescriptorImpl
      * @param manifest The manifest
      * @param startLevel The start level
      * @throws IOException If the manifest can't be get
+     * @throws NullPointerException If artifact is {@code null}
      */
     public BundleDescriptorImpl(final Artifact artifact,
                                 final ArtifactProvider provider,
@@ -138,6 +140,7 @@ public class BundleDescriptorImpl
      * @param manifest The manifest
      * @param startLevel The start level
      * @throws IOException If the manifest can't be get
+     * @throws NullPointerException If artifact is {@code null}
      */
     public BundleDescriptorImpl(final Artifact artifact,
                                 final URL url,

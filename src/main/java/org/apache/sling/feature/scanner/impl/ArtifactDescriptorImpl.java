@@ -24,7 +24,7 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.scanner.ArtifactDescriptor;
 
 /**
- * Information about a bundle
+ * Information about an artifact.
  */
 public class ArtifactDescriptorImpl
     extends ArtifactDescriptor {
@@ -41,11 +41,12 @@ public class ArtifactDescriptorImpl
     /**
      * Constructor for an artifact descriptor
      * @param name Optional name
-     * @param artifact Optional artifact
+     * @param artifact The artifact, must be provided
      * @param url Optional url
      * @param hasManifest Whether that artifact must have a metafest
      * @param isManifestOptional Whether the manifest is optional
      * @throws IOException If processing fails
+     * @throws NullPointerException If artifact is {@code null}
      */
     public ArtifactDescriptorImpl(
             final String name,
@@ -55,6 +56,7 @@ public class ArtifactDescriptorImpl
             final boolean isManifestOptional) throws IOException  {
         super(name != null ? name : artifact.getId().toMvnId());
         this.artifact = artifact;
+        this.artifact.getId(); // throw NPE if artifact is null
         this.artifactFile = url;
         Manifest mf = null;
         if ( hasManifest ) {

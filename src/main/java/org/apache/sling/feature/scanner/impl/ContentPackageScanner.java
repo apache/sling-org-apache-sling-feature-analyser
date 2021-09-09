@@ -209,7 +209,9 @@ public class ContentPackageScanner {
                 for (final File f : toProcess) {
                     extractContentPackage(cp, infos, f.toURI().toURL());
                     final int lastDot = f.getName().lastIndexOf(".");
-                    final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName().substring(0, lastDot), null, f.toURI().toURL());
+                    // create synthetic artifact with a synthetic id containing the file name
+                    final Artifact artifact = new Artifact(cp.getArtifact().getId().changeClassifier(f.getName()));
+                    final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName().substring(0, lastDot), artifact, f.toURI().toURL());
                     i.setContentPackageInfo(cp.getArtifact(), f.getName());
                     infos.add(i);
 
