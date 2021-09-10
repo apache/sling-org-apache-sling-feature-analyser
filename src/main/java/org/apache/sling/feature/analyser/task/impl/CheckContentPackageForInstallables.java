@@ -29,6 +29,8 @@ import org.apache.sling.feature.scanner.impl.ContentPackageDescriptor;
  */
 public class CheckContentPackageForInstallables implements AnalyserTask {
 
+    static final String CFG_CHECK_PACKAGES = "embedded-packages";
+
     @Override
     public String getName() {
         return "Content Packages Installable Check";
@@ -42,20 +44,23 @@ public class CheckContentPackageForInstallables implements AnalyserTask {
     @Override
     public void execute(final AnalyserTaskContext ctx)
             throws Exception {
+        final boolean checkPcks = Boolean.parseBoolean(ctx.getConfiguration().getOrDefault(CFG_CHECK_PACKAGES, "false"));
+
         final List<ContentPackageDescriptor> contentPackages = new ArrayList<>();
         for (final ArtifactDescriptor d : ctx.getFeatureDescriptor().getArtifactDescriptors()) {
             if (d instanceof ContentPackageDescriptor) {
                 contentPackages.add((ContentPackageDescriptor) d);
             }
         }
-        if (contentPackages.isEmpty()) {
-            return;
-        }
 
         for (final ContentPackageDescriptor cp : contentPackages) {
             if (cp.getArtifactFile() ==  null) {
                 ctx.reportArtifactError(cp.getArtifact().getId(), "Content package " + cp.getName() + " is not resolved and can not be checked.");
                 continue;
+            }
+            if ( checkPcks && cp.isEmbeddedInContentPackage() ) {
+                ctx.reportArtifactError(cp.getContentPackage().getId(), "Content package " + cp.getContentPackage().getId() +
+                        " embedds content package " + cp.getName());
             }
             if (!cp.hasEmbeddedArtifacts() || cp.isEmbeddedInContentPackage()) {
                 continue;

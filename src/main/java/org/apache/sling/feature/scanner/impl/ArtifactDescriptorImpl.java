@@ -61,7 +61,7 @@ public class ArtifactDescriptorImpl
         Manifest mf = null;
         if ( hasManifest ) {
             try {
-                final Manifest origMf = BundleDescriptorImpl.getManifest(url);
+                final Manifest origMf = url == null ? null : BundleDescriptorImpl.getManifest(url);
                 if ( origMf != null ) {
                     mf = new Manifest(origMf);
                 } else if ( !isManifestOptional ) {
