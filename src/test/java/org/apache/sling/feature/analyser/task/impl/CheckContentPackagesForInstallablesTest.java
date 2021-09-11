@@ -48,7 +48,7 @@ public class CheckContentPackagesForInstallablesTest {
         final FeatureDescriptor fd = new FeatureDescriptorImpl(ctx.getFeature());
         ctx.setFeatureDescriptor(fd);
 
-        final ContentPackageDescriptor cpd = new ContentPackageDescriptor("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"));
+        final ContentPackageDescriptor cpd = new ContentPackageDescriptor("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"), null);
         fd.getArtifactDescriptors().add(cpd);
 
         analyser.execute(ctx);
@@ -66,10 +66,10 @@ public class CheckContentPackagesForInstallablesTest {
         final FeatureDescriptor fd = new FeatureDescriptorImpl(ctx.getFeature());
         ctx.setFeatureDescriptor(fd);
 
-        final ContentPackageDescriptor cpd = new ContentPackageDescriptor("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"));
+        final ContentPackageDescriptor cpd = new ContentPackageDescriptor("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"), null);
         fd.getArtifactDescriptors().add(cpd);
 
-        final ContentPackageDescriptor embedded = new ContentPackageDescriptor("embedded", new Artifact(ArtifactId.parse("g:e:1")), new URL("file:/foo"));
+        final ContentPackageDescriptor embedded = new ContentPackageDescriptor("embedded", new Artifact(ArtifactId.parse("g:e:1")), new URL("file:/foo"), null);
         embedded.setContentPackageInfo(cpd.getArtifact(), "/path");
         fd.getArtifactDescriptors().add(embedded);
 
