@@ -54,6 +54,7 @@
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.FrameworkScanner</exclude>
                         <exclude>src/test/resources/origins/**</exclude>
                         <exclude>src/test/resources/test-bundle-src/**</exclude>
+                        <exclude>src/test/resources/**.xml</exclude>
                     </excludes>
                 </configuration>
             </plugin>

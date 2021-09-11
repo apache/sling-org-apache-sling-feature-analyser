@@ -16,10 +16,10 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
@@ -60,13 +60,14 @@ public class ContentPackageDescriptor extends ArtifactDescriptorImpl {
      * @param name The name
      * @param artifact The artifact
      * @param url The url to the binary
-     * @throws IOException If processing fails
+     * @param manifest The manifest (optional)
      * @throws NullPointerException If artifact is {@code null}
      */
     public ContentPackageDescriptor(final String name,
             final Artifact artifact,
-            final URL url) throws IOException  {
-        super(name, artifact, url, true, true);
+            final URL url,
+            final Manifest manifest) {
+        super(name, artifact, url, manifest);
     }
 
     /**

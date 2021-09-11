@@ -71,7 +71,7 @@ public class CheckContentPackagesForPathsTest {
 
         final Rules r = analyser.getRules(ctx);
         final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")),
-            new URL("https://sling.apache.org"));
+            new URL("https://sling.apache.org"), null);
         desc.paths.add("/b/foo");
         desc.paths.add("/a");
         desc.paths.add("/a/foo");
@@ -95,7 +95,7 @@ public class CheckContentPackagesForPathsTest {
 
         final Rules r = analyser.getRules(ctx);
         final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")),
-            new URL("https://sling.apache.org"));
+            new URL("https://sling.apache.org"), null);
         desc.paths.add("/a/foo");
         desc.paths.add("/a/bar");
 

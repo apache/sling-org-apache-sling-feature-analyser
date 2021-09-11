@@ -78,7 +78,7 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
             }
             else {
                 final int lastDot = a.getId().toMvnPath().lastIndexOf(".");
-                ContentPackageDescriptor desc = new ContentPackageDescriptor(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot), a, url);
+                ContentPackageDescriptor desc = new ContentPackageDescriptor(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot), a, url, null);
                 desc.lock();
                 cd.getArtifactDescriptors().add(desc);
             }
