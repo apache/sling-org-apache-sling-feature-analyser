@@ -18,6 +18,7 @@ package org.apache.sling.feature.scanner.impl;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.Artifact;
@@ -70,15 +71,16 @@ public class ContentPackagesExtensionScanner implements ExtensionScanner {
             }
 
             if (url != null) {
-                final Set<ContentPackageDescriptor> pcks = scanner.scan(a, url);
-                for (final ContentPackageDescriptor desc : pcks) {
+                final Set<ContentPackageDescriptorImpl> pcks = scanner.scan(a, url);
+                for (final ContentPackageDescriptorImpl desc : pcks) {
                     cd.getArtifactDescriptors().add(desc);
-                    cd.getBundleDescriptors().addAll(desc.bundles);
+                    cd.getBundleDescriptors().addAll(desc.getBundles());
                 }
             }
             else {
                 final int lastDot = a.getId().toMvnPath().lastIndexOf(".");
-                ContentPackageDescriptor desc = new ContentPackageDescriptor(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot), a, url, null);
+                ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl(a.getId().toMvnPath().substring(a.getId().toMvnPath().lastIndexOf("/") + 1, lastDot), 
+                        a, url, null, null, null, null, new Properties());
                 desc.lock();
                 cd.getArtifactDescriptors().add(desc);
             }

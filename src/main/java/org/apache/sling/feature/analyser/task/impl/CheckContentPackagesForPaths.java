@@ -18,8 +18,7 @@ package org.apache.sling.feature.analyser.task.impl;
 
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.ArtifactDescriptor;
-import org.apache.sling.feature.scanner.impl.ContentPackageDescriptor;
+import org.apache.sling.feature.scanner.ContentPackageDescriptor;
 
 /**
  * This analyser checks for content paths in packages
@@ -46,10 +45,8 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
         final Rules rules = getRules(ctx);
 
         if (rules != null ) {
-            for (final ArtifactDescriptor d : ctx.getFeatureDescriptor().getArtifactDescriptors()) {
-                if (d instanceof ContentPackageDescriptor) {
-                    checkPackage(ctx, (ContentPackageDescriptor) d, rules);
-                }
+            for (final ContentPackageDescriptor d : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
+                checkPackage(ctx, d, rules);
             }
         } else {
             ctx.reportError("Configuration for task " + getId() + " is missing.");
@@ -84,7 +81,7 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
     }
 
     void checkPackage(final AnalyserTaskContext ctx, final ContentPackageDescriptor desc, final Rules rules) {
-        for(final String path : desc.paths) {
+        for(final String path : desc.getContentPaths()) {
             boolean isAllowed = rules.includes == null;
             int matchLength = 0;
             if ( !isAllowed ) {

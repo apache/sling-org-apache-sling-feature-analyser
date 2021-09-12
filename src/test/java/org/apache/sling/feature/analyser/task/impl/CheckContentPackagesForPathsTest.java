@@ -22,12 +22,13 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Properties;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.analyser.task.impl.CheckContentPackagesForPaths.Rules;
-import org.apache.sling.feature.scanner.impl.ContentPackageDescriptor;
+import org.apache.sling.feature.scanner.impl.ContentPackageDescriptorImpl;
 import org.junit.Test;
 
 public class CheckContentPackagesForPathsTest {
@@ -70,14 +71,14 @@ public class CheckContentPackagesForPathsTest {
         ctx.getConfiguration().put("includes", "/ab,/b");
 
         final Rules r = analyser.getRules(ctx);
-        final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")),
-            new URL("https://sling.apache.org"), null);
-        desc.paths.add("/b/foo");
-        desc.paths.add("/a");
-        desc.paths.add("/a/foo");
-        desc.paths.add("/ab");
-        desc.paths.add("/b");
-        desc.paths.add("/c");
+        final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl("name", new Artifact(ArtifactId.parse("g:a:1")),
+            new URL("https://sling.apache.org"), null, null, null, null, new Properties());
+        desc.getContentPaths().add("/b/foo");
+        desc.getContentPaths().add("/a");
+        desc.getContentPaths().add("/a/foo");
+        desc.getContentPaths().add("/ab");
+        desc.getContentPaths().add("/b");
+        desc.getContentPaths().add("/c");
 
         analyser.checkPackage(ctx, desc, r);
 
@@ -94,10 +95,10 @@ public class CheckContentPackagesForPathsTest {
         ctx.getConfiguration().put("includes", "/a/foo");
 
         final Rules r = analyser.getRules(ctx);
-        final ContentPackageDescriptor desc = new ContentPackageDescriptor("name", new Artifact(ArtifactId.parse("g:a:1")),
-            new URL("https://sling.apache.org"), null);
-        desc.paths.add("/a/foo");
-        desc.paths.add("/a/bar");
+        final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl("name", new Artifact(ArtifactId.parse("g:a:1")),
+            new URL("https://sling.apache.org"), null, null, null, null, new Properties());
+        desc.getContentPaths().add("/a/foo");
+        desc.getContentPaths().add("/a/bar");
 
         analyser.checkPackage(ctx, desc, r);
 

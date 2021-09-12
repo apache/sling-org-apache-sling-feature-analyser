@@ -17,6 +17,7 @@
 package org.apache.sling.feature.scanner.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -28,12 +29,9 @@ import java.net.URL;
 import java.util.Dictionary;
 import java.util.Set;
 
-import org.apache.felix.utils.repository.UrlLoader;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
-import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.junit.Before;
 import org.junit.Test;
 
 public class ContentPackageScannerTest {
@@ -47,9 +45,9 @@ public class ContentPackageScannerTest {
         final ArtifactId TEST_PACKAGE_AID_A_10 = ArtifactId.fromMvnId(COORDINATES_TEST_PACKAGE_A_10);
 
         ContentPackageScanner scanner = new ContentPackageScanner();
-        Set<ContentPackageDescriptor> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+        Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
         assertEquals(2, descriptors.size());
-        for(ContentPackageDescriptor desc : descriptors) {
+        for(ContentPackageDescriptorImpl desc : descriptors) {
             if (desc.getName().equals("test-content")) {
                 assetDescriptor(desc, "test-content", TEST_PACKAGE_AID_A_10, file.toURI().toURL());
             } else {
@@ -64,21 +62,29 @@ public class ContentPackageScannerTest {
     }
 
     @SuppressWarnings("deprecation")
-    private void assetDescriptor(ContentPackageDescriptor desc, String descName, final ArtifactId descArtifactId, final URL descUrl) {
+    private void assetDescriptor(ContentPackageDescriptorImpl desc, String descName, final ArtifactId descArtifactId, final URL descUrl) {
         assertEquals(descName, desc.getName());
         assertEquals(descArtifactId, desc.getArtifact().getId());
         assertEquals(descUrl, desc.getArtifactFile());
 
-        assertTrue(desc.bundles != null && !desc.bundles.isEmpty());
-        BundleDescriptor bundles[] = desc.bundles.toArray(new BundleDescriptor[desc.bundles.size()]);
+        assertEquals(1, desc.getBundles().size());
 
-        assertEquals(bundles[0].getArtifact().getId().toString(), "org.apache.felix:org.apache.felix.framework:jar:bundle:6.0.1");
-        assertEquals("artifact start order",20, bundles[0].getArtifact().getStartOrder());
-        assertEquals("bundle start level",20, bundles[0].getBundleStartLevel());
+        assertEquals(desc.getBundles().get(0).getArtifact().getId().toString(), "org.apache.felix:org.apache.felix.framework:jar:bundle:6.0.1");
+        assertEquals("artifact start order",20, desc.getBundles().get(0).getArtifact().getStartOrder());
+        assertEquals("bundle start level",20, desc.getBundles().get(0).getBundleStartLevel());
 
-        assertTrue(desc.configs != null && !desc.configs.isEmpty());
-        Configuration configs[] = desc.configs.toArray(new Configuration[desc.configs.size()]);
-        assertConfiguration(configs[0]);
+        assertEquals(1, desc.getConfigurations().size());
+        assertConfiguration(desc.getConfigurations().get(0));
+
+        assertEquals(6, desc.getContentPaths().size());
+        assertTrue(desc.getContentPaths().contains("/.content.xml"));
+        assertTrue(desc.getContentPaths().contains("/libs/.content.xml"));
+        assertTrue(desc.getContentPaths().contains("/libs/a/.content.xml"));
+        assertTrue(desc.getContentPaths().contains("/libs/install/test-bundle.jar"));
+        assertTrue(desc.getContentPaths().contains("/libs/config/com.example.some.Component.xml"));
+        assertTrue(desc.getContentPaths().contains("/sub-content.zip"));
+
+        assertFalse(desc.getPackageProperties().isEmpty());
     }
 
     private void assertConfiguration(Configuration c) {

@@ -48,7 +48,11 @@ import org.slf4j.LoggerFactory;
  */
 public class ContentPackageScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContentPackageScanner.class);
+    private static final String FILE_PACKAGE_PROPS = "META-INF/vault/properties.xml";
+
+    private static final String FILE_MANIFEST = "META-INF/MANIFEST.MF";
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final byte[] buffer = new byte[65536];
 
@@ -67,8 +71,8 @@ public class ContentPackageScanner {
      * @return A set of artifacts
      * @throws IOException If processing fails
      */
-    public Set<ContentPackageDescriptor> scan(final Artifact artifact, final URL url) throws IOException {
-        final Set<ContentPackageDescriptor> contentPackages = new HashSet<>();
+    public Set<ContentPackageDescriptorImpl> scan(final Artifact artifact, final URL url) throws IOException {
+        final Set<ContentPackageDescriptorImpl> contentPackages = new HashSet<>();
         if (url != null) {
             final String path = url.getPath();
             final int lastDotInUrl = path.lastIndexOf(".");
@@ -141,12 +145,12 @@ public class ContentPackageScanner {
         return fileType;
     }
 
-    private ContentPackageDescriptor extractContentPackage(final ContentPackageDescriptor parentPackage,
+    private ContentPackageDescriptorImpl extractContentPackage(final ContentPackageDescriptorImpl parentPackage,
             final String parentContentPath,
             final Artifact packageArtifact,
             final String name,
             final URL archiveUrl,
-            final Set<ContentPackageDescriptor> infos)
+            final Set<ContentPackageDescriptorImpl> infos)
     throws IOException {
         logger.debug("Analyzing Content Package {}", archiveUrl);
 
@@ -160,7 +164,8 @@ public class ContentPackageScanner {
             final List<String> contentPaths = new ArrayList<>();
             final List<BundleDescriptor> bundles = new ArrayList<>();
             final List<Configuration> configs = new ArrayList<>();
-    
+            final Properties packageProps = new Properties();
+
             try (final JarFile zipFile = IOUtils.getJarFileFromURL(archiveUrl, true, null)) {
                 Enumeration<? extends ZipEntry> entries = zipFile.entries();
                 while (entries.hasMoreElements()) {
@@ -209,9 +214,9 @@ public class ContentPackageScanner {
                                 bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
-                                bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PACKAGE,
+                                bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PACKAGE,
                                         packageArtifact.getId().toMvnId());
-                                bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PATH, contentPath);
+                                bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PATH, contentPath);
     
                                 bundles.add(info);
     
@@ -226,20 +231,22 @@ public class ContentPackageScanner {
                                 toProcess.add(newFile);
                             } 
                         }
-                    } else if ( entryName.equals("META-INF/MANIFEST.MF") ) {
+                    } else if ( FILE_MANIFEST.equals(entry.getName()) ) {
                         try ( final InputStream zis = zipFile.getInputStream(entry)) {
                             manifest = new Manifest(zis);
+                        }
+                    } else if ( FILE_PACKAGE_PROPS.equals(entry.getName()) ) {
+                        try ( final InputStream zis = zipFile.getInputStream(entry)) {
+                            packageProps.loadFromXML(zis);
                         }
                     }
                 }
 
-                final ContentPackageDescriptor desc = new ContentPackageDescriptor(name, packageArtifact, archiveUrl, manifest);
+                final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl(name, packageArtifact, archiveUrl, manifest,
+                    bundles, contentPaths, configs, packageProps);
                 if ( parentPackage != null ) {
-                    desc.setContentPackageInfo(parentPackage.getArtifact(), parentContentPath);
+                    desc.setParentContentPackageInfo(parentPackage.getArtifact(), parentContentPath);
                 }
-                desc.bundles.addAll(bundles);
-                desc.configs.addAll(configs);
-                desc.paths.addAll(contentPaths);
 
                 for (final File f : toProcess) {
                     final int lastDot = f.getName().lastIndexOf(".");
@@ -403,8 +410,8 @@ public class ContentPackageScanner {
             }
 
             final Configuration cfg = new Configuration(pid);
-            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptor.METADATA_PATH, contentPath);
-            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptor.METADATA_PACKAGE,
+            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptorImpl.METADATA_PATH, contentPath);
+            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptorImpl.METADATA_PACKAGE,
                     packageArtifactId.toMvnId());
 
             return cfg;

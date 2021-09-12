@@ -20,11 +20,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.net.URL;
+import java.util.Properties;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
-import org.apache.sling.feature.scanner.impl.ContentPackageDescriptor;
+import org.apache.sling.feature.scanner.impl.ContentPackageDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Test;
 
@@ -48,7 +49,8 @@ public class CheckContentPackagesForInstallablesTest {
         final FeatureDescriptor fd = new FeatureDescriptorImpl(ctx.getFeature());
         ctx.setFeatureDescriptor(fd);
 
-        final ContentPackageDescriptor cpd = new ContentPackageDescriptor("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"), null);
+        final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"), 
+            null, null, null, null, new Properties());
         fd.getArtifactDescriptors().add(cpd);
 
         analyser.execute(ctx);
@@ -66,11 +68,13 @@ public class CheckContentPackagesForInstallablesTest {
         final FeatureDescriptor fd = new FeatureDescriptorImpl(ctx.getFeature());
         ctx.setFeatureDescriptor(fd);
 
-        final ContentPackageDescriptor cpd = new ContentPackageDescriptor("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"), null);
+        final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), new URL("file:/foo"),
+            null, null, null, null, new Properties());
         fd.getArtifactDescriptors().add(cpd);
 
-        final ContentPackageDescriptor embedded = new ContentPackageDescriptor("embedded", new Artifact(ArtifactId.parse("g:e:1")), new URL("file:/foo"), null);
-        embedded.setContentPackageInfo(cpd.getArtifact(), "/path");
+        final ContentPackageDescriptorImpl embedded = new ContentPackageDescriptorImpl("embedded", new Artifact(ArtifactId.parse("g:e:1")), 
+            new URL("file:/foo"), null, null, null, null, new Properties());
+        embedded.setParentContentPackageInfo(cpd.getArtifact(), "/path");
         fd.getArtifactDescriptors().add(embedded);
 
         analyser.execute(ctx);
