@@ -90,12 +90,9 @@ public class ContentPackageScanner {
      */
     FileType detectContentFileType(final String contentPath) {
         FileType fileType = null;
-        if (contentPath.endsWith(".zip")) {
-            // embedded content package
-            fileType = FileType.PACKAGE;
 
-            // check for libs or apps
-        } else if (contentPath.startsWith("/libs/") || contentPath.startsWith("/apps/")) {
+        // check for install folders in libs or apps
+        if (contentPath.startsWith("/libs/") || contentPath.startsWith("/apps/")) {
 
             // check if this is an install folder (I)
             // install folders are either named:
@@ -132,6 +129,10 @@ public class ContentPackageScanner {
 
                 if (contentPath.endsWith(".jar")) {
                     fileType = FileType.BUNDLE;
+                
+                } else if (contentPath.endsWith(".zip")) {
+                    fileType = FileType.PACKAGE;
+            
                 } else {
                     for(final String ext : CFG_EXTENSIONS) {
                         if ( contentPath.endsWith(ext) ) {
@@ -141,6 +142,9 @@ public class ContentPackageScanner {
                     }
                 } 
             }
+        } else if ( contentPath.startsWith("/etc/packages/") && contentPath.endsWith(".zip")) {
+            // embedded content package
+            fileType = FileType.PACKAGE;
         }
         return fileType;
     }

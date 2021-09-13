@@ -82,7 +82,7 @@ public class ContentPackageScannerTest {
         assertTrue(desc.getContentPaths().contains("/libs/a/.content.xml"));
         assertTrue(desc.getContentPaths().contains("/libs/install/test-bundle.jar"));
         assertTrue(desc.getContentPaths().contains("/libs/config/com.example.some.Component.xml"));
-        assertTrue(desc.getContentPaths().contains("/sub-content.zip"));
+        assertTrue(desc.getContentPaths().contains("/etc/packages/org/sling/sub-content.zip"));
 
         assertFalse(desc.getPackageProperties().isEmpty());
     }
@@ -97,9 +97,10 @@ public class ContentPackageScannerTest {
     public void testDetectContentFileType() {
         final ContentPackageScanner scanner = new ContentPackageScanner();
 
-        // any file ending in zip is a content package
-        assertEquals(ContentPackageScanner.FileType.PACKAGE, scanner.detectContentFileType("/etc/package/my-package.zip"));
+        // content packages need to be below /libs, /apps or /etc/packages/
+        assertEquals(ContentPackageScanner.FileType.PACKAGE, scanner.detectContentFileType("/etc/packages/a/b/my-package.zip"));
         assertEquals(ContentPackageScanner.FileType.PACKAGE, scanner.detectContentFileType("/libs/app/install/component.zip"));
+        assertNull(scanner.detectContentFileType("/content/app/install/component.zip"));
 
         // configs need to be below /libs, /apps in install or config folders
         assertEquals(ContentPackageScanner.FileType.CONFIG, scanner.detectContentFileType("/libs/app/install/component.cfg"));
