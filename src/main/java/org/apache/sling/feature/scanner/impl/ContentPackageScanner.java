@@ -129,10 +129,10 @@ public class ContentPackageScanner {
 
                 if (contentPath.endsWith(".jar")) {
                     fileType = FileType.BUNDLE;
-                
+
                 } else if (contentPath.endsWith(".zip")) {
                     fileType = FileType.PACKAGE;
-            
+
                 } else {
                     for(final String ext : CFG_EXTENSIONS) {
                         if ( contentPath.endsWith(ext) ) {
@@ -140,7 +140,7 @@ public class ContentPackageScanner {
                             break;
                         }
                     }
-                } 
+                }
             }
         } else if ( contentPath.startsWith("/etc/packages/") && contentPath.endsWith(".zip")) {
             // embedded content package
@@ -180,7 +180,7 @@ public class ContentPackageScanner {
                     if ( entryName.endsWith("/") ) {
                         continue;
                     }
-                    
+
                     logger.debug("Content package entry {}", entryName);
 
                     if ( entryName.startsWith("jcr_root/") ) {
@@ -192,7 +192,7 @@ public class ContentPackageScanner {
                             logger.debug("- extracting : {}", contentPath);
                             final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
                             newFile.getParentFile().mkdirs();
-    
+
                             try (
                                     final FileOutputStream fos = new FileOutputStream(newFile);
                                     final InputStream zis = zipFile.getInputStream(entry);
@@ -202,7 +202,7 @@ public class ContentPackageScanner {
                                     fos.write(buffer, 0, len);
                                 }
                             }
-    
+
                             if (fileType == FileType.BUNDLE) {
                                 int startLevel = 20;
                                 final int lastSlash = contentPath.lastIndexOf('/');
@@ -213,7 +213,7 @@ public class ContentPackageScanner {
                                 } catch (final NumberFormatException ignore) {
                                     // ignore
                                 }
-    
+
                                 final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
                                 bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
@@ -221,23 +221,25 @@ public class ContentPackageScanner {
                                 bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PACKAGE,
                                         packageArtifact.getId().toMvnId());
                                 bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PATH, contentPath);
-    
+
                                 bundles.add(info);
-    
+
                             } else if (fileType == FileType.CONFIG) {
-    
+
                                 final Configuration configEntry = this.processConfiguration(newFile, packageArtifact.getId(), contentPath);
                                 if (configEntry != null) {
                                     configs.add(configEntry);
                                 }
-    
+
                             } else if (fileType == FileType.PACKAGE) {
                                 toProcess.add(newFile);
-                            } 
+                            }
                         }
                     } else if ( FILE_MANIFEST.equals(entry.getName()) ) {
                         try ( final InputStream zis = zipFile.getInputStream(entry)) {
                             manifest = new Manifest(zis);
+                        } catch ( final IOException ignore ) {
+                            logger.warn("Failure reading manifest from {} : {}", packageArtifact.getId(), ignore.getMessage());
                         }
                     } else if ( FILE_PACKAGE_PROPS.equals(entry.getName()) ) {
                         try ( final InputStream zis = zipFile.getInputStream(entry)) {
