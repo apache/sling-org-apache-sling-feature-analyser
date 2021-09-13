@@ -245,7 +245,7 @@ public class ContentPackageScanner {
                 final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl(name, packageArtifact, archiveUrl, manifest,
                     bundles, contentPaths, configs, packageProps);
                 if ( parentPackage != null ) {
-                    desc.setParentContentPackageInfo(parentPackage.getArtifact(), parentContentPath);
+                    desc.setParentContentPackageInfo(parentPackage, parentContentPath);
                 }
 
                 for (final File f : toProcess) {

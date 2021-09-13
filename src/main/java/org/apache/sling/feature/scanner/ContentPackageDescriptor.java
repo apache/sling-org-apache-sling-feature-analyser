@@ -59,7 +59,7 @@ public abstract class ContentPackageDescriptor extends ArtifactDescriptor {
      * Get the parent content package
      * @return The parent content package or {@code null}
      */
-    public abstract Artifact getParentContentPackage();
+    public abstract ContentPackageDescriptor getParentContentPackage();
 
     /**
      * Get the parent content path

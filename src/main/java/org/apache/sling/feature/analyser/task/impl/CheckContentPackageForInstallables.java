@@ -48,7 +48,7 @@ public class CheckContentPackageForInstallables implements AnalyserTask {
                 continue;
             }
             if ( checkPcks && cp.isEmbeddedInContentPackage() ) {
-                ctx.reportArtifactError(cp.getParentContentPackage().getId(), "Content package " + cp.getParentContentPackage().getId() +
+                ctx.reportArtifactError(cp.getParentContentPackage().getArtifact().getId(), "Content package " + cp.getParentContentPackage().getArtifact().getId() +
                         " embedds content package " + cp.getName());
             }
             if (!cp.hasEmbeddedArtifacts() || cp.isEmbeddedInContentPackage()) {

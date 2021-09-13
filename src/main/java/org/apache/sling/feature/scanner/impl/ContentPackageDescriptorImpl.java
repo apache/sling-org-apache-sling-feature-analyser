@@ -52,8 +52,8 @@ public class ContentPackageDescriptorImpl extends ContentPackageDescriptor {
     /** Paths in the content package. */
     private final List<String> paths;
 
-    /** Optional: the artifact of the parent content package. */
-    private Artifact parentContentPackage;
+    /** Optional: the descriptor of the parent content package. */
+    private ContentPackageDescriptor parentContentPackage;
 
     /** Optional: the path inside of the parent content package. */
     private String parentContentPath;
@@ -132,7 +132,7 @@ public class ContentPackageDescriptorImpl extends ContentPackageDescriptor {
     }
 
     @Override
-    public Artifact getParentContentPackage() {
+    public ContentPackageDescriptor getParentContentPackage() {
         return parentContentPackage;
     }
 
@@ -143,12 +143,12 @@ public class ContentPackageDescriptorImpl extends ContentPackageDescriptor {
 
     /**
      * Set the information about the parent content package containing this artifact
-     * @param artifact The package
+     * @param desc The package
      * @param path The path inside the package
      */
-    public void setParentContentPackageInfo(final Artifact artifact, final String path) {
+    public void setParentContentPackageInfo(final ContentPackageDescriptor desc, final String path) {
         checkLocked();
-        this.parentContentPackage = artifact;
+        this.parentContentPackage = desc;
         this.parentContentPath = path;
     }
 

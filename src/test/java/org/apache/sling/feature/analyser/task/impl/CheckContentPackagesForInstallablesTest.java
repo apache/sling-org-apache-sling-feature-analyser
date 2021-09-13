@@ -74,7 +74,7 @@ public class CheckContentPackagesForInstallablesTest {
 
         final ContentPackageDescriptorImpl embedded = new ContentPackageDescriptorImpl("embedded", new Artifact(ArtifactId.parse("g:e:1")), 
             new URL("file:/foo"), null, null, null, null, new Properties());
-        embedded.setParentContentPackageInfo(cpd.getArtifact(), "/path");
+        embedded.setParentContentPackageInfo(cpd, "/path");
         fd.getArtifactDescriptors().add(embedded);
 
         analyser.execute(ctx);
