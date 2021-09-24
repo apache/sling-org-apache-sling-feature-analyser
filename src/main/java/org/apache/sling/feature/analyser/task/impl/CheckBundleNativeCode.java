@@ -29,7 +29,7 @@ public class CheckBundleNativeCode implements AnalyserTask {
 
     @Override
     public String getName() {
-        return "Bundle Natice Code Check";
+        return "Bundle Native Code Check";
     }
 
     @Override
