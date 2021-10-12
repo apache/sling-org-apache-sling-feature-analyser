@@ -8,6 +8,7 @@ org.apache.sling.feature.analyser.task.impl.CheckCompareFeatures
 org.apache.sling.feature.analyser.task.impl.CheckContentPackageForInstallables
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesDependencies
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesForPaths
+org.apache.sling.feature.analyser.task.impl.CheckContentPackageXMLSyntax
 org.apache.sling.feature.analyser.task.impl.CheckDuplicateSymbolicName
 org.apache.sling.feature.analyser.task.impl.CheckRepoinit
 org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities
