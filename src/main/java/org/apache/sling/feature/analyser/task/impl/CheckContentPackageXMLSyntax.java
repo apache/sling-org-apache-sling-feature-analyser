@@ -103,6 +103,9 @@ public class CheckContentPackageXMLSyntax implements AnalyserTask {
             throws IOException {
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            // disable external entities declarations:
+            dbFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             DocumentBuilder dBuilder;
             dBuilder = dbFactory.newDocumentBuilder();
             dBuilder.parse(fis);
