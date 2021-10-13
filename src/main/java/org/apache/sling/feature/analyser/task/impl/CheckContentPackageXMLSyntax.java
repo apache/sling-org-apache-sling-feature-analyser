@@ -38,6 +38,8 @@ import org.xml.sax.SAXException;
  */
 public class CheckContentPackageXMLSyntax implements AnalyserTask {
 
+    private static final int BUFFER_SIZE = 1024*1024;
+
     @Override
     public String getName() {
         return "Content Package xml syntax check";
@@ -67,25 +69,21 @@ public class CheckContentPackageXMLSyntax implements AnalyserTask {
         try {
             URLConnection conn = artifactFile.openConnection();
             InputStream is = conn.getInputStream();
-            byte[] buffer = new byte[1024*1024];
+            byte[] buffer = new byte[BUFFER_SIZE];
             ZipInputStream zis = new ZipInputStream(is);
             ZipEntry zipEntry = zis.getNextEntry();
             while (zipEntry != null) {
-                if (zipEntry.getName().endsWith(".xml")) {
+                if (zipEntry.getName().endsWith(".xml") && zipEntry.getSize() < buffer.length) {
                     ByteArrayInputStream fis = createStreamFromZipEntry(buffer, zis);
-                    try {
-                        checkXmlFile(fis);
-                    } catch (SAXException e) {
-                        String msg = String.format("Parse error in file %s : %s", zipEntry.getName(), e.getMessage());
-                        ctx.reportArtifactError(cp.getArtifact().getId(), msg);
-                    }
+                    checkXmlFile(ctx, cp, zipEntry, fis);
                 }
                 zipEntry = zis.getNextEntry();
             }
             zis.closeEntry();
             zis.close();
         } catch (IOException e) {
-            throw new RuntimeException();
+            String msg = "IOException while checking content package. " + e.getMessage();
+            ctx.reportArtifactError(cp.getArtifact().getId(), msg);
         }
     }
 
@@ -98,18 +96,21 @@ public class CheckContentPackageXMLSyntax implements AnalyserTask {
                 offset += len;
             }
         }
-        ByteArrayInputStream fis = new ByteArrayInputStream(buffer, 0, offset);
-        return fis;
+        return new ByteArrayInputStream(buffer, 0, offset);
     }
 
-    private void checkXmlFile(InputStream fis) throws SAXException, IOException {
+    private void checkXmlFile(final AnalyserTaskContext ctx, final ContentPackageDescriptor cp, ZipEntry zipEntry, ByteArrayInputStream fis) 
+            throws IOException {
+        try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder;
-            try {
-                dBuilder = dbFactory.newDocumentBuilder();
-            } catch (ParserConfigurationException e) {
-                throw new IOException(e);
-            }
+            dBuilder = dbFactory.newDocumentBuilder();
             dBuilder.parse(fis);
+        } catch (ParserConfigurationException e) {
+            throw new IOException(e);
+        } catch (SAXException e) {
+            String msg = String.format("Parse error in file %s : %s", zipEntry.getName(), e.getMessage());
+            ctx.reportArtifactError(cp.getArtifact().getId(), msg);
+        }
     }
 }
