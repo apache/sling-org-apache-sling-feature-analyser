@@ -16,7 +16,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl.contentpackage;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +36,7 @@ public class ArchiveValidationContextImpl implements ValidationContext {
     private final PackageProperties properties;
     private final Path archivePath;
 
-    public ArchiveValidationContextImpl(Archive archive, Path archivePath) throws IOException {
+    public ArchiveValidationContextImpl(Archive archive, Path archivePath) {
         this.archivePath = archivePath;
         properties = archive.getMetaInf().getPackageProperties();
         this.filter = archive.getMetaInf().getFilter();

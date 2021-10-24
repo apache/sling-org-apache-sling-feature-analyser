@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -81,7 +82,7 @@ public class PackageValidator {
                 throw new RuntimeException("No registered validators found!");
             }
         } catch (IOException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
         return messages;
     }
@@ -122,27 +123,26 @@ public class PackageValidator {
     
     private void printUsedValidators(boolean printUnusedValidators) {
         String packageType = context.getProperties().getPackageType() != null ? context.getProperties().getPackageType().toString() : "unknown";
-        log.info("Using " + executor.getAllValidatorsById().entrySet().size() + " validators for package of type " + packageType + ": " + getValidatorNames());
+        int numValidators = executor.getAllValidatorsById().entrySet().size();
+        log.info("Using {} validators for package of type {}: {}", numValidators, packageType, getValidatorNames());
         if (printUnusedValidators) {
             Map<String, Validator> unusedValidatorsById = executor.getUnusedValidatorsById();
             if (!unusedValidatorsById.isEmpty()) {
-                log.warn("There are unused validators among those which are not executed: " + StringUtils.join(unusedValidatorsById.keySet(), "."));
+                String validatorNames = StringUtils.join(unusedValidatorsById.keySet(), ".");
+                log.warn("There are unused validators among those which are not executed: {}", validatorNames);
             }
         }
     }
     
     private String getValidatorNames() {
-        StringBuilder validatorNames = new StringBuilder();
-        boolean isFirstItem = true;
-        for (Map.Entry<String, Validator> validatorById : executor.getAllValidatorsById().entrySet()) {
-            if (!isFirstItem) {
-                validatorNames.append(", ");
-            } else {
-                isFirstItem = false;
-            }
-            validatorNames.append(validatorById.getKey()).append(" (").append(validatorById.getValue().getClass().getName()).append(")");
-        }
-        return validatorNames.toString();
+        return executor.getAllValidatorsById().entrySet().stream()
+                .map(this::describeValidator)
+                .collect(Collectors.joining(", "));
+    }
+    
+    private String describeValidator(Map.Entry<String, Validator> validatorById) {
+        String validatorClassName = validatorById.getValue().getClass().getName();
+        return validatorById.getKey() + " (" + validatorClassName + ")";
     }
     
     /** 
