@@ -31,8 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
@@ -44,7 +42,6 @@ import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 /**
  * Validate a package using filevault validation API.
@@ -90,17 +87,11 @@ public class PackageValidator {
     }
     
     private void validateArchive(Archive archive, Path path) throws IOException {
-        try {
-            validateEntry(archive, archive.getRoot(), Paths.get(""), path);
-            messages.addAll(executor.done());
-        } catch (SAXException e) {
-            e.printStackTrace();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
+        validateEntry(archive, archive.getRoot(), Paths.get(""), path);
+        messages.addAll(executor.done());
     }
     
-    private void validateEntry(Archive archive, Archive.Entry entry, Path entryPath, Path packagePath) throws IOException, SAXException, ParserConfigurationException {
+    private void validateEntry(Archive archive, Archive.Entry entry, Path entryPath, Path packagePath) throws IOException {
         // sort children to make sure that .content.xml comes first!
         List<Archive.Entry> sortedEntryList = new ArrayList<>(entry.getChildren());
         sortedEntryList.sort(Comparator.comparing(Archive.Entry::getName, new DotContentXmlFirstComparator()));
@@ -117,7 +108,7 @@ public class PackageValidator {
         }
     }
     
-    private void validateInputStream(InputStream inputStream, Path entryPath, Path packagePath) throws IOException, SAXException, ParserConfigurationException {
+    private void validateInputStream(InputStream inputStream, Path entryPath, Path packagePath) throws IOException {
         if (entryPath.startsWith(Constants.META_INF)) {
             messages.addAll(executor.validateMetaInf(inputStream, Paths.get(Constants.META_INF).relativize(entryPath), packagePath.resolve(Constants.META_INF)));
         } else if (entryPath.startsWith(Constants.ROOT_DIR)) {
@@ -129,7 +120,7 @@ public class PackageValidator {
         }
     }
     
-    public void printUsedValidators(boolean printUnusedValidators) {
+    private void printUsedValidators(boolean printUnusedValidators) {
         String packageType = context.getProperties().getPackageType() != null ? context.getProperties().getPackageType().toString() : "unknown";
         log.info("Using " + executor.getAllValidatorsById().entrySet().size() + " validators for package of type " + packageType + ": " + getValidatorNames());
         if (printUnusedValidators) {
