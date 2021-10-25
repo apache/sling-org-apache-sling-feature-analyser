@@ -30,15 +30,20 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Test;
 
 public class CheckContentPackagesTest {
+    
+    private final CheckContentPackages analyser;
+    private final AnalyserTaskContextImpl ctx;
+    private final FeatureDescriptor fd;
+
+    public CheckContentPackagesTest() {
+        analyser = new CheckContentPackages();
+        ctx = new AnalyserTaskContextImpl();
+        fd = new FeatureDescriptorImpl(ctx.getFeature());
+        ctx.setFeatureDescriptor(fd);
+    }
 
     @Test 
     public void testContentPackageWithInvalidXMLShouldBeReported() throws Exception {
-        final CheckContentPackages analyser = new CheckContentPackages();
-        final AnalyserTaskContextImpl ctx = new AnalyserTaskContextImpl();
-
-        final FeatureDescriptor fd = new FeatureDescriptorImpl(ctx.getFeature());
-        ctx.setFeatureDescriptor(fd);
-
         final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), 
                 getClass().getClassLoader().getResource("test-invalid-xml.zip").toURI().toURL(),
                 null, null, null, null, new Properties());
@@ -48,5 +53,20 @@ public class CheckContentPackagesTest {
         List<String> errors = ctx.getErrors();
         assertThat(errors.size(), equalTo(2));
         assertThat(errors.get(1), equalTo("ValidationViolation: \"jackrabbit-docviewparser: Invalid XML found: The reference to entity \"se\" must end with the ';' delimiter.\", filePath=jcr_root/apps/cschneidervalidation/configs/com.adobe.test.Invalid.xml, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid"));
+    }
+    
+    @Test
+    public void testInfo() throws Exception {
+        assertThat(analyser.getId(), equalTo("content-packages"));
+        assertThat(analyser.getName(), equalTo("Content Package validation"));
+        final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), 
+                null,
+                null, null, null, null, new Properties());
+        fd.getArtifactDescriptors().add(cpd);
+        analyser.execute(ctx);
+        List<String> errors = ctx.getErrors();
+        assertThat(errors.size(), equalTo(1));
+        assertThat(errors.get(0), equalTo("Content package content is not resolved and can not be checked."));
+ 
     }
 }
