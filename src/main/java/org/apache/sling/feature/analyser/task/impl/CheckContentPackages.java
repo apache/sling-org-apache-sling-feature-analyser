@@ -43,8 +43,8 @@ import org.slf4j.LoggerFactory;
  */
 public class CheckContentPackages implements AnalyserTask {
     // Comma separated list of validator ids to disable
-    static final String DISABLED_VALIDATORS = "disabled_validators";
-    static final String MAX_REPORT_LEVEL = "max_report_level";
+    static final String DISABLED_VALIDATORS = "disabled-validators";
+    static final String MAX_REPORT_LEVEL = "max-report-level";
     private Logger log = LoggerFactory.getLogger(this.getClass());
     
     @Override
@@ -59,9 +59,8 @@ public class CheckContentPackages implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) throws Exception {
-        Map<String, ValidatorSettings> validatorSettings = new HashMap<>();
         String disabledValidators = ctx.getConfiguration().get(DISABLED_VALIDATORS);
-        disableValidators(validatorSettings, disabledValidators);
+        Map<String, ValidatorSettings> validatorSettings = disableValidators(disabledValidators);
         String maxReportLevelSt = ctx.getConfiguration().get(MAX_REPORT_LEVEL);
         ValidationMessageSeverity maxReportLevel = maxReportLevelSt == null ? ValidationMessageSeverity.WARN : ValidationMessageSeverity.valueOf(maxReportLevelSt); 
         for (final ContentPackageDescriptor cp : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
@@ -74,15 +73,16 @@ public class CheckContentPackages implements AnalyserTask {
         }
     }
 
-    private void disableValidators(Map<String, ValidatorSettings> validatorSettings,
-            String disabledValidators) {
+    private Map<String, ValidatorSettings> disableValidators(String disabledValidators) {
+        Map<String, ValidatorSettings> validatorSettings = new HashMap<>();
         if (disabledValidators == null) {
-            return;
+            return validatorSettings;
         }
         String[] disabledValidatorsAr = disabledValidators.split(",");
         for (String validatorId : disabledValidatorsAr) {
             validatorSettings.put(validatorId, new ValidatorSettingsImpl(true));
         }
+        return validatorSettings;
     }
 
     private void validatePackage(final AnalyserTaskContext ctx, 
