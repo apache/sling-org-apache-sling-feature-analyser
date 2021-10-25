@@ -66,12 +66,13 @@ public class PackageValidator {
     
     public PackageValidator(URI artifactURI, Map<String, ? extends ValidatorSettings> validatorSettings) {
         this.artifactURI = artifactURI;
+        this.validatorSettings = validatorSettings;
         validationExecutorFactory = new ValidationExecutorFactory(
                 this.getClass().getClassLoader());
         messages = new LinkedList<>();
     }
 
-    public Collection<ValidationViolation> validate() {
+    public Collection<ValidationViolation> validate() throws IOException {
         Path artifactPath = Paths.get(artifactURI);
         try (Archive archive = new ZipArchive(new File(artifactURI))) {
             archive.open(true);
@@ -84,7 +85,7 @@ public class PackageValidator {
                 log.warn("No registered validators found. Skipping validation.");
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new IOException("Error while checking archive " + artifactURI, e);
         }
         return messages;
     }

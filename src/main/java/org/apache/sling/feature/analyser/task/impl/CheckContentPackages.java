@@ -16,6 +16,7 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -65,7 +66,7 @@ public class CheckContentPackages implements AnalyserTask {
     }
 
     private void validatePackage(final AnalyserTaskContext ctx, final ContentPackageDescriptor cp, 
-        URL artifactFile, Map<String, ? extends ValidatorSettings> validatorSettings) throws URISyntaxException {
+        URL artifactFile, Map<String, ? extends ValidatorSettings> validatorSettings) throws URISyntaxException, IOException {
         URI artifactURI = artifactFile.toURI();
         Path artifactPath = Paths.get(artifactURI);
         PackageValidator validator = new PackageValidator(artifactURI, validatorSettings);
