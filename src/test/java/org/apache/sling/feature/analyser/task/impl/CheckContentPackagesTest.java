@@ -41,9 +41,10 @@ public class CheckContentPackagesTest {
         fd = new FeatureDescriptorImpl(ctx.getFeature());
         ctx.setFeatureDescriptor(fd);
     }
-
+    
     @Test 
-    public void testContentPackageWithInvalidXMLShouldBeReported() throws Exception {
+    public void testContentPackageWithInvalidXMLOnLowReportLevelShouldNotBeReported() throws Exception {
+        ctx.getConfiguration().put(CheckContentPackages.MAX_REPORT_LEVEL, "WARN");
         final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), 
                 getClass().getClassLoader().getResource("test-invalid-xml.zip").toURI().toURL(),
                 null, null, null, null, new Properties());
@@ -51,14 +52,32 @@ public class CheckContentPackagesTest {
 
         analyser.execute(ctx);
         List<String> errors = ctx.getErrors();
-        assertThat(errors.size(), equalTo(2));
-        assertThat(errors.get(1), equalTo("ValidationViolation: \"jackrabbit-docviewparser: Invalid XML found: The reference to entity \"se\" must end with the ';' delimiter.\", filePath=jcr_root/apps/cschneidervalidation/configs/com.adobe.test.Invalid.xml, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid"));
+        assertThat(errors.size(), equalTo(0));
+    }
+
+    @Test 
+    public void testContentPackageWithInvalidXMLShouldBeReported() throws Exception {
+        ctx.getConfiguration().put(CheckContentPackages.DISABLED_VALIDATORS, "jackrabbit-filter");
+        ctx.getConfiguration().put(CheckContentPackages.MAX_REPORT_LEVEL, "ERROR");
+        final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), 
+                getClass().getClassLoader().getResource("test-invalid-xml.zip").toURI().toURL(),
+                null, null, null, null, new Properties());
+        fd.getArtifactDescriptors().add(cpd);
+
+        analyser.execute(ctx);
+        List<String> errors = ctx.getErrors();
+        assertThat(errors.size(), equalTo(1));
+        assertThat(errors.get(0), equalTo("ValidationViolation: \"jackrabbit-docviewparser: Invalid XML found: The reference to entity \"se\" must end with the ';' delimiter.\", filePath=jcr_root/apps/cschneidervalidation/configs/com.adobe.test.Invalid.xml, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid"));
     }
     
     @Test
     public void testInfo() throws Exception {
         assertThat(analyser.getId(), equalTo("content-packages"));
         assertThat(analyser.getName(), equalTo("Content Package validation"));
+    }
+    
+    @Test
+    public void testNoContentPackageURLIsReported() throws Exception {
         final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), 
                 null,
                 null, null, null, null, new Properties());
@@ -67,6 +86,5 @@ public class CheckContentPackagesTest {
         List<String> errors = ctx.getErrors();
         assertThat(errors.size(), equalTo(1));
         assertThat(errors.get(0), equalTo("Content package content is not resolved and can not be checked."));
- 
     }
 }

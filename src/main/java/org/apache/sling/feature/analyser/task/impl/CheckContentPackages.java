@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
+import org.apache.jackrabbit.vault.validation.impl.util.ValidatorSettingsImpl;
+import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
@@ -40,7 +42,10 @@ import org.slf4j.LoggerFactory;
  * This analyzer checks for bundles and configurations in packages
  */
 public class CheckContentPackages implements AnalyserTask {
-    Logger log = LoggerFactory.getLogger(this.getClass());
+    // Comma separated list of validator ids to disable
+    static final String DISABLED_VALIDATORS = "disabled_validators";
+    static final String MAX_REPORT_LEVEL = "max_report_level";
+    private Logger log = LoggerFactory.getLogger(this.getClass());
     
     @Override
     public String getName() {
@@ -54,37 +59,60 @@ public class CheckContentPackages implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) throws Exception {
-        Map<String, ? extends ValidatorSettings> validatorSettings = new HashMap<>();
+        Map<String, ValidatorSettings> validatorSettings = new HashMap<>();
+        String disabledValidators = ctx.getConfiguration().get(DISABLED_VALIDATORS);
+        disableValidators(validatorSettings, disabledValidators);
+        String maxReportLevelSt = ctx.getConfiguration().get(MAX_REPORT_LEVEL);
+        ValidationMessageSeverity maxReportLevel = maxReportLevelSt == null ? ValidationMessageSeverity.WARN : ValidationMessageSeverity.valueOf(maxReportLevelSt); 
         for (final ContentPackageDescriptor cp : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
             URL artifactFile = cp.getArtifactFile();
             if (artifactFile ==  null) {
                 ctx.reportArtifactError(cp.getArtifact().getId(), "Content package " + cp.getName() + " is not resolved and can not be checked.");
             } else {
-                validatePackage(ctx, cp, artifactFile, validatorSettings);
+                validatePackage(ctx, cp, artifactFile, validatorSettings, maxReportLevel);
             }
         }
     }
 
-    private void validatePackage(final AnalyserTaskContext ctx, final ContentPackageDescriptor cp, 
-        URL artifactFile, Map<String, ? extends ValidatorSettings> validatorSettings) throws URISyntaxException, IOException {
+    private void disableValidators(Map<String, ValidatorSettings> validatorSettings,
+            String disabledValidators) {
+        if (disabledValidators == null) {
+            return;
+        }
+        String[] disabledValidatorsAr = disabledValidators.split(",");
+        for (String validatorId : disabledValidatorsAr) {
+            validatorSettings.put(validatorId, new ValidatorSettingsImpl(true));
+        }
+    }
+
+    private void validatePackage(final AnalyserTaskContext ctx, 
+            final ContentPackageDescriptor cp,
+            URL artifactFile, Map<String, ValidatorSettings> validatorSettings, 
+            ValidationMessageSeverity maxReportLevel) throws URISyntaxException, IOException {
         URI artifactURI = artifactFile.toURI();
         Path artifactPath = Paths.get(artifactURI);
         PackageValidator validator = new PackageValidator(artifactURI, validatorSettings);
         Collection<ValidationViolation> violations = validator.validate();
-        reportViolations(ctx, cp, violations, artifactPath);
+        reportViolations(ctx, cp, violations, artifactPath, maxReportLevel);
     }
 
     private void reportViolations(AnalyserTaskContext ctx, ContentPackageDescriptor cp,
-            Collection<ValidationViolation> violations, Path artifactPath) {
+            Collection<ValidationViolation> violations, Path artifactPath, ValidationMessageSeverity maxReportLevel) {
         for (ValidationViolation violation : violations) {
-            reportViolation(ctx, cp, violation, artifactPath);
+            ValidationMessageSeverity severity = getMin(maxReportLevel, violation.getSeverity());
+            reportViolation(ctx, cp, violation, artifactPath, severity);
         }
     }
 
-    private void reportViolation(AnalyserTaskContext ctx, ContentPackageDescriptor cp, ValidationViolation violation, Path artifactPath) {
+    private ValidationMessageSeverity getMin(ValidationMessageSeverity a, ValidationMessageSeverity b) {
+        return a.compareTo(b) < 0 ? a : b;
+    }
+
+    private void reportViolation(AnalyserTaskContext ctx, ContentPackageDescriptor cp, ValidationViolation violation, 
+            Path artifactPath, ValidationMessageSeverity severity) {
         String msg = getDetailMessage(violation, artifactPath);
         ArtifactId id = cp.getArtifact().getId();
-        switch (violation.getSeverity()) {
+        switch (severity) {
         case ERROR:
             log.error(msg);
             ctx.reportArtifactError(id, msg);
