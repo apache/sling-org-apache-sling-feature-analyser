@@ -41,6 +41,7 @@ import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
+import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,8 +61,10 @@ public class PackageValidator {
     private ArchiveValidationContextImpl context;
 
     private ValidationExecutor executor;
+
+    private Map<String, ? extends ValidatorSettings> validatorSettings;
     
-    public PackageValidator(URI artifactURI) {
+    public PackageValidator(URI artifactURI, Map<String, ? extends ValidatorSettings> validatorSettings) {
         this.artifactURI = artifactURI;
         validationExecutorFactory = new ValidationExecutorFactory(
                 this.getClass().getClassLoader());
@@ -73,13 +76,12 @@ public class PackageValidator {
         try (Archive archive = new ZipArchive(new File(artifactURI))) {
             archive.open(true);
             context = new ArchiveValidationContextImpl(archive, artifactPath);
-            executor = validationExecutorFactory.createValidationExecutor(context, false, false,
-                    null);
+            executor = validationExecutorFactory.createValidationExecutor(context, false, false, validatorSettings);
             if (executor != null) {
                 printUsedValidators(true);
                 validateArchive(archive, artifactPath);
             } else {
-                throw new RuntimeException("No registered validators found!");
+                log.warn("No registered validators found. Skipping validation.");
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
