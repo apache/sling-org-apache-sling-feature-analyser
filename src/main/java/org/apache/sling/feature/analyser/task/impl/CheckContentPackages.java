@@ -54,7 +54,7 @@ public class CheckContentPackages implements AnalyserTask {
 
     @Override
     public String getId() {
-        return "content-packages";
+        return "content-packages-validation";
     }
 
     @Override
