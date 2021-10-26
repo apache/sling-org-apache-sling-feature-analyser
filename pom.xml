@@ -144,7 +144,13 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.2.6</version>
+            <version>3.5.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jackrabbit.vault</groupId>
+            <artifactId>vault-validation</artifactId>
+            <version>3.5.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

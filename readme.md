@@ -83,6 +83,15 @@ This analyser checks for allowed and denied paths inside content packages. This 
 `includes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must match at least one of these.
 `excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must not match any of these - except it matches an include.
 
+## `content-packages-validation`
+
+Runs the default [filevault validators](https://jackrabbit.apache.org/filevault/validation.html) on the content packages.
+
+ Configuration key | Allowed values | Description
+ ----------------- | -------------- | -----
+`disabled-validators`     | validator ids  | A comma separated list of validator-ids to disable
+`max-report-level`       | severity level | Maximum severity level to report. (INFO, WARN, ERROR) defaults to WARN. Higher level messages will be downgraded to the sepcified level. The default will never break a build.
+
 ## `duplicate-symbolic-names`
 
 Checks if there are duplicates of symbolic names for bundles.
