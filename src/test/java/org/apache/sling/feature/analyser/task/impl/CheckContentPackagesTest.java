@@ -72,7 +72,7 @@ public class CheckContentPackagesTest {
     
     @Test
     public void testInfo() throws Exception {
-        assertThat(analyser.getId(), equalTo("content-packages"));
+        assertThat(analyser.getId(), equalTo("content-packages-validation"));
         assertThat(analyser.getName(), equalTo("Content Package validation"));
     }
     

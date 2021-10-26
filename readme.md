@@ -90,7 +90,7 @@ Runs the default [filevault validators](https://jackrabbit.apache.org/filevault/
  Configuration key | Allowed values | Description
  ----------------- | -------------- | -----
 `disabled-validators`     | validator ids  | A comma separated list of validator-ids to disable
-`max-report-level`       | severity level | Maximum severity level to report. (INFO, WARN, ERROR) defaults to WARN. The default will never break a build.
+`max-report-level`       | severity level | Maximum severity level to report. (INFO, WARN, ERROR) defaults to WARN. Higher level messages will be downgraded to the sepcified level. The default will never break a build.
 
 ## `duplicate-symbolic-names`
 
