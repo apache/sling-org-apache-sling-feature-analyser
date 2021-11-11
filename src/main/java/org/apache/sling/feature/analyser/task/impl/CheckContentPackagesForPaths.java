@@ -16,6 +16,12 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.ContentPackageDescriptor;
@@ -71,7 +77,14 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
         }
         
         private String[] splitAndTrim(String property) {
-            return property == null ? new String[] {} : property.trim().split("\\s*,\\s*");
+            if (property == null) {
+                return new String[] {};
+            }
+            
+            return Stream.of(property.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList())
+                    .toArray(new String[] {});
         }
 
         boolean isConfigured() {
