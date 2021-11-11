@@ -17,7 +17,6 @@
 package org.apache.sling.feature.analyser.task.impl;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -26,43 +25,11 @@ import java.util.Properties;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
-import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.analyser.task.impl.CheckContentPackagesForPaths.Rules;
 import org.apache.sling.feature.scanner.impl.ContentPackageDescriptorImpl;
 import org.junit.Test;
 
 public class CheckContentPackagesForPathsTest {
-
-    @Test public void testNoRulesConfiguration() {
-        final CheckContentPackagesForPaths analyser = new CheckContentPackagesForPaths();
-        final AnalyserTaskContext ctx = new AnalyserTaskContextImpl();
-
-        assertNull(analyser.getRules(ctx));
-    }
-
-    @Test public void testIncludesRulesConfiguration() {
-        final CheckContentPackagesForPaths analyser = new CheckContentPackagesForPaths();
-        final AnalyserTaskContext ctx = new AnalyserTaskContextImpl();
-        ctx.getConfiguration().put("includes", "/a, /b");
-
-        final Rules r = analyser.getRules(ctx);
-        assertNull(r.excludes);
-        assertEquals(2, r.includes.length);
-        assertEquals("/a", r.includes[0]);
-        assertEquals("/b", r.includes[1]);
-    }
-
-    @Test public void testExcludesRulesConfiguration() {
-        final CheckContentPackagesForPaths analyser = new CheckContentPackagesForPaths();
-        final AnalyserTaskContext ctx = new AnalyserTaskContextImpl();
-        ctx.getConfiguration().put("excludes", "/a, /b");
-
-        final Rules r = analyser.getRules(ctx);
-        assertNull(r.includes);
-        assertEquals(2, r.excludes.length);
-        assertEquals("/a", r.excludes[0]);
-        assertEquals("/b", r.excludes[1]);
-    }
 
     @Test public void testPathsCheck() throws IOException {
         final CheckContentPackagesForPaths analyser = new CheckContentPackagesForPaths();
@@ -70,7 +37,7 @@ public class CheckContentPackagesForPathsTest {
         ctx.getConfiguration().put("excludes", "/a");
         ctx.getConfiguration().put("includes", "/ab,/b");
 
-        final Rules r = analyser.getRules(ctx);
+        final Rules r = new Rules(ctx);
         final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl("name", new Artifact(ArtifactId.parse("g:a:1")),
             new URL("https://sling.apache.org"), null, null, null, null, new Properties());
         desc.getContentPaths().add("/b/foo");
@@ -94,7 +61,7 @@ public class CheckContentPackagesForPathsTest {
         ctx.getConfiguration().put("excludes", "/a");
         ctx.getConfiguration().put("includes", "/a/foo");
 
-        final Rules r = analyser.getRules(ctx);
+        final Rules r = new Rules(ctx);
         final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl("name", new Artifact(ArtifactId.parse("g:a:1")),
             new URL("https://sling.apache.org"), null, null, null, null, new Properties());
         desc.getContentPaths().add("/a/foo");
