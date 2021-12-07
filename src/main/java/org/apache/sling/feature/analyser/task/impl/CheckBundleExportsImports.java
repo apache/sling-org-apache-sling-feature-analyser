@@ -20,6 +20,7 @@ package org.apache.sling.feature.analyser.task.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +34,9 @@ import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Version;
 
 public class CheckBundleExportsImports implements AnalyserTask {
+
+    /** Ignore JDK packages */
+    private static final List<String> IGNORED_IMPORT_PREFIXES = Arrays.asList("java.", "javax.", "org.w3c.", "org.xml.");
 
     @Override
     public String getName() {
@@ -80,16 +84,21 @@ public class CheckBundleExportsImports implements AnalyserTask {
         }
     }
 
+    private boolean ignoreImportPackage(final String name) {
+        for(final String prefix : IGNORED_IMPORT_PREFIXES) {
+            if ( name.startsWith(prefix) ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private void checkForVersionOnImportingPackages(final AnalyserTaskContext ctx, final Map<BundleDescriptor, Report> reports) {
         for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             if ( info.getImportedPackages() != null ) {
                 for(final PackageInfo i : info.getImportedPackages()) {
-                    if ( i.getVersion() == null ) {
-                        // don't report for javax, org.w3c. and org.xml. packages (TODO)
-                        if ( !i.getName().startsWith("javax.")
-                                && !i.getName().startsWith("org.w3c.") && !i.getName().startsWith("org.xml.")) {
-                            getReport(reports, info).importWithoutVersion.add(i);
-                        }
+                    if ( i.getVersion() == null && !ignoreImportPackage(i.getName()) ) {
+                        getReport(reports, info).importWithoutVersion.add(i);
                     }
                 }
             }
