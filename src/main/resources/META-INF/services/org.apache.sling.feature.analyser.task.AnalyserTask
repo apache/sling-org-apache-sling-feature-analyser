@@ -1,5 +1,6 @@
 org.apache.sling.feature.analyser.task.impl.CheckApisJarsProperties
 org.apache.sling.feature.analyser.task.impl.CheckBundleExportsImports
+org.apache.sling.feature.analyser.task.impl.CheckBundleUnversionedPackages
 org.apache.sling.feature.analyser.task.impl.CheckBundleNativeCode
 org.apache.sling.feature.analyser.task.impl.CheckBundlesForConnect
 org.apache.sling.feature.analyser.task.impl.CheckBundlesForInitialContent
