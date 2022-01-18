@@ -42,11 +42,15 @@ Checks for native code instructions in bundles and errors if found.
 
 ## `bundle-packages`
 
-Checks bundle import/export package statements for consistency and completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
+Checks bundle import/export package statements for completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
 
 ## `bundle-resources`
 
 Gives a warning if a bundle contains resources specified with `Sling-Bundle-Resources`.
+
+## `bundle-unversioned-packages`
+
+Checks bundle import/export package statements for missing version information.
 
 ## `check-unused-bundles`
 
