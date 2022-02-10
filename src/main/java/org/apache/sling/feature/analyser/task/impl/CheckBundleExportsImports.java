@@ -65,8 +65,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
         final SortedMap<Integer, List<BundleDescriptor>> bundlesMap = new TreeMap<>();
         for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
-            List<BundleDescriptor> list = bundlesMap.computeIfAbsent(bi.getArtifact().getStartOrder(), key -> new ArrayList<>());
-            list.add(bi);
+            bundlesMap.computeIfAbsent(bi.getArtifact().getStartOrder(), key -> new ArrayList<>()).add(bi);
         }
 
         // add all system packages
@@ -116,16 +115,16 @@ public class CheckBundleExportsImports implements AnalyserTask {
         boolean errorReported = false;
         for(final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
             if ( !entry.getValue().missingExports.isEmpty() ) {
-                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), " is importing package(s) " + getPackageInfo(entry.getValue().missingExports, false) + " in start level " +
+                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), "Bundle is importing " + getPackageInfo(entry.getValue().missingExports, false) + " with start order " +
                         String.valueOf(entry.getKey().getArtifact().getStartOrder())
-                        + " but no bundle is exporting these for that start level.");
+                        + " but no bundle is exporting these for that start order.");
                 errorReported = true;
             }
             if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
-                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), " is importing package(s) "
-                        + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " in start level "
+                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), "Bundle is importing "
+                        + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " with start order "
                         + String.valueOf(entry.getKey().getArtifact().getStartOrder())
-                        + " but no bundle is exporting these for that start level in the required version range.");
+                        + " but no bundle is exporting these for that start order in the required version range.");
                 errorReported = true;
             }
         }
@@ -136,13 +135,15 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
     private String getPackageInfo(final List<PackageInfo> pcks, final boolean includeVersion) {
         if ( pcks.size() == 1 ) {
+            final StringBuilder sb = new StringBuilder("package ");
+            sb.append(pcks.get(0).getName());
             if (includeVersion) {
-                return pcks.get(0).toString();
-            } else {
-                return pcks.get(0).getName();
+                sb.append(";version=");
+                sb.append(pcks.get(0).getVersion());
             }
+            return sb.toString();
         }
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder("packages ");
         boolean first = true;
         sb.append('[');
         for(final PackageInfo info : pcks) {
