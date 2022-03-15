@@ -57,7 +57,7 @@ public class CheckContentPackagesTest {
 
     @Test 
     public void testContentPackageWithInvalidXMLShouldBeReported() throws Exception {
-        ctx.getConfiguration().put(CheckContentPackages.DISABLED_VALIDATORS, "jackrabbit-filter");
+        ctx.getConfiguration().put(CheckContentPackages.ENABLED_VALIDATORS, "jackrabbit-docviewparser");
         ctx.getConfiguration().put(CheckContentPackages.MAX_REPORT_LEVEL, "ERROR");
         final ContentPackageDescriptorImpl cpd = new ContentPackageDescriptorImpl("content", new Artifact(ArtifactId.parse("g:c:1")), 
                 getClass().getClassLoader().getResource("test-invalid-xml.zip").toURI().toURL(),
