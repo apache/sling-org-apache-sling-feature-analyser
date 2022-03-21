@@ -22,13 +22,19 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
 import org.apache.jackrabbit.vault.validation.impl.util.ValidatorSettingsImpl;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
+import org.apache.jackrabbit.vault.validation.spi.ValidatorFactory;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
@@ -42,8 +48,8 @@ import org.slf4j.LoggerFactory;
  * This analyzer checks for bundles and configurations in packages
  */
 public class CheckContentPackages implements AnalyserTask {
-    // Comma separated list of validator ids to disable
-    static final String DISABLED_VALIDATORS = "disabled-validators";
+    // Comma separated list of validator ids to enable
+    static final String ENABLED_VALIDATORS = "enabled-validators";
     static final String MAX_REPORT_LEVEL = "max-report-level";
     private Logger log = LoggerFactory.getLogger(this.getClass());
     
@@ -59,8 +65,8 @@ public class CheckContentPackages implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) throws Exception {
-        String disabledValidators = ctx.getConfiguration().get(DISABLED_VALIDATORS);
-        Map<String, ValidatorSettings> validatorSettings = disableValidators(disabledValidators);
+        String enabledValidators = ctx.getConfiguration().get(ENABLED_VALIDATORS);
+        Map<String, ValidatorSettings> validatorSettings = enableValidators(enabledValidators);
         String maxReportLevelSt = ctx.getConfiguration().get(MAX_REPORT_LEVEL);
         ValidationMessageSeverity maxReportLevel = maxReportLevelSt == null ? ValidationMessageSeverity.WARN : ValidationMessageSeverity.valueOf(maxReportLevelSt); 
         for (final ContentPackageDescriptor cp : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
@@ -73,16 +79,26 @@ public class CheckContentPackages implements AnalyserTask {
         }
     }
 
-    private Map<String, ValidatorSettings> disableValidators(String disabledValidators) {
+    private Map<String, ValidatorSettings> enableValidators(String enabledValidators) {
+        ServiceLoader<ValidatorFactory> validatorFactories = ServiceLoader.load(ValidatorFactory.class, PackageValidator.class.getClassLoader());
+
         Map<String, ValidatorSettings> validatorSettings = new HashMap<>();
-        if (disabledValidators == null) {
-            return validatorSettings;
-        }
-        String[] disabledValidatorsAr = disabledValidators.split(",");
-        for (String validatorId : disabledValidatorsAr) {
-            validatorSettings.put(validatorId, new ValidatorSettingsImpl(true));
+        Set<String> enabledValidatorsSet = split(enabledValidators);
+        for (ValidatorFactory validatorFactory : validatorFactories) {
+            String validatorId = validatorFactory.getId();
+            boolean enabled = enabledValidatorsSet.contains(validatorId);
+            validatorSettings.put(validatorId, new ValidatorSettingsImpl(!enabled));
         }
         return validatorSettings;
+    }
+
+    private Set<String> split(String enabledValidators) {
+        HashSet<String> enabled = new HashSet<String>();
+        if (enabledValidators != null) {
+            List<String> enabledList = Arrays.asList(enabledValidators.split(","));
+            enabled.addAll(enabledList);
+        }
+        return enabled;
     }
 
     private void validatePackage(final AnalyserTaskContext ctx, 
