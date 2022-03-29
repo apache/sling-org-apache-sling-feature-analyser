@@ -18,8 +18,7 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -169,8 +168,8 @@ public class CheckApisJarsPropertiesTest {
 
         SpyAnalyserTaskContext context = new SpyAnalyserTaskContext(f);
         check.execute(context);
-        assertThat("errors.size", context.getErrors().size(), equalTo(0));
-        assertThat("warnings.size", context.getWarnings().size(), equalTo(0));
+        assertEquals("errors.size", 0, context.getErrors().size());
+        assertEquals("warnings.size", 0, context.getWarnings().size());
     }
     
     @Test
@@ -184,7 +183,7 @@ public class CheckApisJarsPropertiesTest {
 
         SpyAnalyserTaskContext context = new SpyAnalyserTaskContext(f);
         check.execute(context);
-        assertThat("errors.size", context.getErrors().size(), equalTo(1));
-        assertThat("warnings.size", context.getWarnings().size(), equalTo(0));  
+        assertEquals("errors.size", 1, context.getErrors().size());
+        assertEquals("warnings.size", 0, context.getWarnings().size());  
     }
 }

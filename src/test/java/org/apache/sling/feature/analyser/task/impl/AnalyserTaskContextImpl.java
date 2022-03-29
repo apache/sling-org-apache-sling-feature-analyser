@@ -38,10 +38,12 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
 
     private final List<String> errors = new ArrayList<>();
 
+    private FeatureDescriptor featureDescriptor;
+
     public AnalyserTaskContextImpl() {
         this("g:a:1");
     }
-    
+
     public AnalyserTaskContextImpl(String artifactId) {
         f = new Feature(ArtifactId.parse(artifactId));
     }
@@ -53,7 +55,11 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
 
     @Override
     public FeatureDescriptor getFeatureDescriptor() {
-        return null;
+        return featureDescriptor;
+    }
+
+    public void setFeatureDescriptor(final FeatureDescriptor fd) {
+        this.featureDescriptor = fd;
     }
 
     @Override
@@ -115,6 +121,6 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
 
     @Override
     public void reportConfigurationWarning(Configuration cfg, String message) {
-        
+
     }
 }

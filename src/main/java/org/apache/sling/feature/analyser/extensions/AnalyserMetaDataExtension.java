@@ -81,7 +81,7 @@ public class AnalyserMetaDataExtension {
         return ext != null && ext.getName().equals(EXTENSION_NAME) && ext.getType() == ExtensionType.JSON;
     }
 
-    public Map<String, String> getManifest(ArtifactId artifactId) {
+    public Map<String, String> getManifest(final ArtifactId artifactId) {
         return this.manifests.get(artifactId);
     }
 

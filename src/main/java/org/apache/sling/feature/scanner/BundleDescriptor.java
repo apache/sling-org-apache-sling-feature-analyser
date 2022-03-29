@@ -33,6 +33,7 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
     /**
      * Constructor for a new descriptor
      * @param name The name
+     * @throws IllegalArgumentException if name is {@code null}
      */
     protected BundleDescriptor(final String name) {
         super(name);

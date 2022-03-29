@@ -16,7 +16,6 @@
  */
 package org.apache.sling.feature.scanner.impl;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.jar.Manifest;
 
@@ -24,7 +23,7 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.scanner.ArtifactDescriptor;
 
 /**
- * Information about a bundle
+ * Information about an artifact.
  */
 public class ArtifactDescriptorImpl
     extends ArtifactDescriptor {
@@ -41,37 +40,21 @@ public class ArtifactDescriptorImpl
     /**
      * Constructor for an artifact descriptor
      * @param name Optional name
-     * @param artifact Optional artifact
+     * @param artifact The artifact, must be provided
      * @param url Optional url
-     * @param hasManifest Whether that artifact must have a metafest
-     * @param isManifestOptional Whether the manifest is optional
-     * @throws IOException If processing fails
+     * @param Manifest manifest (optional)
+     * @throws NullPointerException If artifact is {@code null}
      */
     public ArtifactDescriptorImpl(
             final String name,
             final Artifact artifact,
             final URL url,
-            final boolean hasManifest,
-            final boolean isManifestOptional) throws IOException  {
+            final Manifest manifest) {
         super(name != null ? name : artifact.getId().toMvnId());
         this.artifact = artifact;
+        this.artifact.getId(); // throw NPE if artifact is null
         this.artifactFile = url;
-        Manifest mf = null;
-        if ( hasManifest ) {
-            try {
-                final Manifest origMf = BundleDescriptorImpl.getManifest(url);
-                if ( origMf != null ) {
-                    mf = new Manifest(origMf);
-                } else if ( !isManifestOptional ) {
-                    throw new IOException(url + " : No manifest found.");
-                }
-            } catch ( final IOException ioe) {
-                if ( !isManifestOptional ) {
-                    throw ioe;
-                }
-            }
-        }
-        this.manifest = mf;
+        this.manifest = manifest;
     }
 
     @Override

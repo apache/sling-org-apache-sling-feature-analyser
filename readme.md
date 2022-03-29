@@ -42,11 +42,15 @@ Checks for native code instructions in bundles and errors if found.
 
 ## `bundle-packages`
 
-Checks bundle import/export package statements for consistency and completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
+Checks bundle import/export package statements for completeness. Does _not_ take API Regions into account. An expanded variant of this analyser is available in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions) under the name `api-regions-exportsimports`.
 
 ## `bundle-resources`
 
 Gives a warning if a bundle contains resources specified with `Sling-Bundle-Resources`.
+
+## `bundle-unversioned-packages`
+
+Checks bundle import/export package statements for missing version information.
 
 ## `check-unused-bundles`
 
@@ -82,6 +86,15 @@ This analyser checks for allowed and denied paths inside content packages. This 
  ----- | ----- | -----
 `includes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must match at least one of these.
 `excludes` | Content paths | A comma separated list of content paths. If this is specified all content in the content package must not match any of these - except it matches an include.
+
+## `content-packages-validation`
+
+Runs the default [filevault validators](https://jackrabbit.apache.org/filevault/validation.html) on the content packages.
+
+ Configuration key | Allowed values | Description
+ ----------------- | -------------- | -----
+`enabled-validators`     | validator ids  | A comma separated list of validator-ids to enable
+`max-report-level`       | severity level | Maximum severity level to report. (INFO, WARN, ERROR) defaults to WARN. Higher level messages will be downgraded to the sepcified level. The default will never break a build.
 
 ## `duplicate-symbolic-names`
 

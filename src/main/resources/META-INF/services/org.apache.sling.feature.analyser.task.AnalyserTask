@@ -1,5 +1,6 @@
 org.apache.sling.feature.analyser.task.impl.CheckApisJarsProperties
 org.apache.sling.feature.analyser.task.impl.CheckBundleExportsImports
+org.apache.sling.feature.analyser.task.impl.CheckBundleUnversionedPackages
 org.apache.sling.feature.analyser.task.impl.CheckBundleNativeCode
 org.apache.sling.feature.analyser.task.impl.CheckBundlesForConnect
 org.apache.sling.feature.analyser.task.impl.CheckBundlesForInitialContent
@@ -8,6 +9,7 @@ org.apache.sling.feature.analyser.task.impl.CheckCompareFeatures
 org.apache.sling.feature.analyser.task.impl.CheckContentPackageForInstallables
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesDependencies
 org.apache.sling.feature.analyser.task.impl.CheckContentPackagesForPaths
+org.apache.sling.feature.analyser.task.impl.CheckContentPackages
 org.apache.sling.feature.analyser.task.impl.CheckDuplicateSymbolicName
 org.apache.sling.feature.analyser.task.impl.CheckRepoinit
 org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities

@@ -37,8 +37,9 @@ public abstract class ContainerDescriptor extends Descriptor {
     /**
      * Constructor for a new descriptor
      * @param name The name
+     * @throws IllegalArgumentException if name is {@code null}
      */
-    protected ContainerDescriptor(String name) {
+    protected ContainerDescriptor(final String name) {
         super(name);
     }
 
@@ -64,6 +65,22 @@ public abstract class ContainerDescriptor extends Descriptor {
      */
     public final Set<ArtifactDescriptor> getArtifactDescriptors() {
         return this.isLocked() ? Collections.unmodifiableSet(artifacts) : artifacts;
+    }
+
+    /**
+     * Return a set of artifact descriptors of the given type
+     * @param type The descriptor type
+     * @return The set of artifact descriptors matching the type (might be empty)
+     * @since 2.3
+     */
+    public <T extends ArtifactDescriptor> Set<T> getDescriptors(final Class<T> type) {
+        final Set<T> result = new HashSet<>();
+        for(final ArtifactDescriptor desc : this.getArtifactDescriptors()) {
+            if ( type.isInstance(desc) ) {
+                result.add(type.cast(desc));
+            }
+        }
+        return result;
     }
 
     @Override

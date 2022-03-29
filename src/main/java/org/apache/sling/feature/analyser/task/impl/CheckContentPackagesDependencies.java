@@ -35,6 +35,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.ArtifactDescriptor;
+import org.apache.sling.feature.scanner.ContentPackageDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,14 +57,9 @@ public class CheckContentPackagesDependencies implements AnalyserTask {
 
     @Override
     public void execute(AnalyserTaskContext ctx) throws Exception {
-        Set<ArtifactDescriptor> descriptors = ctx.getFeatureDescriptor().getArtifactDescriptors();
-        if (descriptors == null || descriptors.isEmpty()) {
-            return;
-        }
-
         Map<PackageId, Dependency[]> dependenciesMap = new HashMap<>();
 
-        for (ArtifactDescriptor descriptor : descriptors) {
+        for (ArtifactDescriptor descriptor : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
             onDescriptor(ctx, descriptor, dependenciesMap);
         }
 

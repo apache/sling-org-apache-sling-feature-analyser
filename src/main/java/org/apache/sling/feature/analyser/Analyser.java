@@ -186,6 +186,7 @@ public class Analyser {
             throws Exception {
         logger.info("Starting analyzing feature '{}'...", feature.getId());
 
+        long start = System.currentTimeMillis();
         final FeatureDescriptor featureDesc = scanner.scan(feature);
         BundleDescriptor bd = null;
         ArtifactId framework = fwk;
@@ -199,6 +200,7 @@ public class Analyser {
         if (framework != null) {
             bd = scanner.scan(framework, feature.getFrameworkProperties());
         }
+        logger.info("- Scanned feature in {}ms", System.currentTimeMillis() - start);
         final BundleDescriptor fwkDesc = bd;
 
         final List<AnalyserResult.GlobalReport> globalWarnings = new ArrayList<>();
@@ -215,8 +217,9 @@ public class Analyser {
 
         // execute analyser tasks
         for (final AnalyserTask task : tasks) {
-            logger.info("- Executing {} [{}]...", task.getName(), task.getId());
 
+            logger.info("- Executing {} [{}]...", task.getName(), task.getId());
+            start = System.currentTimeMillis();
             final Map<String, String> taskConfiguration = getConfiguration(task.getId());
 
             task.execute(new AnalyserTaskContext() {
@@ -309,6 +312,7 @@ public class Analyser {
                     }
                 }
             });
+            logger.info("- Executed {} [{}] in {}ms", task.getName(), task.getId(), System.currentTimeMillis() - start);
         }
 
         int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size() + configurationWarnings.size();

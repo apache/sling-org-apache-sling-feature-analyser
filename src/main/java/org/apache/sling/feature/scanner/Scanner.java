@@ -239,7 +239,11 @@ public class Scanner {
         return desc;
     }
 
-
+    /**
+     * Populate the scanner cache from the feature extension (if available)
+     * @param feature The feature
+     * @throws IOException If extracting the data fails
+     */
     private void populateCache(Feature feature) throws IOException {
         AnalyserMetaDataExtension extension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(feature);
 

@@ -25,12 +25,14 @@ import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
 import org.apache.sling.feature.Artifact;
@@ -46,15 +48,21 @@ import org.slf4j.LoggerFactory;
  */
 public class ContentPackageScanner {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContentPackageScanner.class);
+    private static final String FILE_PACKAGE_PROPS = "META-INF/vault/properties.xml";
+
+    private static final String FILE_MANIFEST = "META-INF/MANIFEST.MF";
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     private final byte[] buffer = new byte[65536];
 
-    private enum FileType {
+    enum FileType {
         BUNDLE,
         CONFIG,
-        PACKAGE
+        PACKAGE,
     }
+
+    private static final List<String> CFG_EXTENSIONS = Arrays.asList(".config", ".cfg", ".cfg.json", ".xml");
 
     /**
      * Scan the content package for embedded artifacts
@@ -63,97 +71,125 @@ public class ContentPackageScanner {
      * @return A set of artifacts
      * @throws IOException If processing fails
      */
-    public Set<ContentPackageDescriptor> scan(final Artifact artifact, final URL url) throws IOException {
-        final Set<ContentPackageDescriptor> contentPackages = new HashSet<>();
+    public Set<ContentPackageDescriptorImpl> scan(final Artifact artifact, final URL url) throws IOException {
+        final Set<ContentPackageDescriptorImpl> contentPackages = new HashSet<>();
         if (url != null) {
-            final int lastDot = url.getPath().lastIndexOf(".");
-            final ContentPackageDescriptor cp = new ContentPackageDescriptor(url.getPath().substring(url.getPath().lastIndexOf("/") + 1, lastDot), artifact, url);
-
-            extractContentPackage(cp, contentPackages, url);
-
-            contentPackages.add(cp);
-            cp.lock();
+            final String path = url.getPath();
+            final int lastDotInUrl = path.lastIndexOf(".");
+            final String name = path.substring(path.lastIndexOf("/") + 1, lastDotInUrl);
+             extractContentPackage(null, null, artifact, name, url, contentPackages);
         }
 
         return contentPackages;
     }
 
-    private void extractContentPackage(final ContentPackageDescriptor cp,
-            final Set<ContentPackageDescriptor> infos,
-            final URL archive)
+    /**
+     * Detect the file type, bundle, configuration or embedded package from the content path
+     * @param contentPath The content path
+     * @return The detected file type or {@code null}
+     */
+    FileType detectContentFileType(final String contentPath) {
+        FileType fileType = null;
+
+        // check for install folders in libs or apps
+        if (contentPath.startsWith("/libs/") || contentPath.startsWith("/apps/")) {
+
+            // check if this is an install folder (I)
+            // install folders are either named:
+            // "install" or
+            // "install.{runmode}"
+            boolean isInstall = contentPath.indexOf("/install/") != -1;
+            if (!isInstall) {
+                final int pos = contentPath.indexOf("/install.");
+                if (pos != -1) {
+                    final int endSlashPos = contentPath.indexOf('/', pos + 1);
+                    if (endSlashPos != -1) {
+                        isInstall = true;
+                    }
+                }
+            }
+            if (!isInstall) {
+                // check if this is an install folder (II)
+                // config folders are either named:
+                // "config" or
+                // "config.{runmode}"
+                isInstall = contentPath.indexOf("/config/") != -1;
+                if (!isInstall) {
+                    final int pos = contentPath.indexOf("/config.");
+                    if (pos != -1) {
+                        final int endSlashPos = contentPath.indexOf('/', pos + 1);
+                        if (endSlashPos != -1) {
+                            isInstall = true;
+                        }
+                    }
+                }
+            }
+
+            if (isInstall) {
+
+                if (contentPath.endsWith(".jar")) {
+                    fileType = FileType.BUNDLE;
+
+                } else if (contentPath.endsWith(".zip")) {
+                    fileType = FileType.PACKAGE;
+
+                } else {
+                    for(final String ext : CFG_EXTENSIONS) {
+                        if ( contentPath.endsWith(ext) ) {
+                            fileType = FileType.CONFIG;
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if ( contentPath.startsWith("/etc/packages/") && contentPath.endsWith(".zip")) {
+            // embedded content package
+            fileType = FileType.PACKAGE;
+        }
+        return fileType;
+    }
+
+    private ContentPackageDescriptorImpl extractContentPackage(final ContentPackageDescriptorImpl parentPackage,
+            final String parentContentPath,
+            final Artifact packageArtifact,
+            final String name,
+            final URL archiveUrl,
+            final Set<ContentPackageDescriptorImpl> infos)
     throws IOException {
-        logger.debug("Analyzing Content Package {}", archive);
+        logger.debug("Analyzing Content Package {}", archiveUrl);
 
         final File tempDir = Files.createTempDirectory(null).toFile();
         try {
-            final File toDir = new File(tempDir, archive.getPath().substring(archive.getPath().lastIndexOf("/") + 1));
+            final File toDir = new File(tempDir, archiveUrl.getPath().substring(archiveUrl.getPath().lastIndexOf("/") + 1));
             toDir.mkdirs();
 
+            Manifest manifest = null;
             final List<File> toProcess = new ArrayList<>();
+            final List<String> contentPaths = new ArrayList<>();
+            final List<BundleDescriptor> bundles = new ArrayList<>();
+            final List<Configuration> configs = new ArrayList<>();
+            final Properties packageProps = new Properties();
 
-            try (final JarFile zipFile = IOUtils.getJarFileFromURL(archive, true, null)) {
+            try (final JarFile zipFile = IOUtils.getJarFileFromURL(archiveUrl, true, null)) {
                 Enumeration<? extends ZipEntry> entries = zipFile.entries();
                 while (entries.hasMoreElements()) {
                     final ZipEntry entry = entries.nextElement();
                     final String entryName = entry.getName();
+
+                    // skip dirs
+                    if ( entryName.endsWith("/") ) {
+                        continue;
+                    }
+
                     logger.debug("Content package entry {}", entryName);
 
-                    if ( !entryName.endsWith("/") && entryName.startsWith("jcr_root/") ) {
+                    if ( entryName.startsWith("jcr_root/") ) {
                         final String contentPath = entryName.substring(8);
-                        cp.paths.add(contentPath);
+                        contentPaths.add(contentPath);
 
-                        FileType fileType = null;
-
-                        if (entryName.endsWith(".zip")) {
-                            // embedded content package
-                            fileType = FileType.PACKAGE;
-
-                            // check for libs or apps
-                        } else if (contentPath.startsWith("/libs/") || contentPath.startsWith("/apps/")) {
-
-                            // check if this is an install folder (I)
-                            // install folders are either named:
-                            // "install" or
-                            // "install.{runmode}"
-                            boolean isInstall = contentPath.indexOf("/install/") != -1;
-                            if (!isInstall) {
-                                final int pos = contentPath.indexOf("/install.");
-                                if (pos != -1) {
-                                    final int endSlashPos = contentPath.indexOf('/', pos + 1);
-                                    if (endSlashPos != -1) {
-                                        isInstall = true;
-                                    }
-                                }
-                            }
-                            if (!isInstall) {
-                                // check if this is an install folder (II)
-                                // config folders are either named:
-                                // "config" or
-                                // "config.{runmode}"
-                                isInstall = contentPath.indexOf("/config/") != -1;
-                                if (!isInstall) {
-                                    final int pos = contentPath.indexOf("/config.");
-                                    if (pos != -1) {
-                                        final int endSlashPos = contentPath.indexOf('/', pos + 1);
-                                        if (endSlashPos != -1) {
-                                            isInstall = true;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (isInstall) {
-
-                                if (contentPath.endsWith(".jar")) {
-                                    fileType = FileType.BUNDLE;
-                                } else if (contentPath.endsWith(".xml") || contentPath.endsWith(".config") || contentPath.endsWith(".cfg.json")) {
-                                    fileType = FileType.CONFIG;
-                                }
-                            }
-                        }
-
+                        final FileType fileType = detectContentFileType(contentPath);
                         if (fileType != null) {
-                            logger.debug("- extracting : {}", entryName);
+                            logger.debug("- extracting : {}", contentPath);
                             final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
                             newFile.getParentFile().mkdirs();
 
@@ -182,39 +218,56 @@ public class ContentPackageScanner {
                                 bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
-                                bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PACKAGE,
-                                        cp.getArtifact().getId().toMvnId());
-                                bundle.getMetadata().put(ContentPackageDescriptor.METADATA_PATH, contentPath);
+                                bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PACKAGE,
+                                        packageArtifact.getId().toMvnId());
+                                bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PATH, contentPath);
 
-                                cp.bundles.add(info);
+                                bundles.add(info);
 
                             } else if (fileType == FileType.CONFIG) {
 
-                                final Configuration configEntry = this.process(newFile, cp.getArtifact(), contentPath);
+                                final Configuration configEntry = this.processConfiguration(newFile, packageArtifact.getId(), contentPath);
                                 if (configEntry != null) {
-
-                                    cp.configs.add(configEntry);
+                                    configs.add(configEntry);
                                 }
 
                             } else if (fileType == FileType.PACKAGE) {
                                 toProcess.add(newFile);
                             }
-
                         }
-
+                    } else if ( FILE_MANIFEST.equals(entry.getName()) ) {
+                        try ( final InputStream zis = zipFile.getInputStream(entry)) {
+                            manifest = new Manifest(zis);
+                        } catch ( final IOException ignore ) {
+                            logger.warn("Failure reading manifest from {} : {}", packageArtifact.getId(), ignore.getMessage());
+                        }
+                    } else if ( FILE_PACKAGE_PROPS.equals(entry.getName()) ) {
+                        try ( final InputStream zis = zipFile.getInputStream(entry)) {
+                            packageProps.loadFromXML(zis);
+                        }
                     }
+                }
 
+                final ContentPackageDescriptorImpl desc = new ContentPackageDescriptorImpl(name, packageArtifact, archiveUrl, manifest,
+                    bundles, contentPaths, configs, packageProps);
+                if ( parentPackage != null ) {
+                    desc.setParentContentPackageInfo(parentPackage, parentContentPath);
                 }
 
                 for (final File f : toProcess) {
-                    extractContentPackage(cp, infos, f.toURI().toURL());
                     final int lastDot = f.getName().lastIndexOf(".");
-                    final ContentPackageDescriptor i = new ContentPackageDescriptor(f.getName().substring(0, lastDot), null, f.toURI().toURL());
-                    i.setContentPackageInfo(cp.getArtifact(), f.getName());
-                    infos.add(i);
+                    final String subName = f.getName().substring(0, lastDot);
+                    final String contentPath = f.getAbsolutePath().substring(toDir.getAbsolutePath().length()).replace(File.separatorChar, '/');
 
-                    i.lock();
+                    // create synthetic artifact with a synthetic id containing the file name
+                    final Artifact subArtifact = new Artifact(packageArtifact.getId().changeClassifier(subName));
+
+                    extractContentPackage(desc, contentPath, subArtifact, subName, f.toURI().toURL(), infos);
                 }
+
+                infos.add(desc);
+                desc.lock();
+                return desc;
             }
         } finally {
             deleteOnExitRecursive(tempDir);
@@ -324,13 +377,13 @@ public class ContentPackageScanner {
         throw new IOException(bundleFile.getName() + " has no maven coordinates!");
     }
 
-    private Configuration process(final File configFile,
-            final Artifact packageArtifact,
+    Configuration processConfiguration(final File configFile,
+            final ArtifactId packageArtifactId,
             final String contentPath)
     throws IOException {
 
         boolean isConfig = true;
-        if ( configFile.getName().endsWith(".xml") ) {
+        if ( contentPath.endsWith(".xml") ) {
             final String contents = Files.readAllLines(configFile.toPath()).toString();
             if ( contents.indexOf("jcr:primaryType=\"sling:OsgiConfig\"") == -1 ) {
                 isConfig = false;
@@ -339,13 +392,19 @@ public class ContentPackageScanner {
 
         if ( isConfig ) {
             final String id;
-            if ( ".content.xml".equals(configFile.getName()) ) {
+            if ( contentPath.endsWith("/.content.xml") ) {
                 final int lastSlash = contentPath.lastIndexOf('/');
                 final int previousSlash = contentPath.lastIndexOf('/', lastSlash - 1);
                 id = contentPath.substring(previousSlash + 1, lastSlash);
             } else {
-                final int lastDot = configFile.getName().lastIndexOf('.');
-                id = configFile.getName().substring(0, lastDot);
+                String name = contentPath;
+                final int lastSlash = contentPath.lastIndexOf('/');
+                for(final String ext : CFG_EXTENSIONS) {
+                    if ( name.endsWith(ext) ) {
+                        name = name.substring(lastSlash + 1, name.length() - ext.length());
+                    }
+                }
+                id = name;
             }
 
             final String pid;
@@ -357,9 +416,9 @@ public class ContentPackageScanner {
             }
 
             final Configuration cfg = new Configuration(pid);
-            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptor.METADATA_PATH, contentPath);
-            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptor.METADATA_PACKAGE,
-                    packageArtifact.getId().toMvnId());
+            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptorImpl.METADATA_PATH, contentPath);
+            cfg.getProperties().put(Configuration.PROP_PREFIX + ContentPackageDescriptorImpl.METADATA_PACKAGE,
+                    packageArtifactId.toMvnId());
 
             return cfg;
         }

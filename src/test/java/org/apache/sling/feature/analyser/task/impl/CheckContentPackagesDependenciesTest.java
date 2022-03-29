@@ -33,7 +33,7 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.ArtifactDescriptor;
+import org.apache.sling.feature.scanner.ContentPackageDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.After;
@@ -89,7 +89,7 @@ public class CheckContentPackagesDependenciesTest {
             Artifact artifact = mock(Artifact.class);
             when(artifact.getId()).thenReturn(id);
 
-            ArtifactDescriptor descriptor = mock(ArtifactDescriptor.class);
+            ContentPackageDescriptor descriptor = mock(ContentPackageDescriptor.class);
             when(descriptor.getArtifact()).thenReturn(artifact);
             when(descriptor.getArtifactFile()).thenReturn(getClass().getClassLoader().getResource(resource));
 

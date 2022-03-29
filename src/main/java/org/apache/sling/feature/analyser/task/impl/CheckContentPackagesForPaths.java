@@ -16,10 +16,12 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.scanner.ArtifactDescriptor;
-import org.apache.sling.feature.scanner.impl.ContentPackageDescriptor;
+import org.apache.sling.feature.scanner.ContentPackageDescriptor;
 
 /**
  * This analyser checks for content paths in packages
@@ -43,52 +45,58 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
     @Override
     public void execute(final AnalyserTaskContext ctx)
     throws Exception {
-        final Rules rules = getRules(ctx);
-
-        if (rules != null ) {
-            for (final ArtifactDescriptor d : ctx.getFeatureDescriptor().getArtifactDescriptors()) {
-                if (d instanceof ContentPackageDescriptor) {
-                    checkPackage(ctx, (ContentPackageDescriptor) d, rules);
-                }
-            }
-        } else {
+        final Rules rules = new Rules(ctx);
+        if (!rules.isConfigured()) {
             ctx.reportError("Configuration for task " + getId() + " is missing.");
+            return;
         }
-    }
-
-    static final class Rules {
-        public String[] includes;
-        public String[] excludes;
-    }
-
-    Rules getRules(final AnalyserTaskContext ctx) {
-        final String inc = ctx.getConfiguration().get(PROP_INCLUDES);
-        final String exc = ctx.getConfiguration().get(PROP_EXCLUDES);
-
-        if ( inc != null || exc != null ) {
-            final Rules r = new Rules();
-            r.includes = inc == null ? null : inc.split(",");
-            clean(r.includes);
-            r.excludes = exc == null ? null : exc.split(",");
-            clean(r.excludes);
-            return r;
-        }
-        return null;
-    }
-    private static void clean(final String[] array) {
-        if ( array != null ) {
-            for(int i=0;i<array.length;i++) {
-                array[i] = array[i].trim();
-            }
+        
+        for (final ContentPackageDescriptor d : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
+            checkPackage(ctx, d, rules);
         }
     }
 
     void checkPackage(final AnalyserTaskContext ctx, final ContentPackageDescriptor desc, final Rules rules) {
-        for(final String path : desc.paths) {
-            boolean isAllowed = rules.includes == null;
+        desc.getContentPaths().stream()
+            .filter(rules::isDisAllowed)
+            .forEach(path -> ctx.reportArtifactError(desc.getArtifact().getId(), "Content not allowed: " + path));
+    }
+
+    static final class Rules {
+        final String[] includes;
+        final String[] excludes;
+
+        Rules(final AnalyserTaskContext ctx) {
+            final String inc = ctx.getConfiguration().get(PROP_INCLUDES);
+            final String exc = ctx.getConfiguration().get(PROP_EXCLUDES);
+            includes = splitAndTrim(inc);
+            excludes = splitAndTrim(exc);
+        }
+        
+        private String[] splitAndTrim(String property) {
+            if (property == null) {
+                return new String[] {};
+            }
+            
+            return Stream.of(property.split(","))
+                    .map(String::trim)
+                    .collect(Collectors.toList())
+                    .toArray(new String[] {});
+        }
+
+        boolean isConfigured() {
+            return includes.length > 0 || excludes.length > 0;
+        }
+
+        boolean isDisAllowed(String path) {
+            return !isAllowed(path);
+        }
+
+        boolean isAllowed(String path) {
+            boolean isAllowed = includes.length == 0;
             int matchLength = 0;
             if ( !isAllowed ) {
-                for(final String i : rules.includes) {
+                for(final String i : includes) {
                     if ( path.equals(i) || path.startsWith(i.concat("/")) ) {
                         isAllowed = true;
                         matchLength = i.length();
@@ -96,17 +104,16 @@ public class CheckContentPackagesForPaths implements AnalyserTask {
                     }
                 }
             }
-            if ( isAllowed && rules.excludes != null ) {
-                for(final String i : rules.excludes) {
+            if ( isAllowed && excludes.length > 0 ) {
+                for(final String i : excludes) {
                     if ( path.equals(i) || path.startsWith(i.concat("/")) && i.length() > matchLength ) {
                         isAllowed = false;
                         break;
                     }
                 }
             }
-            if ( !isAllowed ) {
-                ctx.reportArtifactError(desc.getArtifact().getId(), "Content not allowed: ".concat(path));
-            }
+            return isAllowed;
         }
     }
+
 }
