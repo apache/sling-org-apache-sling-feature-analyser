@@ -27,6 +27,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
@@ -89,12 +91,21 @@ public class BundleDescriptorImplTest
                 + "Bundle-Version: 1\n"
                 + "Bundle-ManifestVersion: 2\n"
                 + "Export-Package: org.apache.sling;version=1.0,org.apache.felix;version=2.0\n";
-        URL f = createBundleFolder(bmf).toURI().toURL();
-        BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f, 1);
-        final Set<PackageInfo> infos = bdf.getExportedPackages();
-        assertEquals(2, infos.size());
-        assertPackageInfo(infos ,"org.apache.sling", Version.parseVersion("1.0"));
-        assertPackageInfo(infos,"org.apache.felix", Version.parseVersion("2.0"));
+        File dir = createBundleFolder(bmf);
+        try {
+            URL f = dir.toURI().toURL();
+            BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f, 1);
+            final Set<PackageInfo> infos = bdf.getExportedPackages();
+            assertEquals(2, infos.size());
+            assertPackageInfo(infos ,"org.apache.sling", Version.parseVersion("1.0"));
+            assertPackageInfo(infos,"org.apache.felix", Version.parseVersion("2.0"));    
+        } finally {
+            Path tempDir = dir.toPath();
+            Files.walk(tempDir)
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
+        }
     }
 
     private File createBundle(String manifest) throws IOException
@@ -111,7 +122,6 @@ public class BundleDescriptorImplTest
     private File createBundleFolder(String manifest) throws IOException
     {
         File f = Files.createTempDirectory("bundle.folder").toFile();
-        f.deleteOnExit();
         Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("UTF-8")));
         mf.getMainAttributes().putValue("Manifest-Version", "1.0");
         File manifestFile = new File(f, "META-INF/MANIFEST.MF");
