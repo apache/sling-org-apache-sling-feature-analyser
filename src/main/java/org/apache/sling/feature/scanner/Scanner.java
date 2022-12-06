@@ -121,21 +121,6 @@ public class Scanner {
         return this.doScan(bundle, bundle.getStartOrder());
     }
 
-    /**
-     * Scan a bundle
-     *
-     * @param bundle     The bundle artifact
-     * @param startLevel The start level of the bundle
-     * @return The bundle descriptor
-     * @throws IOException If something goes wrong or the provided artifact is not a
-     *                     bundle.
-     * @deprecated Use {@link #scanBundle(Artifact)}
-     */
-    @Deprecated
-    public BundleDescriptor scan(final Artifact bundle, final int startLevel) throws IOException {
-        return this.doScan(bundle, startLevel);
-    }
-
     private BundleDescriptor doScan(final Artifact bundle, final int startLevel) throws IOException {
         final String key = bundle.getId().toMvnId().concat(":")
             .concat(String.valueOf(startLevel)).concat(":")

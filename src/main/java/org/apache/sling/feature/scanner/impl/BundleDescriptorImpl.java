@@ -179,15 +179,6 @@ public class BundleDescriptorImpl
         return bundleVersion;
     }
 
-    /**
-     * Get the start level
-     * @return The start level or {@code 0} for the default.
-     */
-    @Override
-    public int getBundleStartLevel() {
-        return startLevel;
-    }
-
     @Override
     public URL getArtifactFile() {
         if (artifactFile == null && artifactProvider != null) {

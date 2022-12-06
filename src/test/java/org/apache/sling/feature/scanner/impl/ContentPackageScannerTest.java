@@ -61,7 +61,6 @@ public class ContentPackageScannerTest {
         return new File(getClass().getResource(path).toURI());
     }
 
-    @SuppressWarnings("deprecation")
     private void assetDescriptor(ContentPackageDescriptorImpl desc, String descName, final ArtifactId descArtifactId, final URL descUrl) {
         assertEquals(descName, desc.getName());
         assertEquals(descArtifactId, desc.getArtifact().getId());
@@ -71,7 +70,6 @@ public class ContentPackageScannerTest {
 
         assertEquals(desc.getBundles().get(0).getArtifact().getId().toString(), "org.apache.felix:org.apache.felix.framework:jar:bundle:6.0.1");
         assertEquals("artifact start order",20, desc.getBundles().get(0).getArtifact().getStartOrder());
-        assertEquals("bundle start level",20, desc.getBundles().get(0).getBundleStartLevel());
 
         assertEquals(1, desc.getConfigurations().size());
         assertConfiguration(desc.getConfigurations().get(0));

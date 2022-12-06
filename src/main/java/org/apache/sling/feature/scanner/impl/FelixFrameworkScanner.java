@@ -86,11 +86,6 @@ public class FelixFrameworkScanner implements FrameworkScanner {
             }
 
             @Override
-            public int getBundleStartLevel() {
-                return 0;
-            }
-
-            @Override
             public URL getArtifactFile() {
                 return platformFile;
             }

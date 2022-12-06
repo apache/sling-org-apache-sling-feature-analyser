@@ -59,15 +59,6 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
     public abstract Manifest getManifest();
 
     /**
-     * Get the start level
-     *
-     * @return The start level.
-     * @deprecated Use start order of the bundle
-     */
-    @Deprecated
-    public abstract int getBundleStartLevel();
-
-    /**
      * Is the bundle exporting a package?
      * @param packageName Package name
      * @return {@code true} if that package is exported.
