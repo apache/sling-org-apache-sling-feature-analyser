@@ -67,7 +67,13 @@ public class ContentPackageScannerTest {
 
         ContentPackageScanner scanner = new ContentPackageScanner();
         Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+        
+        for(ContentPackageDescriptorImpl descriptor: descriptors){
+            if(descriptor.getName().equals("test-content-felix-bundle-multi-maven-properties")){
+                assertEquals("org.apache.felix:org.apache.felix.framework:jar:bundle:6.0.1", descriptor.getBundles().get(0).getName());
+            }
        
+        }
     }
 
     private File getTestFile(String path) throws URISyntaxException {
