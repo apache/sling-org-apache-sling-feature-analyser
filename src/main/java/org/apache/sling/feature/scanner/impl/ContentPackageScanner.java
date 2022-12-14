@@ -381,6 +381,9 @@ public class ContentPackageScanner {
             }
         }
         
+        if ( candidateDirectories.isEmpty() ) {
+            return null;
+        }
         if ( candidateDirectories.size() == 1 ) {
             return candidateDirectories.get(0);
         } else {
