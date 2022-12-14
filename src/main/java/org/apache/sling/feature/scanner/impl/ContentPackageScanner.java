@@ -212,7 +212,7 @@ public class ContentPackageScanner {
                                     // ignore
                                 }
 
-                                final Artifact bundle = new Artifact(extractArtifactId(packageArtifact.getId(), tempDir, newFile));
+                                final Artifact bundle = new Artifact(extractArtifactId(packageArtifact.getId(), newFile));
                                 bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
@@ -284,11 +284,8 @@ public class ContentPackageScanner {
         }
     }
 
-    final List<Properties> getInitialCandidates(final File tempDir, final File bundleFile)  throws IOException{
+    final List<Properties> getInitialCandidates(final File bundleFile)  throws IOException{
         logger.debug("Extracting Bundle {}", bundleFile.getName());
-
-        final File toDir = new File(tempDir, bundleFile.getName());
-        toDir.mkdirs();
 
         final List<Properties> candidates = new ArrayList<>();
         try (final JarFile zipFile = new JarFile(bundleFile)) {
@@ -300,8 +297,6 @@ public class ContentPackageScanner {
                 final String entryName = entry.getName();
                 if ( !entryName.endsWith("/") && entryName.startsWith("META-INF/maven/") && entryName.endsWith("/pom.properties")) {
                     logger.debug("- extracting : {}", entryName);
-                    final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
-                    newFile.getParentFile().mkdirs();
 
                     final Properties props = new Properties();
                     try (final InputStream zis = zipFile.getInputStream(entry)) {
@@ -336,9 +331,9 @@ public class ContentPackageScanner {
         return id;
     }
 
-    private ArtifactId extractArtifactId(final ArtifactId packageArtifactId, final File tempDir, final File bundleFile)
+    private ArtifactId extractArtifactId(final ArtifactId packageArtifactId, final File bundleFile)
     throws IOException {
-        final List<Properties> candidates = this.getInitialCandidates(tempDir, bundleFile);
+        final List<Properties> candidates = this.getInitialCandidates(bundleFile);
         return extractArtifactId(candidates, bundleFile.getName(), packageArtifactId);
     }
 
