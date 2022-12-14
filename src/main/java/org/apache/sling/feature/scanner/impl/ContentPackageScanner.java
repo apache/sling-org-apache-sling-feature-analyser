@@ -214,7 +214,7 @@ public class ContentPackageScanner {
                                     // ignore
                                 }
 
-                                final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
+                                final Artifact bundle = new Artifact(extractArtifactId(packageArtifact.getId(), tempDir, newFile));
                                 bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
@@ -286,7 +286,7 @@ public class ContentPackageScanner {
         }
     }
 
-    private ArtifactId extractArtifactId(final File tempDir, final File bundleFile)
+    private ArtifactId extractArtifactId(ArtifactId packageArtifactId, final File tempDir, final File bundleFile)
     throws IOException {
         logger.debug("Extracting Bundle {}", bundleFile.getName());
 
@@ -324,13 +324,7 @@ public class ContentPackageScanner {
         if ( metaInfDir.exists() ) {
             final File mavenDir = new File(metaInfDir, "maven");
             if ( mavenDir.exists() ) {
-                File groupDir = null;
-                for(final File d : mavenDir.listFiles()) {
-                    if ( d.isDirectory() && !d.getName().startsWith(".") ) {
-                        groupDir = d;
-                        break;
-                    }
-                }
+                File groupDir = getGroupDir(mavenDir,packageArtifactId);
                 if ( groupDir != null ) {
                     File artifactDir = null;
                     for(final File d : groupDir.listFiles()) {
@@ -375,6 +369,35 @@ public class ContentPackageScanner {
         }
 
         throw new IOException(bundleFile.getName() + " has no maven coordinates!");
+    }
+
+    private static File getGroupDir(File mavenDir, ArtifactId packageArtifactId) {
+        File groupDir = null;
+        List<File> candidateDirectories = new ArrayList<>();
+        
+        for(final File d : mavenDir.listFiles()) {
+            if ( d.isDirectory() && !d.getName().startsWith(".") ) {
+                candidateDirectories.add(d);
+            }
+        }
+        
+        if ( candidateDirectories.size() == 1 ) {
+            return candidateDirectories.get(0);
+        } else {
+            // if we have multiple directories, we have the case where dependency's maven properties are injected alongside the package maven properties.
+            // for example in acs aem commons 5.3.4 we find com.google.guava.
+            // in this case, let's try to get the appropriate group directory by using the artifactId.
+            for(File candidateDir: candidateDirectories){
+                if(candidateDir.getName().equals(packageArtifactId.getGroupId())){
+                    return candidateDir;
+                }
+            }
+            
+            //no matches found. we'll take the first
+            return candidateDirectories.get(0);
+            
+        }
+        
     }
 
     Configuration processConfiguration(final File configFile,

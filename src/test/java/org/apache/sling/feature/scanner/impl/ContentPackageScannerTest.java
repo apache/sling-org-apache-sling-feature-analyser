@@ -56,6 +56,19 @@ public class ContentPackageScannerTest {
             assertNotNull(desc.getManifest());
         }
     }
+    
+    @Test
+    public void testMultipleMavenPropertyDirectoryPicking() throws URISyntaxException, IOException {
+        // this test case is to cover where
+        final File file = getTestFile("/test-content-felix-bundle-multi-maven-properties.zip");
+
+        final String COORDINATES_TEST_PACKAGE_A_10 = "org.apache.felix:org.apache.felix.framework:6.0.1";
+        final ArtifactId TEST_PACKAGE_AID_A_10 = ArtifactId.fromMvnId(COORDINATES_TEST_PACKAGE_A_10);
+
+        ContentPackageScanner scanner = new ContentPackageScanner();
+        Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+       
+    }
 
     private File getTestFile(String path) throws URISyntaxException {
         return new File(getClass().getResource(path).toURI());
