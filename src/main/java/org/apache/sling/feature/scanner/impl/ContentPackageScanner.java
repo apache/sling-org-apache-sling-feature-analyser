@@ -371,8 +371,7 @@ public class ContentPackageScanner {
         throw new IOException(bundleFile.getName() + " has no maven coordinates!");
     }
 
-    private static File getGroupDir(File mavenDir, ArtifactId packageArtifactId) {
-        File groupDir = null;
+    private  File getGroupDir(File mavenDir, ArtifactId packageArtifactId) {
         List<File> candidateDirectories = new ArrayList<>();
         
         for(final File d : mavenDir.listFiles()) {
@@ -382,16 +381,28 @@ public class ContentPackageScanner {
         }
         
         if ( candidateDirectories.isEmpty() ) {
+            logger.debug("No maven pom.properties directory found.");
             return null;
         }
         if ( candidateDirectories.size() == 1 ) {
-            return candidateDirectories.get(0);
+            File dirToBeUsed = candidateDirectories.get(0);
+            logger.debug("Using directory {}", dirToBeUsed.getName());
+            return dirToBeUsed;
         } else {
+            
+            if(logger.isDebugEnabled()){
+                logger.debug("Multiple maven pom.properties directories found.");
+                for(File candidateDir: candidateDirectories){
+                    logger.debug("Candidate directory: {}", candidateDir.getName());
+                }
+            }
+
             // if we have multiple directories, we have the case where dependency's maven properties are injected alongside the package maven properties.
             // for example in acs aem commons 5.3.4 we find com.google.guava.
             // in this case, let's try to get the appropriate group directory by using the artifactId.
             for(File candidateDir: candidateDirectories){
                 if(candidateDir.getName().equals(packageArtifactId.getGroupId())){
+                    logger.debug("Using directory {}", candidateDir.getName());
                     return candidateDir;
                 }
             }
