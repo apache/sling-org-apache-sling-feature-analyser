@@ -18,10 +18,8 @@ package org.apache.sling.feature.scanner.impl;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -214,7 +212,7 @@ public class ContentPackageScanner {
                                     // ignore
                                 }
 
-                                final Artifact bundle = new Artifact(extractArtifactId(tempDir, newFile));
+                                final Artifact bundle = new Artifact(extractArtifactId(packageArtifact.getId(), tempDir, newFile));
                                 bundle.setStartOrder(startLevel);
                                 final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
                                         startLevel);
@@ -286,13 +284,13 @@ public class ContentPackageScanner {
         }
     }
 
-    private ArtifactId extractArtifactId(final File tempDir, final File bundleFile)
-    throws IOException {
+    final List<Properties> getInitialCandidates(final File tempDir, final File bundleFile)  throws IOException{
         logger.debug("Extracting Bundle {}", bundleFile.getName());
 
         final File toDir = new File(tempDir, bundleFile.getName());
         toDir.mkdirs();
 
+        final List<Properties> candidates = new ArrayList<>();
         try (final JarFile zipFile = new JarFile(bundleFile)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
 
@@ -305,76 +303,107 @@ public class ContentPackageScanner {
                     final File newFile = new File(toDir, entryName.replace('/', File.separatorChar));
                     newFile.getParentFile().mkdirs();
 
-                    try (
-                            final FileOutputStream fos = new FileOutputStream(newFile);
-                            final InputStream zis = zipFile.getInputStream(entry)
-                    ) {
-                        int len;
-                        while ((len = zis.read(buffer)) > -1) {
-                            fos.write(buffer, 0, len);
-                        }
+                    final Properties props = new Properties();
+                    try (final InputStream zis = zipFile.getInputStream(entry)) {
+                        props.load(zis);
                     }
+                    candidates.add(props);
                 }
             }
         }
+        return candidates;
+    }
 
-        // check for maven
+    private String adjustVersion(final String version) {
+        final String parts[] = version.split("\\.");
+        if ( parts.length == 4 ) {
+            final int lastDot = version.lastIndexOf('.');
+            return version.substring(0, lastDot) + '-' + version.substring(lastDot + 1);
+        }
+        return version;
+    }
 
-        final File metaInfDir = new File(toDir, "META-INF");
-        if ( metaInfDir.exists() ) {
-            final File mavenDir = new File(metaInfDir, "maven");
-            if ( mavenDir.exists() ) {
-                File groupDir = null;
-                for(final File d : mavenDir.listFiles()) {
-                    if ( d.isDirectory() && !d.getName().startsWith(".") ) {
-                        groupDir = d;
-                        break;
-                    }
-                }
-                if ( groupDir != null ) {
-                    File artifactDir = null;
-                    for(final File d : groupDir.listFiles()) {
-                        if ( d.isDirectory() && !d.getName().startsWith(".") ) {
-                            artifactDir = d;
-                            break;
-                        }
-                    }
-                    if ( artifactDir != null ) {
-                        final File propsFile = new File(artifactDir, "pom.properties");
-                        if ( propsFile.exists() ) {
-                            final Properties props = new Properties();
-                            try ( final Reader r = new FileReader(propsFile) ) {
-                                props.load(r);
-                            }
-                            String groupId = props.getProperty("groupId");
-                            String artifactId = props.getProperty("artifactId");
-                            String version = props.getProperty("version");
-                            String classifier = null;
-
-                            // Capture classifier
-                            final int pos = bundleFile.getName().indexOf(version) + version.length();
-                            if ( bundleFile.getName().charAt(pos) == '-') {
-                                classifier = bundleFile.getName().substring(pos + 1, bundleFile.getName().lastIndexOf('.'));
-                            }
-
-                            final String parts[] = version.split("\\.");
-                            if ( parts.length == 4 ) {
-                                final int lastDot = version.lastIndexOf('.');
-                                version = version.substring(0, lastDot) + '-' + version.substring(lastDot + 1);
-                            }
-
-                            if ( groupId != null && artifactId != null && version != null ) {
-                                return new ArtifactId(groupId,
-                                        artifactId,
-                                        version, classifier, null);
-                            }
-                        }
-                    }
-                }
+    private ArtifactId adjustClassifier(ArtifactId id, final String bundleFileName) {
+        // check for classifier
+        final int versionStart = bundleFileName.indexOf(id.getVersion());
+        if ( versionStart != -1 ) {
+            // capture classifier
+            final int versionEnd = versionStart + id.getVersion().length();
+            if ( bundleFileName.length() > versionEnd && bundleFileName.charAt(versionEnd) == '-') {
+                id = id.changeClassifier(bundleFileName.substring(versionEnd + 1, bundleFileName.lastIndexOf('.')));
             }
         }
+        return id;
+    }
 
-        throw new IOException(bundleFile.getName() + " has no maven coordinates!");
+    private ArtifactId extractArtifactId(final ArtifactId packageArtifactId, final File tempDir, final File bundleFile)
+    throws IOException {
+        final List<Properties> candidates = this.getInitialCandidates(tempDir, bundleFile);
+        return extractArtifactId(candidates, bundleFile.getName(), packageArtifactId);
+    }
+
+    private List<ArtifactId> getArtifactIds(final List<Properties> candidates) {
+        final List<ArtifactId> idCandidates = new ArrayList<>();
+        for(final Properties props : candidates) {
+            final String version = props.getProperty("version");
+            final String groupId = props.getProperty("groupId");
+            final String artifactId = props.getProperty("artifactId");
+
+            if ( version != null && groupId != null && artifactId != null ) {
+                idCandidates.add(new ArtifactId(groupId, artifactId, adjustVersion(version), null, null));
+            }
+        }
+        return idCandidates;
+    }
+
+    private List<ArtifactId> filterCandidatesByVersion(final List<ArtifactId> ids, final String bundleFileName) {
+        final List<ArtifactId> idCandidates = new ArrayList<>();
+        for(final ArtifactId id : ids) {
+            final int versionStart = bundleFileName.indexOf(id.getVersion());
+            if ( versionStart != -1 ) {
+                idCandidates.add(id);
+            }
+        }
+        return idCandidates;
+    }
+
+    ArtifactId extractArtifactId(final List<Properties> candidates, final String bundleFileName, final ArtifactId packageArtifactId)
+    throws IOException {
+        logger.debug("Properties candidates for {} : {}", bundleFileName, candidates);
+
+        final List<ArtifactId> idCandidates = getArtifactIds(candidates);
+        logger.debug("Artifact candidates for {} : {}", bundleFileName, candidates);
+
+        // single candidate? return
+        if ( idCandidates.size() == 1 ) {
+            final ArtifactId result = adjustClassifier(idCandidates.get(0), bundleFileName);
+            logger.debug("Found single candidate : {}", result);
+            return result;
+        }
+
+        // more than one candidate, find matching version
+        final List<ArtifactId> versionIds = filterCandidatesByVersion(idCandidates, bundleFileName);
+        if ( versionIds.size() == 1 ) {
+            final ArtifactId result = adjustClassifier(versionIds.get(0), bundleFileName);
+            logger.debug("Found single candidate matching version : {}", result);
+            return result;
+        }
+        // check parent group id
+        for(final ArtifactId id : versionIds.isEmpty() ? idCandidates : versionIds) {
+            if ( id.getGroupId().equals(packageArtifactId.getGroupId()) ) {
+                final ArtifactId result = adjustClassifier(id, bundleFileName);
+                logger.debug("Found candidate with parent group id {} : {}",packageArtifactId.getGroupId(), result);
+                return result;
+            }
+        }
+        // randomly pick one
+        if ( idCandidates.size() > 0 ) {
+            final ArtifactId result = adjustClassifier(idCandidates.get(0), bundleFileName);
+            logger.debug("Picking random candidate : {}", result);
+            return result;
+        }
+
+        throw new IOException(bundleFileName + " has no maven coordinates!");
     }
 
     Configuration processConfiguration(final File configFile,

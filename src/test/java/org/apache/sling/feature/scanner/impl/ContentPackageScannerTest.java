@@ -56,6 +56,25 @@ public class ContentPackageScannerTest {
             assertNotNull(desc.getManifest());
         }
     }
+    
+    @Test
+    public void testMultipleMavenPropertyDirectoryPicking() throws URISyntaxException, IOException {
+        // this test case is to cover where we have multiple pom.properties files present in our package.
+        final File file = getTestFile("/test-content-felix-bundle-multi-maven-properties.zip");
+
+        final String COORDINATES_TEST_PACKAGE_A_10 = "org.apache.felix:org.apache.felix.framework:6.0.1";
+        final ArtifactId TEST_PACKAGE_AID_A_10 = ArtifactId.fromMvnId(COORDINATES_TEST_PACKAGE_A_10);
+
+        ContentPackageScanner scanner = new ContentPackageScanner();
+        Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+        
+        for(ContentPackageDescriptorImpl descriptor: descriptors){
+            if(descriptor.getName().equals("test-content-felix-bundle-multi-maven-properties")){
+                assertEquals("org.apache.felix:org.apache.felix.framework:6.0.1", descriptor.getBundles().get(0).getName());
+            }
+       
+        }
+    }
 
     private File getTestFile(String path) throws URISyntaxException {
         return new File(getClass().getResource(path).toURI());
@@ -69,7 +88,7 @@ public class ContentPackageScannerTest {
 
         assertEquals(1, desc.getBundles().size());
 
-        assertEquals(desc.getBundles().get(0).getArtifact().getId().toString(), "org.apache.felix:org.apache.felix.framework:jar:bundle:6.0.1");
+        assertEquals(desc.getBundles().get(0).getArtifact().getId(), ArtifactId.parse("org.apache.felix:org.apache.felix.framework:6.0.1"));
         assertEquals("artifact start order",20, desc.getBundles().get(0).getArtifact().getStartOrder());
         assertEquals("bundle start level",20, desc.getBundles().get(0).getBundleStartLevel());
 
