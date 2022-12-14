@@ -389,29 +389,33 @@ public class ContentPackageScanner {
             logger.debug("Using directory {}", dirToBeUsed.getName());
             return dirToBeUsed;
         } else {
-            
-            if(logger.isDebugEnabled()){
-                logger.debug("Multiple maven pom.properties directories found.");
-                for(File candidateDir: candidateDirectories){
-                    logger.debug("Candidate directory: {}", candidateDir.getName());
-                }
-            }
 
-            // if we have multiple directories, we have the case where dependency's maven properties are injected alongside the package maven properties.
-            // for example in acs aem commons 5.3.4 we find com.google.guava.
-            // in this case, let's try to get the appropriate group directory by using the artifactId.
-            for(File candidateDir: candidateDirectories){
-                if(candidateDir.getName().equals(packageArtifactId.getGroupId())){
-                    logger.debug("Using directory {}", candidateDir.getName());
-                    return candidateDir;
-                }
-            }
-            
-            //no matches found. we'll take the first
-            return candidateDirectories.get(0);
-            
+            return pickDirectoryFromCandidates(packageArtifactId, candidateDirectories);
+
         }
         
+    }
+
+    private File pickDirectoryFromCandidates(ArtifactId packageArtifactId, List<File> candidateDirectories) {
+        if(logger.isDebugEnabled()){
+            logger.debug("Multiple maven pom.properties directories found.");
+            for(File candidateDir: candidateDirectories){
+                logger.debug("Candidate directory: {}", candidateDir.getName());
+            }
+        }
+
+        // if we have multiple directories, we have the case where dependency's maven properties are injected alongside the package maven properties.
+        // for example in acs aem commons 5.3.4 we find com.google.guava.
+        // in this case, let's try to get the appropriate group directory by using the artifactId.
+        for(File candidateDir: candidateDirectories){
+            if(candidateDir.getName().equals(packageArtifactId.getGroupId())){
+                logger.debug("Using directory {}", candidateDir.getName());
+                return candidateDir;
+            }
+        }
+
+        //no matches found. we'll take the first
+        return candidateDirectories.get(0);
     }
 
     Configuration processConfiguration(final File configFile,
