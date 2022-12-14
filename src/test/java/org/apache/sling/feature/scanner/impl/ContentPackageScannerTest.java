@@ -26,7 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.Artifact;
@@ -74,6 +77,55 @@ public class ContentPackageScannerTest {
             }
        
         }
+    }
+
+    @Test
+    public void testMultipleMavenPropertiesMatchingParent() throws IOException {
+        final ContentPackageScanner scanner = new ContentPackageScanner();
+        final List<Properties> candidates = new ArrayList<>();
+        final Properties guava = new Properties();
+        guava.put("groupId", "com.google.guava");
+        guava.put("artifactId", "failureaccess");
+        guava.put("version", "14.0");
+        candidates.add(guava);
+        final Properties acs = new Properties();
+        acs.put("groupId", "com.adobe.acs");
+        acs.put("artifactId", "acs-aem-commons-bundle");
+        acs.put("version", "5.3.7");
+        candidates.add(acs);
+        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4.jar", ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:5.3.7"), id);
+    }
+
+    @Test
+    public void testMavenPropertiesClassifier() throws IOException {
+        final ContentPackageScanner scanner = new ContentPackageScanner();
+        final List<Properties> candidates = new ArrayList<>();
+        final Properties acs = new Properties();
+        acs.put("groupId", "com.adobe.acs");
+        acs.put("artifactId", "acs-aem-commons-bundle");
+        acs.put("version", "5.3.4");
+        candidates.add(acs);
+        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4-test.jar", ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:jar:test:5.3.4"), id);
+    }
+
+    @Test
+    public void testMultipleMavenPropertiesMatchingVersion() throws IOException {
+        final ContentPackageScanner scanner = new ContentPackageScanner();
+        final List<Properties> candidates = new ArrayList<>();
+        final Properties guava = new Properties();
+        guava.put("groupId", "com.google.guava");
+        guava.put("artifactId", "failureaccess");
+        guava.put("version", "14.0");
+        candidates.add(guava);
+        final Properties acs = new Properties();
+        acs.put("groupId", "com.adobe.acs");
+        acs.put("artifactId", "acs-aem-commons-bundle");
+        acs.put("version", "5.3.4");
+        candidates.add(acs);
+        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4.jar", ArtifactId.parse("something:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:5.3.4"), id);
     }
 
     private File getTestFile(String path) throws URISyntaxException {
