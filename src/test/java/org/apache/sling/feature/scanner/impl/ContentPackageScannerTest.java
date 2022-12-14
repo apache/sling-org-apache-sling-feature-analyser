@@ -59,7 +59,7 @@ public class ContentPackageScannerTest {
     
     @Test
     public void testMultipleMavenPropertyDirectoryPicking() throws URISyntaxException, IOException {
-        // this test case is to cover where
+        // this test case is to cover where we have multiple pom.properties files present in our package.
         final File file = getTestFile("/test-content-felix-bundle-multi-maven-properties.zip");
 
         final String COORDINATES_TEST_PACKAGE_A_10 = "org.apache.felix:org.apache.felix.framework:6.0.1";
