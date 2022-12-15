@@ -26,7 +26,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Dictionary;
+import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.sling.feature.Artifact;
@@ -56,6 +59,74 @@ public class ContentPackageScannerTest {
             assertNotNull(desc.getManifest());
         }
     }
+    
+    @Test
+    public void testMultipleMavenPropertyDirectoryPicking() throws URISyntaxException, IOException {
+        // this test case is to cover where we have multiple pom.properties files present in our package.
+        final File file = getTestFile("/test-content-felix-bundle-multi-maven-properties.zip");
+
+        final String COORDINATES_TEST_PACKAGE_A_10 = "org.apache.felix:org.apache.felix.framework:6.0.1";
+        final ArtifactId TEST_PACKAGE_AID_A_10 = ArtifactId.fromMvnId(COORDINATES_TEST_PACKAGE_A_10);
+
+        ContentPackageScanner scanner = new ContentPackageScanner();
+        Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+        
+        for(ContentPackageDescriptorImpl descriptor: descriptors){
+            if(descriptor.getName().equals("test-content-felix-bundle-multi-maven-properties")){
+                assertEquals("org.apache.felix:org.apache.felix.framework:6.0.1", descriptor.getBundles().get(0).getName());
+            }
+       
+        }
+    }
+
+    @Test
+    public void testMultipleMavenPropertiesMatchingParent() throws IOException {
+        final ContentPackageScanner scanner = new ContentPackageScanner();
+        final List<Properties> candidates = new ArrayList<>();
+        final Properties guava = new Properties();
+        guava.put("groupId", "com.google.guava");
+        guava.put("artifactId", "failureaccess");
+        guava.put("version", "14.0");
+        candidates.add(guava);
+        final Properties acs = new Properties();
+        acs.put("groupId", "com.adobe.acs");
+        acs.put("artifactId", "acs-aem-commons-bundle");
+        acs.put("version", "5.3.7");
+        candidates.add(acs);
+        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4.jar", ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:5.3.7"), id);
+    }
+
+    @Test
+    public void testMavenPropertiesClassifier() throws IOException {
+        final ContentPackageScanner scanner = new ContentPackageScanner();
+        final List<Properties> candidates = new ArrayList<>();
+        final Properties acs = new Properties();
+        acs.put("groupId", "com.adobe.acs");
+        acs.put("artifactId", "acs-aem-commons-bundle");
+        acs.put("version", "5.3.4");
+        candidates.add(acs);
+        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4-test.jar", ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:jar:test:5.3.4"), id);
+    }
+
+    @Test
+    public void testMultipleMavenPropertiesMatchingVersion() throws IOException {
+        final ContentPackageScanner scanner = new ContentPackageScanner();
+        final List<Properties> candidates = new ArrayList<>();
+        final Properties guava = new Properties();
+        guava.put("groupId", "com.google.guava");
+        guava.put("artifactId", "failureaccess");
+        guava.put("version", "14.0");
+        candidates.add(guava);
+        final Properties acs = new Properties();
+        acs.put("groupId", "com.adobe.acs");
+        acs.put("artifactId", "acs-aem-commons-bundle");
+        acs.put("version", "5.3.4");
+        candidates.add(acs);
+        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4.jar", ArtifactId.parse("something:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:5.3.4"), id);
+    }
 
     private File getTestFile(String path) throws URISyntaxException {
         return new File(getClass().getResource(path).toURI());
@@ -68,7 +139,7 @@ public class ContentPackageScannerTest {
 
         assertEquals(1, desc.getBundles().size());
 
-        assertEquals(desc.getBundles().get(0).getArtifact().getId().toString(), "org.apache.felix:org.apache.felix.framework:jar:bundle:6.0.1");
+        assertEquals(desc.getBundles().get(0).getArtifact().getId(), ArtifactId.parse("org.apache.felix:org.apache.felix.framework:6.0.1"));
         assertEquals("artifact start order",20, desc.getBundles().get(0).getArtifact().getStartOrder());
 
         assertEquals(1, desc.getConfigurations().size());
