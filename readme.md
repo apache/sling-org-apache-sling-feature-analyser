@@ -10,9 +10,9 @@ The Analyser can analyse features for completeness and correctness. The analyser
 
 The Analyser can also be run as part of a Maven build via the [slingfeature-maven-plugin](https://github.com/apache/sling-slingfeature-maven-plugin)
 
-## Running the Analyser from the Commandlien
+## Running the Analyser from the Command line
 
-The analyser can be run from the commandline by running the following main class:
+The analyser can be run from the command line by executing the following main class:
 
 ```bash
 java org.apache.sling.feature.analyser.main.Main
