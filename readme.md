@@ -12,7 +12,7 @@ The Analyser can also be run as part of a Maven build via the [slingfeature-mave
 
 # Analyser Tasks
 
-Below is a list of built-in analysers. Additional analysers in relation to Feature Model API Regions can be found here: [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions)
+Below is a list of built-in analysers. Additional analysers in relation to Feature Model API Regions can be found in [org-apache-sling-feature-extension-apiregions](https://github.com/apache/sling-org-apache-sling-feature-extension-apiregions), analysers performing checks on class level can be found in [org-apache-sling-feature-analyser-classes](https://github.com/apache/sling-org-apache-sling-feature-analyser-classes).
 
 For further documentation see: [Feature Model](https://github.com/apache/sling-org-apache-sling-feature/blob/master/readme.md)
 
