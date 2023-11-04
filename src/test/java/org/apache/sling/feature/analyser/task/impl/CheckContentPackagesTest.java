@@ -19,6 +19,7 @@ package org.apache.sling.feature.analyser.task.impl;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
@@ -67,7 +68,7 @@ public class CheckContentPackagesTest {
         analyser.execute(ctx);
         List<String> errors = ctx.getErrors();
         assertThat(errors.size(), equalTo(1));
-        assertThat(errors.get(0), equalTo("ValidationViolation: \"jackrabbit-docviewparser: Invalid XML found: The reference to entity \"se\" must end with the ';' delimiter.\", filePath=jcr_root/apps/cschneidervalidation/configs/com.adobe.test.Invalid.xml, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid"));
+        assertThat(errors.get(0), equalTo(String.format("ValidationViolation: \"jackrabbit-docviewparser: Invalid XML found: The reference to entity \"se\" must end with the ';' delimiter.\", filePath=%s, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid", "jcr_root/apps/cschneidervalidation/configs/com.adobe.test.Invalid.xml".replace('/', File.separatorChar))));
     }
     
     @Test
