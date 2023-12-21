@@ -58,6 +58,8 @@ public class Analyser {
 
     private final Map<String, Map<String, String>> configurations;
 
+    private boolean outputTaskDetails = true;
+
     /**
      * Create new analyser with a provided scanner and the tasks to run
      *
@@ -151,6 +153,15 @@ public class Analyser {
     }
 
     /**
+     * Enable/disable output of task details. By default the details are outputted.
+     * @param outputTaskDetails flag for enabling/disabling output of task details
+     * @since 1.6.0
+     */
+    public void setOutputTaskDetails(final boolean outputTaskDetails) {
+        this.outputTaskDetails = outputTaskDetails;
+    }
+
+    /**
      * Analyse the feature
      *
      * @param feature The feature to analyse
@@ -186,7 +197,7 @@ public class Analyser {
             throws Exception {
         logger.info("Starting analyzing feature '{}'...", feature.getId());
 
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         final FeatureDescriptor featureDesc = scanner.scan(feature);
         BundleDescriptor bd = null;
         ArtifactId framework = fwk;
@@ -217,9 +228,10 @@ public class Analyser {
 
         // execute analyser tasks
         for (final AnalyserTask task : tasks) {
-
-            logger.info("- Executing {} [{}]...", task.getName(), task.getId());
-            start = System.currentTimeMillis();
+            if (this.outputTaskDetails) {
+                logger.info("- Executing {} [{}]...", task.getName(), task.getId());
+            }
+            final long startTask = System.currentTimeMillis();
             final Map<String, String> taskConfiguration = getConfiguration(task.getId());
 
             task.execute(new AnalyserTaskContext() {
@@ -312,14 +324,15 @@ public class Analyser {
                     }
                 }
             });
-            logger.info("- Executed {} [{}] in {}ms", task.getName(), task.getId(), System.currentTimeMillis() - start);
+            if (this.outputTaskDetails) {
+                logger.info("- Executed {} [{}] in {}ms", task.getName(), task.getId(), System.currentTimeMillis() - startTask);
+            }
         }
 
-        int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size() + configurationWarnings.size();
-        int allErrors = globalErrors.size() + artifactErrors.size() + extensionErrors.size()  + configurationErrors.size();
-        logger.info("Analyzing feature '" + feature.getId() + "' finished : "
-                + allWarnings + " warnings, "
-                + allErrors + " errors.");
+        final int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size() + configurationWarnings.size();
+        final int allErrors = globalErrors.size() + artifactErrors.size() + extensionErrors.size()  + configurationErrors.size();
+        logger.info("Finished analyzing feature '{}' in {}ms : {} warnings, {} errors.",
+            feature.getId(), System.currentTimeMillis() - start, allWarnings, allErrors);
 
         return new AnalyserResult() {
             @Override
