@@ -63,7 +63,7 @@ public class BundleDescriptorImplTest
             + "Bundle-ManifestVersion: 2\n"
             + "Export-Package: org.apache.sling;version=1.0,org.apache.felix;version=2.0\n";
         URL f = new URL("jar:" + createBundle(bmf).toURI().toURL() + "!/");
-        BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f, 1);
+        BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f);
         final Set<PackageInfo> infos = bdf.getExportedPackages();
         assertEquals(2, infos.size());
         assertPackageInfo(infos ,"org.apache.sling", Version.parseVersion("1.0"));
@@ -94,7 +94,7 @@ public class BundleDescriptorImplTest
         File dir = createBundleFolder(bmf);
         try {
             URL f = dir.toURI().toURL();
-            BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f, 1);
+            BundleDescriptorImpl bdf = new BundleDescriptorImpl(new Artifact(new ArtifactId("foo", "bar", "1.0", "bla", "bundle")), f);
             final Set<PackageInfo> infos = bdf.getExportedPackages();
             assertEquals(2, infos.size());
             assertPackageInfo(infos ,"org.apache.sling", Version.parseVersion("1.0"));

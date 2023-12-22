@@ -132,7 +132,7 @@ public class Scanner {
                 throw new IOException("Unable to find file for " + bundle.getId());
             }
 
-            desc = new BundleDescriptorImpl(bundle, file, startLevel);
+            desc = new BundleDescriptorImpl(bundle, file);
             this.cache.put(key, desc);
         }
         return desc;
@@ -243,7 +243,7 @@ public class Scanner {
                     if (headers != null) {
                         Manifest manifest = new Manifest();
                         headers.forEach(manifest.getMainAttributes()::putValue);
-                        BundleDescriptor desc = new BundleDescriptorImpl(bundle, artifactProvider, manifest, bundle.getStartOrder());
+                        BundleDescriptor desc = new BundleDescriptorImpl(bundle, artifactProvider, manifest);
                         this.cache.put(key, desc);
                     }
                 }

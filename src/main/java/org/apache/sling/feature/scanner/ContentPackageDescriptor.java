@@ -19,7 +19,6 @@ package org.apache.sling.feature.scanner;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.Configuration;
 
 /**

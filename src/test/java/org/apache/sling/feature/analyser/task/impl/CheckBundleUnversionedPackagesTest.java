@@ -81,7 +81,7 @@ public class CheckBundleUnversionedPackagesTest {
         Artifact artifact = new Artifact(ArtifactId.fromMvnId(id));
         artifact.setFeatureOrigins(origins);
         BundleDescriptor bd1 = new BundleDescriptorImpl(
-                artifact, new File(resourceRoot, file).toURI().toURL(), 0);
+                artifact, new File(resourceRoot, file).toURI().toURL());
         fd.getBundleDescriptors().add(bd1);
     }
 }

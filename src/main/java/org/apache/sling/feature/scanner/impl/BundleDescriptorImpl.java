@@ -64,9 +64,6 @@ public class BundleDescriptorImpl
     /** The bundle version. */
     private String bundleVersion;
 
-    /** The start level of this artifact. */
-    private final int startLevel;
-
     /** Manifest */
     private final Manifest manifest;
 
@@ -106,14 +103,12 @@ public class BundleDescriptorImpl
      * Constructor for a new descriptor
      * @param artifact The artifact
      * @param url The URL
-     * @param startLevel The start level
      * @throws IOException If the manifest can't be get
      * @throws NullPointerException If artifact is {@code null}
      */
     public BundleDescriptorImpl(final Artifact artifact,
-            final URL url,
-            final int startLevel) throws IOException  {
-        this(artifact, url, null, getManifest(url), startLevel);
+            final URL url) throws IOException  {
+        this(artifact, url, null, getManifest(url));
     }
 
     /**
@@ -121,15 +116,13 @@ public class BundleDescriptorImpl
      * @param artifact The artifact
      * @param provider The artifact provider
      * @param manifest The manifest
-     * @param startLevel The start level
      * @throws IOException If the manifest can't be get
      * @throws NullPointerException If artifact is {@code null}
      */
     public BundleDescriptorImpl(final Artifact artifact,
                                 final ArtifactProvider provider,
-                                final Manifest manifest,
-                                final int startLevel) throws IOException {
-        this(artifact, null, provider, manifest, startLevel);
+                                final Manifest manifest) throws IOException {
+        this(artifact, null, provider, manifest);
     }
 
     /**
@@ -138,18 +131,15 @@ public class BundleDescriptorImpl
      * @param url The URL
      * @param provider The artifact provider
      * @param manifest The manifest
-     * @param startLevel The start level
      * @throws IOException If the manifest can't be get
      * @throws NullPointerException If artifact is {@code null}
      */
     public BundleDescriptorImpl(final Artifact artifact,
                                 final URL url,
                                 final ArtifactProvider provider,
-                                final Manifest manifest,
-                                final int startLevel) throws IOException  {
+                                final Manifest manifest) throws IOException  {
         super(artifact.getId().toMvnId());
         this.artifact = artifact;
-        this.startLevel = startLevel;
         this.artifactFile = url;
         this.artifactProvider = provider;
         if ( manifest == null ) {

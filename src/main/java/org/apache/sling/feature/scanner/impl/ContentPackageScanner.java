@@ -214,8 +214,7 @@ public class ContentPackageScanner {
 
                                 final Artifact bundle = new Artifact(extractArtifactId(packageArtifact.getId(), newFile));
                                 bundle.setStartOrder(startLevel);
-                                final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL(),
-                                        startLevel);
+                                final BundleDescriptor info = new BundleDescriptorImpl(bundle, newFile.toURI().toURL());
                                 bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PACKAGE,
                                         packageArtifact.getId().toMvnId());
                                 bundle.getMetadata().put(ContentPackageDescriptorImpl.METADATA_PATH, contentPath);
