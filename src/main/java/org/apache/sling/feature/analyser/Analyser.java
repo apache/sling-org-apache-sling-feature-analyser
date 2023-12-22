@@ -211,7 +211,9 @@ public class Analyser {
         if (framework != null) {
             bd = scanner.scan(framework, feature.getFrameworkProperties());
         }
-        logger.info("- Scanned feature in {}ms", System.currentTimeMillis() - start);
+        if (this.outputTaskDetails) {
+            logger.info("- Scanned feature in {}ms", System.currentTimeMillis() - start);
+        }
         final BundleDescriptor fwkDesc = bd;
 
         final List<AnalyserResult.GlobalReport> globalWarnings = new ArrayList<>();
