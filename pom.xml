@@ -180,12 +180,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.apache.sling</groupId>
-            <artifactId>org.apache.sling.serviceusermapper</artifactId>
-            <version>1.5.8</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>javax.jcr</groupId>
             <artifactId>jcr</artifactId>
             <scope>provided</scope>
