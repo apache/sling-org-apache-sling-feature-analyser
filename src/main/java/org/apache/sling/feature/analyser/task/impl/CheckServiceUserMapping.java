@@ -26,8 +26,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.util.converter.Converters;
 
-import java.util.Set;
-
 public class CheckServiceUserMapping implements AnalyserTask {
 
     static final String SERVICE_USER_MAPPING_PID = "org.apache.sling.serviceusermapping.impl.ServiceUserMapperImpl";
@@ -99,10 +97,7 @@ public class CheckServiceUserMapping implements AnalyserTask {
      */
     private static class Mapping {
 
-        private final String userName;
-        private final Set<String> principalNames;
-        private final String serviceName;
-        private final String subServiceName;
+        private final boolean isDeprecated;
 
         private static @Nullable Mapping parse(@NotNull final String spec, @NotNull final AnalyserTaskContext ctx, @NotNull final Configuration cfg) {
             final int colon = spec.indexOf(':');
@@ -119,38 +114,22 @@ public class CheckServiceUserMapping implements AnalyserTask {
                 return null;
             }
 
-            final String serviceName;
-            final String subServiceName;
-            if (colon < 0 || colon > equals) {
-                serviceName = spec.substring(0, equals);
-                subServiceName = null;
-            } else {
-                serviceName = spec.substring(0, colon);
-                subServiceName = spec.substring(colon + 1, equals);
-            }
-
             final String userName;
-            final Set<String> principalNames;
             String s = spec.substring(equals + 1);
             if (s.charAt(0) == '[' && s.charAt(s.length() - 1) == ']') {
                 userName = null;
-                principalNames = org.apache.sling.serviceusermapping.Mapping.extractPrincipalNames(s);
             } else {
                 userName = s;
-                principalNames = null;
             }
-            return new Mapping(userName, principalNames, serviceName, subServiceName);
+            return new Mapping(userName != null);
         }
 
-        private Mapping(@Nullable final String userName, @Nullable final Set<String> principalNames, @NotNull final String serviceName, @Nullable final String subServiceName) {
-            this.userName = userName;
-            this.principalNames = principalNames;
-            this.serviceName = serviceName;
-            this.subServiceName = subServiceName;
+        private Mapping(boolean isDeprecated) {
+            this.isDeprecated = isDeprecated;
         }
 
         private boolean isDeprecated() {
-            return userName != null;
+            return isDeprecated;
         }
     }
 }
