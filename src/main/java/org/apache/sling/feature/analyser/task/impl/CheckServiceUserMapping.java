@@ -46,7 +46,7 @@ public class CheckServiceUserMapping implements AnalyserTask {
 
     @Override
     public String getId() {
-        return SERVICE_USER_MAPPING_PID;
+        return "serviceusermapping";
     }
 
     @Override

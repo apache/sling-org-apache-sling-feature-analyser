@@ -60,7 +60,7 @@ public class CheckServiceUserMappingTest {
     
     @Test
     public void testId() {
-        assertEquals(CheckServiceUserMapping.SERVICE_USER_MAPPING_PID, task.getId());
+        assertEquals("serviceusermapping", task.getId());
     }
     
     @Test
