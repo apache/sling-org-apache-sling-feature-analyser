@@ -25,8 +25,6 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.util.converter.Converters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
@@ -40,9 +38,7 @@ public class CheckServiceUserMapping implements AnalyserTask {
 
     static final String CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS = "warnOnlyForDeprecatedMappings";
     static final String CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT = Boolean.FALSE.toString();
-
-    private static final Logger log = LoggerFactory.getLogger(CheckServiceUserMapping.class);
-
+    
     @Override
     public String getName() {
         return "Service User Mapping Check";
@@ -81,11 +77,11 @@ public class CheckServiceUserMapping implements AnalyserTask {
     private static void check(final @NotNull AnalyserTaskContext ctx, final @NotNull Configuration cfg, final @Nullable String spec, final boolean warnOnlyForDeprecation) {
         final String id = cfg.getPid();
         if (spec == null || spec.trim().isEmpty()) {
-            log.warn("Ignoring empty mapping in {}", id);
+            ctx.reportConfigurationWarning(cfg, "Ignoring empty mapping in " + id);
             return;
         }
 
-        final Mapping mapping = Mapping.parse(spec);
+        final Mapping mapping = Mapping.parse(spec, ctx, cfg);
         if (mapping == null) {
             ctx.reportConfigurationError(cfg, String.format("Invalid service user mapping '%s' from %s", spec, id));
         } else if (mapping.isDeprecated()) {
@@ -108,18 +104,18 @@ public class CheckServiceUserMapping implements AnalyserTask {
         private final String serviceName;
         private final String subServiceName;
 
-        private static @Nullable Mapping parse(@NotNull final String spec) {
+        private static @Nullable Mapping parse(@NotNull final String spec, @NotNull final AnalyserTaskContext ctx, @NotNull final Configuration cfg) {
             final int colon = spec.indexOf(':');
             final int equals = spec.indexOf('=');
 
             if (colon == 0 || equals <= 0) {
-                log.error("serviceName is required");
+                ctx.reportConfigurationWarning(cfg, "Invalid service user mapping: serviceName is required");
                 return null;
             } else if (equals == spec.length() - 1) {
-                log.error("userName or principalNames is required");
+                ctx.reportConfigurationWarning(cfg, "Invalid service user mapping: userName or principalNames is required");
                 return null;
             } else if (colon + 1 == equals) {
-                log.error("serviceInfo must not be empty");
+                ctx.reportConfigurationWarning(cfg, "Invalid service user mapping: serviceInfo must not be empty");
                 return null;
             }
 
