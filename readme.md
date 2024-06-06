@@ -109,3 +109,36 @@ Checks the syntax of all repoinit sections.
 ## `requirements-capabilities`
 
 Checks bundle requirements/capabilities for consistency and completeness.
+
+# Extensions
+
+## `analyser-metadata`
+
+Generates additional metadata that will be recorded in the feature model definition. It is configured by defining an `analyser-metadata` section in the feature model definition. The section can have entries that match individual bundle names and entries that match based on regular expressions (if the key contains the "*" character).
+
+Each individual entry can contain the following keys:
+
+
+Configuration key | Allowed values | Description
+ ----- | ----- | -----
+`manifest` | `null` or Object | If null, the manifest is not generated. If an object, the values are copied over. If absent, the values are extracted from the OSGi bundle
+`report` | Object with keys `warning` and `error` | If any of the values are set to `false`, reporting is suppressed for those kind of occurences.
+
+A typical configuration for platform applications is:
+
+```javascript
+{
+    "analyser-metadata:JSON|true":
+    {
+      ".*" : {
+        "manifest": null,
+        "report": {
+          "error": false,
+          "warning": false
+        }
+      }
+    }
+}
+```
+
+This ensures that warnings related to the platform are not reported when the feature is aggregated with downstream (consumer) applications. The manifests should not be inlined under normal circumstances, since it greatly increases the size of the resulting features.
