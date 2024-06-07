@@ -23,9 +23,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.jar.JarFile;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.ExecutionEnvironmentExtension;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
@@ -33,6 +36,10 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.HandlerContext;
 import org.apache.sling.feature.builder.PostProcessHandler;
 import org.apache.sling.feature.io.IOUtils;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,16 +55,21 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
 
     @Override
     public void postProcess(HandlerContext handlerContext, Feature feature, Extension extension) {
+        
+        
         if (AnalyserMetaDataExtension.EXTENSION_NAME.equals(extension.getName())) {
             LOG.debug("Handling analyser-metadata extension {}", extension);
             JsonObject extensionJSONStructure = extension.getJSONStructure().asJsonObject();
             JsonObjectBuilder result = Json.createObjectBuilder();
             Map<String, JsonValue> directEntries = new HashMap<>();
             Map<String, JsonValue> wildcardEntries = new LinkedHashMap<>();
+            JsonObject[] frameworkDefinitionHolder = new JsonObject[1];
             extensionJSONStructure.entrySet().forEach(
                     entry -> {
                         if (entry.getKey().contains("*")) {
                             wildcardEntries.put(entry.getKey(), entry.getValue());
+                        } else if (entry.getKey().equals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME)) {
+                            frameworkDefinitionHolder[0] = entry.getValue().asJsonObject();
                         } else {
                             directEntries.put(entry.getKey(), entry.getValue());
                         }
@@ -83,6 +95,39 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                              }
                         )
             );;
+            
+            if (frameworkDefinitionHolder[0] != null) {
+                JsonObject v = frameworkDefinitionHolder[0];
+                // TODO - add test
+                // TODO - finalise contract
+                // TODO - make use of the information in the Analyser, if present
+                FrameworkScanner scanner = ServiceLoader.load(FrameworkScanner.class).iterator().next();
+                try {
+                    ExecutionEnvironmentExtension executionEnv = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
+                    if ( executionEnv != null ) {
+                        ArtifactId frameworkId = executionEnv.getFramework().getId();
+                        if ( executionEnv.getJavaVersion() == null ) {
+                            LOG.warn("No java version set in execution environment extension, skipping version validation");
+                        } else {
+                            Version requiredJavaVersion = executionEnv.getJavaVersion();
+                            Version currentJavaVersion = new Version(SystemUtils.JAVA_VERSION);
+                            
+                            if ( requiredJavaVersion.getMajor() != currentJavaVersion.getMajor() ) 
+                                throw new IllegalStateException("Execution environment requires Java " + requiredJavaVersion.getMajor() + ", but running on " + currentJavaVersion.getMajor() + ". Aborting.");
+                            
+                        }
+                        BundleDescriptor fw = scanner.scan(frameworkId, feature.getFrameworkProperties(), handlerContext.getArtifactProvider());
+                        JsonObjectBuilder wrapper = Json.createObjectBuilder(v);
+                        wrapper.add(Constants.PROVIDE_CAPABILITY, fw.getCapabilities().toString());
+                        wrapper.add(Constants.EXPORT_PACKAGE, fw.getExportedPackages().toString());
+                        result.add(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, wrapper);
+                    } else {
+                        LOG.warn("No execution environment found, not creating framework capabilities");
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            }
 
             feature.getExtensions().remove(extension);
 
@@ -92,7 +137,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
             feature.getExtensions().add(newEx);
         }
     }
-
+ 
     private boolean noManifest(JsonObject object) {
         return manifest(object, null) && !object.getBoolean("no-manifest", false);
     }
@@ -104,7 +149,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
     private boolean manifest(JsonObject object, Object match) {
         return object.get(MANIFEST_KEY) == match;
     }
-
+    
     private Optional<JsonObject> findFirst(Map<String, JsonValue> directValues, Map<String, JsonValue> wildcardValues, ArtifactId bundle) {
         JsonValue direct = directValues.get(bundle.toMvnId());
         if (direct != null && direct != JsonValue.NULL) {

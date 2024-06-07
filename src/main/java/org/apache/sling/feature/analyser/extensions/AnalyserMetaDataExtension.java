@@ -16,20 +16,22 @@
  */
 package org.apache.sling.feature.analyser.extensions;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.stream.Stream;
+
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.osgi.framework.Constants;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.stream.Stream;
 
 public class AnalyserMetaDataExtension {
     public static final String EXTENSION_NAME = "analyser-metadata";
@@ -55,6 +57,9 @@ public class AnalyserMetaDataExtension {
 
     private AnalyserMetaDataExtension(JsonObject json) {
         for (Map.Entry<String, JsonValue> entry : json.entrySet()) {
+            if ( entry.getKey().equals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME) ) {
+                continue; // not used for now
+            }
             ArtifactId id = ArtifactId.fromMvnId(entry.getKey());
             JsonObject headers = entry.getValue().asJsonObject();
             if (headers.containsKey("manifest")) {
