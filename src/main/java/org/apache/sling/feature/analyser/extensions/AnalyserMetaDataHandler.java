@@ -55,8 +55,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
 
     @Override
     public void postProcess(HandlerContext handlerContext, Feature feature, Extension extension) {
-        
-        
+
         if (AnalyserMetaDataExtension.EXTENSION_NAME.equals(extension.getName())) {
             LOG.debug("Handling analyser-metadata extension {}", extension);
             JsonObject extensionJSONStructure = extension.getJSONStructure().asJsonObject();
@@ -94,7 +93,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                                  }
                              }
                         )
-            );;
+                    );
             
             if (frameworkDefinitionHolder[0] != null) {
                 JsonObject v = frameworkDefinitionHolder[0];
@@ -129,6 +128,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                 }
             }
 
+
             feature.getExtensions().remove(extension);
 
             // Mark the extension as optional now that we've processed it.
@@ -137,7 +137,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
             feature.getExtensions().add(newEx);
         }
     }
- 
+
     private boolean noManifest(JsonObject object) {
         return manifest(object, null) && !object.getBoolean("no-manifest", false);
     }
@@ -149,7 +149,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
     private boolean manifest(JsonObject object, Object match) {
         return object.get(MANIFEST_KEY) == match;
     }
-    
+
     private Optional<JsonObject> findFirst(Map<String, JsonValue> directValues, Map<String, JsonValue> wildcardValues, ArtifactId bundle) {
         JsonValue direct = directValues.get(bundle.toMvnId());
         if (direct != null && direct != JsonValue.NULL) {

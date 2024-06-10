@@ -114,7 +114,9 @@ Checks bundle requirements/capabilities for consistency and completeness.
 
 ## `analyser-metadata`
 
-Generates additional metadata that will be recorded in the feature model definition. It is configured by defining an `analyser-metadata` section in the feature model definition. The section can have entries that match individual bundle names and entries that match based on regular expressions (if the key contains the "*" character).
+Generates additional metadata that will be recorded in the feature model definition. It is configured by defining an `analyser-metadata` section in the feature model definition. The section will be processed by the extension when the feature models are aggregated and will be replaced with the required entries for bundles matching the configuration.
+
+The section can have entries that match individual bundle names and entries that match based on regular expressions (if the key contains the "*" character).
 
 Each individual entry can contain the following keys:
 
