@@ -58,6 +58,7 @@
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.analyser.task.AnalyserTask</exclude>
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.ExtensionScanner</exclude>
                         <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.FrameworkScanner</exclude>
+                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.builder.PostProcessHandler</exclude>
                         <exclude>src/test/resources/origins/**</exclude>
                         <exclude>src/test/resources/test-bundle-src/**</exclude>
                         <exclude>src/test/resources/**.xml</exclude>
