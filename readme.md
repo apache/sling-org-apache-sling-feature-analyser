@@ -116,15 +116,24 @@ Checks bundle requirements/capabilities for consistency and completeness.
 
 Generates additional metadata that will be recorded in the feature model definition. It is configured by defining an `analyser-metadata` section in the feature model definition. The section will be processed by the extension when the feature models are aggregated and will be replaced with the required entries for bundles matching the configuration.
 
+### Bundle metadata
+
 The section can have entries that match individual bundle names and entries that match based on regular expressions (if the key contains the "*" character).
 
 Each individual entry can contain the following keys:
-
 
 Configuration key | Allowed values | Description
  ----- | ----- | -----
 `manifest` | `null` or Object | If null, the manifest is not generated. If an object, the values are copied over. If absent, the values are extracted from the OSGi bundle
 `report` | Object with keys `warning` and `error` | If any of the values are set to `false`, reporting is suppressed for those kind of occurences.
+
+### Framework metadata
+
+A special case is when an entry with the name `system.bundle` is found. This will record information about the system bundle exported packages and capabilites as present at the time of the feature aggregation. When these are present in an aggregated feature the analysers will use that information instead of the one discovered during analysis time.
+
+The system bundle information will be extracted from the `execution-environment` extension. In this extension, the `framework` entry is required and is used to gather information about the system bundle. The `javaVersion` property is optional but recommended and is used to validate that the Java version used to generate the metadata matches the one in the execution environment.
+
+### Example
 
 A typical configuration for platform applications is:
 
@@ -138,9 +147,19 @@ A typical configuration for platform applications is:
           "error": false,
           "warning": false
         }
-      }
+      },
+      "system.bundle": {}
+    },
+     "framework":{
+       "id":"org.apache.felix:org.apache.felix.framework:7.0.5"
+      },
+      "javaVersion": "21"
     }
 }
 ```
 
-This ensures that warnings related to the platform are not reported when the feature is aggregated with downstream (consumer) applications. The manifests should not be inlined under normal circumstances, since it greatly increases the size of the resulting features.
+This ensures that 
+
+- warnings related to the platform are not reported when the feature is aggregated with downstream (consumer) applications. The manifests should not be inlined under normal circumstances, since it greatly increases the size of the resulting features.
+- metadata related to the system bundle is recorded at the Java 21 compatibility level
+

@@ -155,7 +155,9 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     private List<Descriptor> getCandidates(List<Descriptor> artifactDescriptors, Requirement requirement) {
         return artifactDescriptors.stream()
                 .filter(artifactDescriptor -> artifactDescriptor.getCapabilities() != null)
-                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream().anyMatch(capability -> CapabilitySet.matches(capability, requirement)))
+                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream().anyMatch(
+                        capability -> CapabilitySet.matches(capability, requirement))
+                )
                 .collect(Collectors.toList());
     }
 

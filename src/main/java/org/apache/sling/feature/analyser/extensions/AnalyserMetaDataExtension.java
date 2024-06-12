@@ -39,6 +39,7 @@ public class AnalyserMetaDataExtension {
     private final Map<ArtifactId, Map<String, String>> manifests = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportWarnings = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportErrors = new HashMap<>();
+    private SystemBundle systemBundle;
 
     public static AnalyserMetaDataExtension getAnalyserMetaDataExtension(Feature feature) {
         Extension ext = feature == null ? null : feature.getExtensions().getByName(EXTENSION_NAME);
@@ -56,10 +57,25 @@ public class AnalyserMetaDataExtension {
     }
 
     private AnalyserMetaDataExtension(JsonObject json) {
+
         for (Map.Entry<String, JsonValue> entry : json.entrySet()) {
+            
+            // handle system bundle separately
             if ( entry.getKey().equals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME) ) {
-                continue; // not used for now
+                JsonObject systemBundleConfig = entry.getValue().asJsonObject();
+                JsonObject manifestObj = systemBundleConfig.getJsonObject("manifest");
+                String artifactId = systemBundleConfig.getJsonString("artifactId").getString();
+                String sortedFrameworkProperties = systemBundleConfig.getJsonString("sortedFrameworkProperties").getString();
+                
+                Map<String, String> manifest = new HashMap<>();
+                for (String key : manifestObj.keySet()) {
+                    manifest.put(key, manifestObj.getString(key));
+                }
+                systemBundle = new SystemBundle(manifest, ArtifactId.fromMvnId(artifactId), sortedFrameworkProperties);
+                
+                continue;
             }
+
             ArtifactId id = ArtifactId.fromMvnId(entry.getKey());
             JsonObject headers = entry.getValue().asJsonObject();
             if (headers.containsKey("manifest")) {
@@ -88,6 +104,10 @@ public class AnalyserMetaDataExtension {
 
     public Map<String, String> getManifest(final ArtifactId artifactId) {
         return this.manifests.get(artifactId);
+    }
+    
+    public SystemBundle getSystemBundle() {
+        return systemBundle;
     }
 
     public boolean reportWarning(ArtifactId artifactId) {
@@ -143,5 +163,30 @@ public class AnalyserMetaDataExtension {
 
     public void setReportErrors(ArtifactId id, boolean enabled) {
         reportErrors.put(id, enabled);
+    }
+    
+    public static class SystemBundle {
+        
+        private Map<String, String> manifest = new HashMap<>();
+        private ArtifactId artifactId;
+        private String sortedFrameworkProperties;
+        
+        public SystemBundle(Map<String, String> manifest, ArtifactId artifactId, String sortedFrameworkProperties) {
+            this.manifest = manifest;
+            this.artifactId = artifactId;
+            this.sortedFrameworkProperties = sortedFrameworkProperties;
+        }
+        
+        public ArtifactId getArtifactId() {
+            return artifactId;
+        }
+        
+        public Map<String, String> getManifest() {
+            return manifest;
+        }
+        
+        public String getSortedFrameworkProperties() {
+            return sortedFrameworkProperties;
+        }
     }
 }

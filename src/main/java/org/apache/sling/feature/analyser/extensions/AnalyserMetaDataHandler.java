@@ -24,6 +24,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.StringJoiner;
+import java.util.TreeMap;
 import java.util.jar.JarFile;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -35,11 +38,14 @@ import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.HandlerContext;
 import org.apache.sling.feature.builder.PostProcessHandler;
+import org.apache.sling.feature.impl.felix.utils.resource.ResourceUtils;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,13 +68,13 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
             JsonObjectBuilder result = Json.createObjectBuilder();
             Map<String, JsonValue> directEntries = new HashMap<>();
             Map<String, JsonValue> wildcardEntries = new LinkedHashMap<>();
-            JsonObject[] frameworkDefinitionHolder = new JsonObject[1];
+            JsonObject[] systemBundleHolder = new JsonObject[1];
             extensionJSONStructure.entrySet().forEach(
                     entry -> {
                         if (entry.getKey().contains("*")) {
                             wildcardEntries.put(entry.getKey(), entry.getValue());
                         } else if (entry.getKey().equals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME)) {
-                            frameworkDefinitionHolder[0] = entry.getValue().asJsonObject();
+                            systemBundleHolder[0] = entry.getValue().asJsonObject();
                         } else {
                             directEntries.put(entry.getKey(), entry.getValue());
                         }
@@ -95,12 +101,9 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                         )
                     );
             
-            if (frameworkDefinitionHolder[0] != null) {
-                JsonObject v = frameworkDefinitionHolder[0];
-                // TODO - add test
-                // TODO - finalise contract
-                // TODO - make use of the information in the Analyser, if present
-                FrameworkScanner scanner = ServiceLoader.load(FrameworkScanner.class).iterator().next();
+            if (systemBundleHolder[0] != null) { 
+                JsonObject systemBundle = systemBundleHolder[0];
+                // TODO - skip if the entries already exist?
                 try {
                     ExecutionEnvironmentExtension executionEnv = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
                     if ( executionEnv != null ) {
@@ -115,10 +118,16 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                                 throw new IllegalStateException("Execution environment requires Java " + requiredJavaVersion.getMajor() + ", but running on " + currentJavaVersion.getMajor() + ". Aborting.");
                             
                         }
+                        FrameworkScanner scanner = ServiceLoader.load(FrameworkScanner.class).iterator().next();
+                        
                         BundleDescriptor fw = scanner.scan(frameworkId, feature.getFrameworkProperties(), handlerContext.getArtifactProvider());
-                        JsonObjectBuilder wrapper = Json.createObjectBuilder(v);
-                        wrapper.add(Constants.PROVIDE_CAPABILITY, fw.getCapabilities().toString());
-                        wrapper.add(Constants.EXPORT_PACKAGE, fw.getExportedPackages().toString());
+                        JsonObjectBuilder wrapper = Json.createObjectBuilder(systemBundle);
+                        JsonObjectBuilder manifest = Json.createObjectBuilder();
+                        manifest.add(Constants.PROVIDE_CAPABILITY, capabilitiesToString(fw.getCapabilities()));
+                        manifest.add(Constants.EXPORT_PACKAGE, exportedPackagesToString(fw.getExportedPackages()));
+                        wrapper.add(MANIFEST_KEY, manifest);
+                        wrapper.add("artifactId", frameworkId.toMvnId());
+                        wrapper.add("sortedFrameworkProperties", frameworkPropertiesSortedToString(feature.getFrameworkProperties()));
                         result.add(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, wrapper);
                     } else {
                         LOG.warn("No execution environment found, not creating framework capabilities");
@@ -136,6 +145,37 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
             newEx.setJSONStructure(result.build());
             feature.getExtensions().add(newEx);
         }
+    }
+
+    private String frameworkPropertiesSortedToString(Map<String, String> frameworkProperties) {
+        if (frameworkProperties == null || frameworkProperties.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        // TODO - duplication with Scanner.scan
+        Map<String, String> sortedMap = new TreeMap<>(frameworkProperties);
+        for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
+            sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
+        }
+        return sb.toString();
+    }
+
+    private static String exportedPackagesToString(Set<PackageInfo> exportedPackages) {
+        StringJoiner joiner = new StringJoiner(",");
+        for (PackageInfo packageInfo : exportedPackages) {
+            joiner.add(packageInfo.getName() + ";version=" + packageInfo.getVersion());
+        }
+        return joiner.toString();
+    }
+
+    private static String capabilitiesToString(Set<Capability> capabilities) {
+         
+        StringJoiner joiner = new StringJoiner(",");
+        for (Capability c : capabilities) {
+            joiner.add(ResourceUtils.toString(null, c.getNamespace(), c.getAttributes(), c.getDirectives()));
+        }
+        
+        return joiner.toString();
     }
 
     private boolean noManifest(JsonObject object) {

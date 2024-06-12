@@ -28,17 +28,24 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension;
+import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension.SystemBundle;
 import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.impl.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
 
 /**
  * The scanner is a service that scans items and provides descriptions for
@@ -248,6 +255,71 @@ public class Scanner {
                     }
                 }
             }
+            
+            SystemBundle systemBundle = extension.getSystemBundle();
+            if ( systemBundle != null ) {
+                String key = systemBundle.getArtifactId().toMvnId();
+                if ( systemBundle.getSortedFrameworkProperties() != null )
+                    key += systemBundle.getSortedFrameworkProperties();
+                
+                URL artifactUrl = artifactProvider.provide(systemBundle.getArtifactId());
+                if (artifactUrl == null) {
+                    throw new IOException("Unable to find file for " + systemBundle.getArtifactId());
+                }
+                
+                // TODO - duplicated with FelixFrameworkScanner
+                BundleDescriptor desc = new BundleDescriptor(systemBundle.getArtifactId().toMvnId()) {
+                    
+                    @Override
+                    public URL getArtifactFile() {
+                        return artifactUrl;
+                    }
+                    
+                    @Override
+                    public Artifact getArtifact() {
+                        return new Artifact(systemBundle.getArtifactId());
+                    }
+                    
+                    @Override
+                    public Manifest getManifest() {
+                        return new Manifest();
+                    }
+                    
+                    @Override
+                    public String getBundleVersion() {
+                        return systemBundle.getArtifactId().getOSGiVersion().toString();
+                    }
+                    
+                    @Override
+                    public String getBundleSymbolicName() {
+                        return Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
+                    }
+                };
+                
+                String capabilities = systemBundle.getManifest().get(Constants.PROVIDE_CAPABILITY);
+                if ( capabilities != null ) {
+                    try {
+                        List<Capability> parsedCapabilities = ResourceBuilder.parseCapability(null, capabilities);
+                        desc.getCapabilities().addAll(parsedCapabilities);
+                    } catch (BundleException e) {
+                        throw new IOException("Failed to parse capabilites for the system bundle", e);
+                    }
+                }
+                
+                String exports = systemBundle.getManifest().get(Constants.EXPORT_PACKAGE);
+                if ( exports != null ) {
+                    Clause[] pcks = Parser.parseHeader(exports);
+                    for (final Clause pck : pcks) {
+                        String version = pck.getAttribute("version");
+                        PackageInfo info = new PackageInfo(pck.getName(), version, false);
+                        desc.getExportedPackages().add(info);
+                    }
+                }
+                desc.lock();
+                
+                this.cache.put(key, desc);
+                
+            }
         }
     }
 
@@ -263,7 +335,7 @@ public class Scanner {
         final StringBuilder sb = new StringBuilder();
         sb.append(framework.toMvnId());
         if (props != null) {
-            final Map<String, String> sortedMap = new TreeMap<String, String>(props);
+            final Map<String, String> sortedMap = new TreeMap<>(props);
             for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
                 sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
             }
