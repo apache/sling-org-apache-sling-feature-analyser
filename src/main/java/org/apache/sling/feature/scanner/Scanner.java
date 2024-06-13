@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -259,10 +258,6 @@ public class Scanner {
             
             SystemBundle systemBundle = extension.getSystemBundle();
             if ( systemBundle != null ) {
-                String key = systemBundle.getArtifactId().toMvnId();
-                if ( systemBundle.getSortedFrameworkProperties() != null )
-                    key += systemBundle.getSortedFrameworkProperties();
-                
                 URL artifactUrl = artifactProvider.provide(systemBundle.getArtifactId());
                 if (artifactUrl == null) {
                     throw new IOException("Unable to find file for " + systemBundle.getArtifactId());
@@ -291,6 +286,8 @@ public class Scanner {
                 }
                 desc.lock();
                 
+                String key = systemBundle.getScannerCacheKey();
+                
                 this.cache.put(key, desc);
                 
             }
@@ -306,15 +303,7 @@ public class Scanner {
      * @throws IOException If something goes wrong or a scanner is missing
      */
     public BundleDescriptor scan(final ArtifactId framework, final Map<String,String> props) throws IOException {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(framework.toMvnId());
-        if (props != null) {
-            final Map<String, String> sortedMap = new TreeMap<>(props);
-            for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
-                sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
-            }
-        }
-        final String key = sb.toString();
+        final String key = SystemBundleDescriptor.createCacheKey(framework, props);
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
             for (final FrameworkScanner scanner : this.frameworkScanners) {

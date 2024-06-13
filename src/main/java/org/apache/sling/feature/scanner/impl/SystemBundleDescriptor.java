@@ -17,6 +17,8 @@
 package org.apache.sling.feature.scanner.impl;
 
 import java.net.URL;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
@@ -30,6 +32,18 @@ import org.osgi.framework.Constants;
  * <p>It is based on an existing artifact id and the associated platform file.</p>
  */
 public final class SystemBundleDescriptor extends BundleDescriptor {
+    
+    public static String createCacheKey(final ArtifactId framework, final Map<String, String> props) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(framework.toMvnId());
+        if (props != null) {
+            final Map<String, String> sortedMap = new TreeMap<>(props);
+            for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
+                sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
+            }
+        }
+        return sb.toString();
+    }
     
     private final URL platformFile;
     private final ArtifactId framework;

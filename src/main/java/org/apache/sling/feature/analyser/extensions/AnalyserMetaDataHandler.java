@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.TreeMap;
 import java.util.jar.JarFile;
 
 import org.apache.commons.lang3.SystemUtils;
@@ -42,6 +41,7 @@ import org.apache.sling.feature.impl.felix.utils.resource.ResourceUtils;
 import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.impl.SystemBundleDescriptor;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
@@ -127,7 +127,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                         manifest.add(Constants.EXPORT_PACKAGE, exportedPackagesToString(fw.getExportedPackages()));
                         wrapper.add(MANIFEST_KEY, manifest);
                         wrapper.add("artifactId", frameworkId.toMvnId());
-                        wrapper.add("sortedFrameworkProperties", frameworkPropertiesSortedToString(feature.getFrameworkProperties()));
+                        wrapper.add("scannerCacheKey", SystemBundleDescriptor.createCacheKey(frameworkId, feature.getFrameworkProperties()));
                         result.add(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, wrapper);
                     } else {
                         LOG.warn("No execution environment found, not creating framework capabilities");
@@ -145,19 +145,6 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
             newEx.setJSONStructure(result.build());
             feature.getExtensions().add(newEx);
         }
-    }
-
-    private String frameworkPropertiesSortedToString(Map<String, String> frameworkProperties) {
-        if (frameworkProperties == null || frameworkProperties.isEmpty()) {
-            return "";
-        }
-        StringBuilder sb = new StringBuilder();
-        // TODO - duplication with Scanner.scan
-        Map<String, String> sortedMap = new TreeMap<>(frameworkProperties);
-        for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
-            sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
-        }
-        return sb.toString();
     }
 
     private static String exportedPackagesToString(Set<PackageInfo> exportedPackages) {

@@ -65,13 +65,13 @@ public class AnalyserMetaDataExtension {
                 JsonObject systemBundleConfig = entry.getValue().asJsonObject();
                 JsonObject manifestObj = systemBundleConfig.getJsonObject("manifest");
                 String artifactId = systemBundleConfig.getJsonString("artifactId").getString();
-                String sortedFrameworkProperties = systemBundleConfig.getJsonString("sortedFrameworkProperties").getString();
+                String scannerCacheKey = systemBundleConfig.getJsonString("scannerCacheKey").getString();
                 
                 Map<String, String> manifest = new HashMap<>();
                 for (String key : manifestObj.keySet()) {
                     manifest.put(key, manifestObj.getString(key));
                 }
-                systemBundle = new SystemBundle(manifest, ArtifactId.fromMvnId(artifactId), sortedFrameworkProperties);
+                systemBundle = new SystemBundle(manifest, ArtifactId.fromMvnId(artifactId), scannerCacheKey);
                 
                 continue;
             }
@@ -169,12 +169,12 @@ public class AnalyserMetaDataExtension {
         
         private Map<String, String> manifest = new HashMap<>();
         private ArtifactId artifactId;
-        private String sortedFrameworkProperties;
+        private String scannerCacheKey;
         
-        public SystemBundle(Map<String, String> manifest, ArtifactId artifactId, String sortedFrameworkProperties) {
+        public SystemBundle(Map<String, String> manifest, ArtifactId artifactId, String scannerCacheKey) {
             this.manifest = manifest;
             this.artifactId = artifactId;
-            this.sortedFrameworkProperties = sortedFrameworkProperties;
+            this.scannerCacheKey = scannerCacheKey;
         }
         
         public ArtifactId getArtifactId() {
@@ -185,8 +185,8 @@ public class AnalyserMetaDataExtension {
             return manifest;
         }
         
-        public String getSortedFrameworkProperties() {
-            return sortedFrameworkProperties;
+        public String getScannerCacheKey() {
+            return scannerCacheKey;
         }
     }
 }
