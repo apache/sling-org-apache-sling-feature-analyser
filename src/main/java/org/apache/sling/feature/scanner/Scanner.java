@@ -41,6 +41,7 @@ import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.impl.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
+import org.apache.sling.feature.scanner.impl.SystemBundleDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.BundleException;
@@ -267,34 +268,7 @@ public class Scanner {
                     throw new IOException("Unable to find file for " + systemBundle.getArtifactId());
                 }
                 
-                // TODO - duplicated with FelixFrameworkScanner
-                BundleDescriptor desc = new BundleDescriptor(systemBundle.getArtifactId().toMvnId()) {
-                    
-                    @Override
-                    public URL getArtifactFile() {
-                        return artifactUrl;
-                    }
-                    
-                    @Override
-                    public Artifact getArtifact() {
-                        return new Artifact(systemBundle.getArtifactId());
-                    }
-                    
-                    @Override
-                    public Manifest getManifest() {
-                        return new Manifest();
-                    }
-                    
-                    @Override
-                    public String getBundleVersion() {
-                        return systemBundle.getArtifactId().getOSGiVersion().toString();
-                    }
-                    
-                    @Override
-                    public String getBundleSymbolicName() {
-                        return Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
-                    }
-                };
+                BundleDescriptor desc = new SystemBundleDescriptor(systemBundle.getArtifactId(), artifactUrl);
                 
                 String capabilities = systemBundle.getManifest().get(Constants.PROVIDE_CAPABILITY);
                 if ( capabilities != null ) {
