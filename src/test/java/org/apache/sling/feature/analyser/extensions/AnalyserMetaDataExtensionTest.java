@@ -18,13 +18,26 @@
  */
 package org.apache.sling.feature.analyser.extensions;
 
-import org.apache.sling.feature.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Objects;
+import java.util.jar.Manifest;
+
+import org.apache.sling.feature.Artifact;
+import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.Extension;
+import org.apache.sling.feature.ExtensionState;
+import org.apache.sling.feature.ExtensionType;
+import org.apache.sling.feature.Feature;
+import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension.SystemBundle;
+import org.apache.sling.feature.io.json.FeatureJSONReader;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.util.jar.Manifest;
 
 public class AnalyserMetaDataExtensionTest {
     @Test
@@ -57,5 +70,28 @@ public class AnalyserMetaDataExtensionTest {
 
         Assert.assertFalse(testAnalyserMetaDataExtension.reportError(artifact.getId()));
 
+    }
+    
+    @Test
+    public void readSystemBundleInformation() throws IOException {
+        InputStream featureStream = Objects.requireNonNull(getClass().getResourceAsStream("/analyse-metadata/feature-output-system-bundle.json"), "Unable to locate feature file");
+        Feature feature = FeatureJSONReader.read(new InputStreamReader(featureStream), null);
+        
+        Extension extension = Objects.requireNonNull(feature.getExtensions().getByName(AnalyserMetaDataExtension.EXTENSION_NAME), "Failed to load analyser-metadata extension");
+
+        AnalyserMetaDataExtension analyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(extension);
+        assertThat(analyserMetaDataExtension).as("metadata extension").isNotNull();
+        
+        SystemBundle systemBundle = analyserMetaDataExtension.getSystemBundle();
+        assertThat(systemBundle).as("system bundle")
+            .isNotNull()
+            .extracting(SystemBundle::getArtifactId)
+            .isEqualTo(ArtifactId.fromMvnId("org.apache.felix:org.apache.felix.framework:7.0.5"));
+
+        assertThat(systemBundle.getScannerCacheKey()).as("system bundle scanner cache key")
+            .isNotBlank();
+        
+        assertThat(systemBundle.getManifest()).as("system bundle manifest")
+            .containsKeys("Export-Package", "Provide-Capability");
     }
 }

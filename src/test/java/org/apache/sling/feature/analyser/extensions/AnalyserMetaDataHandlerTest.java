@@ -17,6 +17,7 @@
 package org.apache.sling.feature.analyser.extensions;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -27,6 +28,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.felix.utils.manifest.Clause;
@@ -48,28 +50,8 @@ public class AnalyserMetaDataHandlerTest {
 
     @Test
     public void testMetaDataHandler() throws Exception {
-        URL url = getClass().getResource("/analyse-metadata/feature-input.json");
 
-        Feature feature;
-        try (Reader r = new InputStreamReader(url.openStream())) {
-            feature = FeatureJSONReader.read(r, url.toString());
-        }
-
-        assertThat(feature).isNotNull();
-
-        HandlerContext ctx = Mockito.mock(HandlerContext.class);
-        ArtifactProvider provider = artifactId -> {
-            try {
-                return new URL("https://repo1.maven.org/maven2/" + artifactId.toMvnPath());
-            } catch (MalformedURLException e) {
-                throw new UncheckedIOException(e);
-            }
-        };
-
-        Mockito.when(ctx.getArtifactProvider()).thenReturn(provider);
-
-        new AnalyserMetaDataHandler().
-            postProcess(ctx, feature, feature.getExtensions().getByName("analyser-metadata"));
+        Feature feature = postProcessFeature("/analyse-metadata/feature-input.json");
 
         URL expectedURL = getClass().getResource("/analyse-metadata/feature-expected-output.json");
 
@@ -89,27 +71,8 @@ public class AnalyserMetaDataHandlerTest {
     
     @Test
     public void testMetadataHandlerSystemBundle() throws IOException {
-        URL url = getClass().getResource("/analyse-metadata/feature-input-system-bundle.json");
 
-        Feature feature;
-        try (Reader r = new InputStreamReader(url.openStream())) {
-            feature = FeatureJSONReader.read(r, url.toString());
-        }
-
-        assertThat(feature).isNotNull();
-
-        HandlerContext ctx = Mockito.mock(HandlerContext.class);
-        ArtifactProvider provider = artifactId -> {
-            try {
-                return new URL("https://repo1.maven.org/maven2/" + artifactId.toMvnPath());
-            } catch (MalformedURLException e) {
-                throw new UncheckedIOException(e);
-            }
-        };
-
-        Mockito.when(ctx.getArtifactProvider()).thenReturn(provider);
-
-        new AnalyserMetaDataHandler().postProcess(ctx, feature, feature.getExtensions().getByName("analyser-metadata"));
+        Feature feature = postProcessFeature("/analyse-metadata/feature-input-system-bundle.json");
         
         JsonObject metadata = feature.getExtensions().getByName("analyser-metadata").getJSONStructure().asJsonObject();
         assertThat(metadata).as("analyser-metadata extension").isNotNull();
@@ -158,6 +121,53 @@ public class AnalyserMetaDataHandlerTest {
             .hasSize(1)
             .element(0).extracting( c -> c.getAttribute("version") )
             .isNotNull();
+    }
+    
+    @Test
+    public void testMetadataHandlerSystemBundleAlreadyProcessed() throws IOException {
+        
+        // the minimal feature used in this test would not be processed successfully, as it does not
+        // have an execution-environment extension . This test guarantees that processing is skipped and the
+        // information preserved
+        Feature feature = postProcessFeature("/analyse-metadata/feature-output-system-bundle.json");
+        
+        JsonObject metadata = feature.getExtensions().getByName("analyser-metadata").getJSONStructure().asJsonObject();
+        assertThat(metadata).as("analyser-metadata extension").isNotNull();
+        
+        JsonValue systemBundle = metadata.get("system.bundle");
+        assertThat(systemBundle).as("system.bundle property of the metadata extension")
+            .isNotNull()
+            .extracting(JsonValue::asJsonObject)
+            .asInstanceOf(MAP)
+            .containsKeys("manifest", "artifactId", "scannerCacheKey");
+    }
+    
+    private Feature postProcessFeature(String featureLocation) throws IOException {
+        URL url = getClass().getResource(featureLocation);
+        
+        Objects.requireNonNull(url, "Failed to load feature file from " + featureLocation);
+
+        Feature feature;
+        try (Reader r = new InputStreamReader(url.openStream())) {
+            feature = FeatureJSONReader.read(r, url.toString());
+        }
+
+        assertThat(feature).isNotNull();
+
+        HandlerContext ctx = Mockito.mock(HandlerContext.class);
+        ArtifactProvider provider = artifactId -> {
+            try {
+                return new URL("https://repo1.maven.org/maven2/" + artifactId.toMvnPath());
+            } catch (MalformedURLException e) {
+                throw new UncheckedIOException(e);
+            }
+        };
+
+        Mockito.when(ctx.getArtifactProvider()).thenReturn(provider);
+
+        new AnalyserMetaDataHandler().postProcess(ctx, feature, feature.getExtensions().getByName("analyser-metadata"));
+        
+        return feature;
     }
 
 }

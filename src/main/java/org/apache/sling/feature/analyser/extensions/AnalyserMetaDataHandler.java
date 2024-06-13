@@ -101,9 +101,9 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                         )
                     );
             
-            if (systemBundleHolder[0] != null) { 
+            // only process if we have an empty system bundle definition
+            if (JsonValue.EMPTY_JSON_OBJECT.equals(systemBundleHolder[0]) ) {
                 JsonObject systemBundle = systemBundleHolder[0];
-                // TODO - skip if the entries already exist?
                 try {
                     ExecutionEnvironmentExtension executionEnv = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
                     if ( executionEnv != null ) {
@@ -135,6 +135,9 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
                 }
+            } else if (systemBundleHolder[0] != null) {
+                // preserve the existing system bundle information
+                result.add(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, systemBundleHolder[0]);
             }
 
 
