@@ -23,16 +23,29 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.StringJoiner;
 import java.util.jar.JarFile;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.sling.feature.ArtifactId;
+import org.apache.sling.feature.ExecutionEnvironmentExtension;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionState;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.HandlerContext;
 import org.apache.sling.feature.builder.PostProcessHandler;
+import org.apache.sling.feature.impl.felix.utils.resource.ResourceUtils;
 import org.apache.sling.feature.io.IOUtils;
+import org.apache.sling.feature.scanner.BundleDescriptor;
+import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.impl.SystemBundleDescriptor;
+import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
+import org.osgi.resource.Capability;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,20 +57,22 @@ import jakarta.json.JsonValue;
 public class AnalyserMetaDataHandler implements PostProcessHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AnalyserMetaDataHandler.class);
     
-    private static final String MANIFEST_KEY = "manifest";
-
     @Override
     public void postProcess(HandlerContext handlerContext, Feature feature, Extension extension) {
+
         if (AnalyserMetaDataExtension.EXTENSION_NAME.equals(extension.getName())) {
             LOG.debug("Handling analyser-metadata extension {}", extension);
             JsonObject extensionJSONStructure = extension.getJSONStructure().asJsonObject();
             JsonObjectBuilder result = Json.createObjectBuilder();
             Map<String, JsonValue> directEntries = new HashMap<>();
             Map<String, JsonValue> wildcardEntries = new LinkedHashMap<>();
+            JsonObject[] systemBundleHolder = new JsonObject[1];
             extensionJSONStructure.entrySet().forEach(
                     entry -> {
                         if (entry.getKey().contains("*")) {
                             wildcardEntries.put(entry.getKey(), entry.getValue());
+                        } else if (entry.getKey().equals(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY)) {
+                            systemBundleHolder[0] = entry.getValue().asJsonObject();
                         } else {
                             directEntries.put(entry.getKey(), entry.getValue());
                         }
@@ -70,19 +85,59 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                              json -> {
                                  if (nullManifest(json)) {
                                      JsonObjectBuilder wrapper = Json.createObjectBuilder(json);
-                                     wrapper.remove(MANIFEST_KEY);
+                                     wrapper.remove(AnalyserMetaDataExtension.MANIFEST_KEY);
                                      result.add(bundle.getId().toMvnId(), wrapper);
                                  } else if (noManifest(json)) {
                                      JsonObjectBuilder wrapper = Json.createObjectBuilder(json);
                                      getManifest(handlerContext, bundle.getId()).ifPresent(manifest ->
-                                            wrapper.add(MANIFEST_KEY, manifest));
+                                            wrapper.add(AnalyserMetaDataExtension.MANIFEST_KEY, manifest));
                                      result.add(bundle.getId().toMvnId(), wrapper);
                                  } else {
                                      result.add(bundle.getId().toMvnId(), json);
                                  }
                              }
                         )
-            );
+                    );
+            
+            // only process if we have an empty system bundle definition
+            if (JsonValue.EMPTY_JSON_OBJECT.equals(systemBundleHolder[0]) ) {
+                JsonObject systemBundle = systemBundleHolder[0];
+                try {
+                    ExecutionEnvironmentExtension executionEnv = ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
+                    if ( executionEnv != null ) {
+                        ArtifactId frameworkId = executionEnv.getFramework().getId();
+                        if ( executionEnv.getJavaVersion() == null ) {
+                            LOG.warn("No java version set in execution environment extension, skipping version validation");
+                        } else {
+                            Version requiredJavaVersion = executionEnv.getJavaVersion();
+                            Version currentJavaVersion = new Version(SystemUtils.JAVA_VERSION);
+                            
+                            if ( requiredJavaVersion.getMajor() != currentJavaVersion.getMajor() ) 
+                                throw new IllegalStateException("Execution environment requires Java " + requiredJavaVersion.getMajor() + ", but running on " + currentJavaVersion.getMajor() + ". Aborting.");
+                            
+                        }
+                        FrameworkScanner scanner = ServiceLoader.load(FrameworkScanner.class).iterator().next();
+                        
+                        BundleDescriptor fw = scanner.scan(frameworkId, feature.getFrameworkProperties(), handlerContext.getArtifactProvider());
+                        JsonObjectBuilder wrapper = Json.createObjectBuilder(systemBundle);
+                        JsonObjectBuilder manifest = Json.createObjectBuilder();
+                        manifest.add(Constants.PROVIDE_CAPABILITY, capabilitiesToString(fw.getCapabilities()));
+                        manifest.add(Constants.EXPORT_PACKAGE, exportedPackagesToString(fw.getExportedPackages()));
+                        wrapper.add(AnalyserMetaDataExtension.MANIFEST_KEY, manifest);
+                        wrapper.add(AnalyserMetaDataExtension.ARTIFACT_ID_KEY, frameworkId.toMvnId());
+                        wrapper.add(AnalyserMetaDataExtension.SCANNER_CACHE_KEY, SystemBundleDescriptor.createCacheKey(frameworkId, feature.getFrameworkProperties()));
+                        result.add(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY, wrapper);
+                    } else {
+                        LOG.warn("No execution environment found, not creating framework capabilities");
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            } else if (systemBundleHolder[0] != null) {
+                // preserve the existing system bundle information
+                result.add(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY, systemBundleHolder[0]);
+            }
+
 
             feature.getExtensions().remove(extension);
 
@@ -91,6 +146,24 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
             newEx.setJSONStructure(result.build());
             feature.getExtensions().add(newEx);
         }
+    }
+
+    private static String exportedPackagesToString(Set<PackageInfo> exportedPackages) {
+        StringJoiner joiner = new StringJoiner(",");
+        for (PackageInfo packageInfo : exportedPackages) {
+            joiner.add(packageInfo.getName() + ";version=" + packageInfo.getVersion());
+        }
+        return joiner.toString();
+    }
+
+    private static String capabilitiesToString(Set<Capability> capabilities) {
+         
+        StringJoiner joiner = new StringJoiner(",");
+        for (Capability c : capabilities) {
+            joiner.add(ResourceUtils.toString(null, c.getNamespace(), c.getAttributes(), c.getDirectives()));
+        }
+        
+        return joiner.toString();
     }
 
     private boolean noManifest(JsonObject object) {
@@ -102,7 +175,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
     }
 
     private boolean manifest(JsonObject object, Object match) {
-        return object.get(MANIFEST_KEY) == match;
+        return object.get(AnalyserMetaDataExtension.MANIFEST_KEY) == match;
     }
 
     private Optional<JsonObject> findFirst(Map<String, JsonValue> directValues, Map<String, JsonValue> wildcardValues, ArtifactId bundle) {

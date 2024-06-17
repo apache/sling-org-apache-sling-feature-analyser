@@ -22,23 +22,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.felix.utils.manifest.Clause;
+import org.apache.felix.utils.manifest.Parser;
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Bundles;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension;
+import org.apache.sling.feature.analyser.extensions.AnalyserMetaDataExtension.SystemBundle;
 import org.apache.sling.feature.builder.ArtifactProvider;
+import org.apache.sling.feature.impl.felix.utils.resource.ResourceBuilder;
 import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
+import org.apache.sling.feature.scanner.impl.SystemBundleDescriptor;
 import org.apache.sling.feature.scanner.spi.ExtensionScanner;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.resource.Capability;
 
 /**
  * The scanner is a service that scans items and provides descriptions for
@@ -248,6 +255,42 @@ public class Scanner {
                     }
                 }
             }
+            
+            SystemBundle systemBundle = extension.getSystemBundle();
+            if ( systemBundle != null ) {
+                URL artifactUrl = artifactProvider.provide(systemBundle.getArtifactId());
+                if (artifactUrl == null) {
+                    throw new IOException("Unable to find file for " + systemBundle.getArtifactId());
+                }
+                
+                BundleDescriptor desc = new SystemBundleDescriptor(systemBundle.getArtifactId(), artifactUrl);
+                
+                String capabilities = systemBundle.getManifest().get(Constants.PROVIDE_CAPABILITY);
+                if ( capabilities != null ) {
+                    try {
+                        List<Capability> parsedCapabilities = ResourceBuilder.parseCapability(null, capabilities);
+                        desc.getCapabilities().addAll(parsedCapabilities);
+                    } catch (BundleException e) {
+                        throw new IOException("Failed to parse capabilites for the system bundle", e);
+                    }
+                }
+                
+                String exports = systemBundle.getManifest().get(Constants.EXPORT_PACKAGE);
+                if ( exports != null ) {
+                    Clause[] pcks = Parser.parseHeader(exports);
+                    for (final Clause pck : pcks) {
+                        String version = pck.getAttribute("version");
+                        PackageInfo info = new PackageInfo(pck.getName(), version, false);
+                        desc.getExportedPackages().add(info);
+                    }
+                }
+                desc.lock();
+                
+                String key = systemBundle.getScannerCacheKey();
+                
+                this.cache.put(key, desc);
+                
+            }
         }
     }
 
@@ -260,15 +303,7 @@ public class Scanner {
      * @throws IOException If something goes wrong or a scanner is missing
      */
     public BundleDescriptor scan(final ArtifactId framework, final Map<String,String> props) throws IOException {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(framework.toMvnId());
-        if (props != null) {
-            final Map<String, String> sortedMap = new TreeMap<String, String>(props);
-            for (final Map.Entry<String, String> entry : sortedMap.entrySet()) {
-                sb.append(":").append(entry.getKey()).append("=").append(entry.getValue());
-            }
-        }
-        final String key = sb.toString();
+        final String key = SystemBundleDescriptor.createCacheKey(framework, props);
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
             for (final FrameworkScanner scanner : this.frameworkScanners) {

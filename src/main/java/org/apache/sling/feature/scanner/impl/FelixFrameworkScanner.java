@@ -35,13 +35,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.felix.utils.manifest.Parser;
 import org.apache.felix.utils.resource.ResourceBuilder;
-import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.builder.ArtifactProvider;
 import org.apache.sling.feature.io.IOUtils;
@@ -73,33 +71,7 @@ public class FelixFrameworkScanner implements FrameworkScanner {
         final Set<PackageInfo> pcks = calculateSystemPackages(fwkProps);
         final List<Capability> capabilities = calculateSystemCapabilities(fwkProps);
 
-        final BundleDescriptor d = new BundleDescriptor(framework.toMvnId()) {
-
-            @Override
-            public String getBundleSymbolicName() {
-                return Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
-            }
-
-            @Override
-            public String getBundleVersion() {
-                return framework.getOSGiVersion().toString();
-            }
-
-            @Override
-            public URL getArtifactFile() {
-                return platformFile;
-            }
-
-            @Override
-            public Artifact getArtifact() {
-                return new Artifact(framework);
-            }
-
-            @Override
-            public Manifest getManifest() {
-                return new Manifest();
-            }
-        };
+        final BundleDescriptor d = new SystemBundleDescriptor(framework, platformFile);
         d.getCapabilities().addAll(capabilities);
         d.getExportedPackages().addAll(pcks);
         d.lock();

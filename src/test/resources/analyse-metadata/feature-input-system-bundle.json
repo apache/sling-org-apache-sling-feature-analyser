@@ -1,0 +1,12 @@
+{
+  "id": "org.acme:acmefeature:slingosgifeature:metadata-feature:0.0.1",
+  "execution-environment:JSON|false":{
+    "framework":{
+      "id":"org.apache.felix:org.apache.felix.framework:7.0.5"
+    }
+  },  
+  "analyser-metadata:JSON|true": {
+    "extra-metadata:system.bundle:0" : {
+    }
+  }
+}
