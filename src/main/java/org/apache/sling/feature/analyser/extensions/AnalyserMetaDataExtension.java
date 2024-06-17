@@ -34,14 +34,24 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonValue;
 
 public class AnalyserMetaDataExtension {
+
     public static final String EXTENSION_NAME = "analyser-metadata";
 
+    // use ArtifactId.fromMvnId to ensure the string form can be parsed back to an ArtifactId
     static final String SYSTEM_BUNDLE_KEY = ArtifactId.fromMvnId("extra-metadata:" + Constants.SYSTEM_BUNDLE_SYMBOLICNAME + ":0").toString();
+    static final String MANIFEST_KEY = "manifest";
+    static final String REPORT_KEY = "report";
+    static final String WARNING_KEY = "warning";
+    static final String ERROR_KEY = "error";
+    static final String ARTIFACT_ID_KEY = "artifactId";
+    static final String SCANNER_CACHE_KEY = "scannerCacheKey";
     
     private final Map<ArtifactId, Map<String, String>> manifests = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportWarnings = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportErrors = new HashMap<>();
     private SystemBundle systemBundle;
+
+    
 
     public static AnalyserMetaDataExtension getAnalyserMetaDataExtension(Feature feature) {
         Extension ext = feature == null ? null : feature.getExtensions().getByName(EXTENSION_NAME);
@@ -65,9 +75,9 @@ public class AnalyserMetaDataExtension {
             // handle system bundle separately
             if ( entry.getKey().equals(SYSTEM_BUNDLE_KEY) ) {
                 JsonObject systemBundleConfig = entry.getValue().asJsonObject();
-                JsonObject manifestObj = systemBundleConfig.getJsonObject("manifest");
-                String artifactId = systemBundleConfig.getJsonString("artifactId").getString();
-                String scannerCacheKey = systemBundleConfig.getJsonString("scannerCacheKey").getString();
+                JsonObject manifestObj = systemBundleConfig.getJsonObject(MANIFEST_KEY);
+                String artifactId = systemBundleConfig.getJsonString(ARTIFACT_ID_KEY).getString();
+                String scannerCacheKey = systemBundleConfig.getJsonString(SCANNER_CACHE_KEY).getString();
                 
                 Map<String, String> manifest = new HashMap<>();
                 for (String key : manifestObj.keySet()) {
@@ -80,21 +90,21 @@ public class AnalyserMetaDataExtension {
 
             ArtifactId id = ArtifactId.fromMvnId(entry.getKey());
             JsonObject headers = entry.getValue().asJsonObject();
-            if (headers.containsKey("manifest")) {
+            if (headers.containsKey(MANIFEST_KEY)) {
                 Map<String, String> manifest = new LinkedHashMap<>();
-                JsonObject manifestHeaders = headers.getJsonObject("manifest");
+                JsonObject manifestHeaders = headers.getJsonObject(MANIFEST_KEY);
                 for (String name : manifestHeaders.keySet()) {
                     manifest.put(name, manifestHeaders.getString(name));
                 }
                 this.manifests.put(id, manifest);
             }
-            if (headers.containsKey("report")) {
-                JsonObject report = headers.getJsonObject("report");
-                if (report.containsKey("warning")) {
-                    reportWarnings.put(id, report.getBoolean("warning"));
+            if (headers.containsKey(REPORT_KEY)) {
+                JsonObject report = headers.getJsonObject(REPORT_KEY);
+                if (report.containsKey(WARNING_KEY)) {
+                    reportWarnings.put(id, report.getBoolean(WARNING_KEY));
                 }
-                if (report.containsKey("error")) {
-                    reportErrors.put(id, report.getBoolean("error"));
+                if (report.containsKey(ERROR_KEY)) {
+                    reportErrors.put(id, report.getBoolean(ERROR_KEY));
                 }
             }
         }
@@ -129,17 +139,17 @@ public class AnalyserMetaDataExtension {
                         if (manifests.containsKey(id)) {
                             JsonObjectBuilder manifest = Json.createObjectBuilder();
                             manifests.get(id).forEach(manifest::add);
-                            metadata.add("manifest", manifest);
+                            metadata.add(MANIFEST_KEY, manifest);
                         }
                         if (reportErrors.containsKey(id) || reportWarnings.containsKey(id)) {
                             JsonObjectBuilder report = Json.createObjectBuilder();
                             if (reportErrors.containsKey(id)) {
-                                report.add("error", reportErrors.get(id));
+                                report.add(ERROR_KEY, reportErrors.get(id));
                             }
                             if (reportWarnings.containsKey(id)) {
-                                report.add("warning", reportWarnings.get(id));
+                                report.add(WARNING_KEY, reportWarnings.get(id));
                             }
-                            metadata.add("report", report);
+                            metadata.add(REPORT_KEY, report);
                         }
                         builder.add(id.toMvnId(), metadata);
                     }

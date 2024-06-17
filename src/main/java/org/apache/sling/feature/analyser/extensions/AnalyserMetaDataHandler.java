@@ -57,8 +57,6 @@ import jakarta.json.JsonValue;
 public class AnalyserMetaDataHandler implements PostProcessHandler {
     private static final Logger LOG = LoggerFactory.getLogger(AnalyserMetaDataHandler.class);
     
-    private static final String MANIFEST_KEY = "manifest";
-
     @Override
     public void postProcess(HandlerContext handlerContext, Feature feature, Extension extension) {
 
@@ -87,12 +85,12 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                              json -> {
                                  if (nullManifest(json)) {
                                      JsonObjectBuilder wrapper = Json.createObjectBuilder(json);
-                                     wrapper.remove(MANIFEST_KEY);
+                                     wrapper.remove(AnalyserMetaDataExtension.MANIFEST_KEY);
                                      result.add(bundle.getId().toMvnId(), wrapper);
                                  } else if (noManifest(json)) {
                                      JsonObjectBuilder wrapper = Json.createObjectBuilder(json);
                                      getManifest(handlerContext, bundle.getId()).ifPresent(manifest ->
-                                            wrapper.add(MANIFEST_KEY, manifest));
+                                            wrapper.add(AnalyserMetaDataExtension.MANIFEST_KEY, manifest));
                                      result.add(bundle.getId().toMvnId(), wrapper);
                                  } else {
                                      result.add(bundle.getId().toMvnId(), json);
@@ -125,9 +123,9 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                         JsonObjectBuilder manifest = Json.createObjectBuilder();
                         manifest.add(Constants.PROVIDE_CAPABILITY, capabilitiesToString(fw.getCapabilities()));
                         manifest.add(Constants.EXPORT_PACKAGE, exportedPackagesToString(fw.getExportedPackages()));
-                        wrapper.add(MANIFEST_KEY, manifest);
-                        wrapper.add("artifactId", frameworkId.toMvnId());
-                        wrapper.add("scannerCacheKey", SystemBundleDescriptor.createCacheKey(frameworkId, feature.getFrameworkProperties()));
+                        wrapper.add(AnalyserMetaDataExtension.MANIFEST_KEY, manifest);
+                        wrapper.add(AnalyserMetaDataExtension.ARTIFACT_ID_KEY, frameworkId.toMvnId());
+                        wrapper.add(AnalyserMetaDataExtension.SCANNER_CACHE_KEY, SystemBundleDescriptor.createCacheKey(frameworkId, feature.getFrameworkProperties()));
                         result.add(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY, wrapper);
                     } else {
                         LOG.warn("No execution environment found, not creating framework capabilities");
@@ -177,7 +175,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
     }
 
     private boolean manifest(JsonObject object, Object match) {
-        return object.get(MANIFEST_KEY) == match;
+        return object.get(AnalyserMetaDataExtension.MANIFEST_KEY) == match;
     }
 
     private Optional<JsonObject> findFirst(Map<String, JsonValue> directValues, Map<String, JsonValue> wildcardValues, ArtifactId bundle) {
