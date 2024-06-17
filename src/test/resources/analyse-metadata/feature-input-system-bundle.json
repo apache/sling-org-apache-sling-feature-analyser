@@ -6,7 +6,7 @@
     }
   },  
   "analyser-metadata:JSON|true": {
-    "system.bundle" : {
+    "extra-metadata:system.bundle:0" : {
     }
   }
 }

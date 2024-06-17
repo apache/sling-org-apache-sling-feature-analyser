@@ -73,7 +73,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                     entry -> {
                         if (entry.getKey().contains("*")) {
                             wildcardEntries.put(entry.getKey(), entry.getValue());
-                        } else if (entry.getKey().equals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME)) {
+                        } else if (entry.getKey().equals(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY)) {
                             systemBundleHolder[0] = entry.getValue().asJsonObject();
                         } else {
                             directEntries.put(entry.getKey(), entry.getValue());
@@ -128,7 +128,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                         wrapper.add(MANIFEST_KEY, manifest);
                         wrapper.add("artifactId", frameworkId.toMvnId());
                         wrapper.add("scannerCacheKey", SystemBundleDescriptor.createCacheKey(frameworkId, feature.getFrameworkProperties()));
-                        result.add(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, wrapper);
+                        result.add(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY, wrapper);
                     } else {
                         LOG.warn("No execution environment found, not creating framework capabilities");
                     }
@@ -137,7 +137,7 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
                 }
             } else if (systemBundleHolder[0] != null) {
                 // preserve the existing system bundle information
-                result.add(Constants.SYSTEM_BUNDLE_SYMBOLICNAME, systemBundleHolder[0]);
+                result.add(AnalyserMetaDataExtension.SYSTEM_BUNDLE_KEY, systemBundleHolder[0]);
             }
 
 

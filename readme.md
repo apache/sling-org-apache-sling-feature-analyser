@@ -129,7 +129,7 @@ Configuration key | Allowed values | Description
 
 ### Framework metadata
 
-A special case is when an entry with the name `system.bundle` is found. This will record information about the system bundle exported packages and capabilites as present at the time of the feature aggregation. When these are present in an aggregated feature the analysers will use that information instead of the one discovered during analysis time.
+A special case is when an entry with the name `extra-metadata:system.bundle:0` is found. This will record information about the system bundle exported packages and capabilites as present at the time of the feature aggregation. When these are present in an aggregated feature the analysers will use that information instead of the one discovered during analysis time.
 
 The system bundle information will be extracted from the `execution-environment` extension. In this extension, the `framework` entry is required and is used to gather information about the system bundle. The `javaVersion` property is optional but recommended and is used to validate that the Java version used to generate the metadata matches the one in the execution environment.
 
@@ -148,7 +148,7 @@ A typical configuration for platform applications is:
           "warning": false
         }
       },
-      "system.bundle": {}
+      "extra-metadata:system.bundle:0": {}
     },
      "framework":{
        "id":"org.apache.felix:org.apache.felix.framework:7.0.5"

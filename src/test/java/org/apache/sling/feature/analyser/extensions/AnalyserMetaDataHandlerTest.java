@@ -77,7 +77,7 @@ public class AnalyserMetaDataHandlerTest {
         JsonObject metadata = feature.getExtensions().getByName("analyser-metadata").getJSONStructure().asJsonObject();
         assertThat(metadata).as("analyser-metadata extension").isNotNull();
         
-        JsonValue systemBundle = metadata.get("system.bundle");
+        JsonValue systemBundle = metadata.get("extra-metadata:system.bundle:0");
         assertThat(systemBundle).as("system.bundle property of the metadata extension").isNotNull();
         
         // ensure the artifactId is recorded and correctly formed
@@ -134,7 +134,7 @@ public class AnalyserMetaDataHandlerTest {
         JsonObject metadata = feature.getExtensions().getByName("analyser-metadata").getJSONStructure().asJsonObject();
         assertThat(metadata).as("analyser-metadata extension").isNotNull();
         
-        JsonValue systemBundle = metadata.get("system.bundle");
+        JsonValue systemBundle = metadata.get("extra-metadata:system.bundle:0");
         assertThat(systemBundle).as("system.bundle property of the metadata extension")
             .isNotNull()
             .extracting(JsonValue::asJsonObject)

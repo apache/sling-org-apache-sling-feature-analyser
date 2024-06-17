@@ -36,6 +36,8 @@ import jakarta.json.JsonValue;
 public class AnalyserMetaDataExtension {
     public static final String EXTENSION_NAME = "analyser-metadata";
 
+    static final String SYSTEM_BUNDLE_KEY = ArtifactId.fromMvnId("extra-metadata:" + Constants.SYSTEM_BUNDLE_SYMBOLICNAME + ":0").toString();
+    
     private final Map<ArtifactId, Map<String, String>> manifests = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportWarnings = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportErrors = new HashMap<>();
@@ -61,7 +63,7 @@ public class AnalyserMetaDataExtension {
         for (Map.Entry<String, JsonValue> entry : json.entrySet()) {
             
             // handle system bundle separately
-            if ( entry.getKey().equals(Constants.SYSTEM_BUNDLE_SYMBOLICNAME) ) {
+            if ( entry.getKey().equals(SYSTEM_BUNDLE_KEY) ) {
                 JsonObject systemBundleConfig = entry.getValue().asJsonObject();
                 JsonObject manifestObj = systemBundleConfig.getJsonObject("manifest");
                 String artifactId = systemBundleConfig.getJsonString("artifactId").getString();
