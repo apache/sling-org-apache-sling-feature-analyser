@@ -114,7 +114,11 @@ Checks bundle requirements/capabilities for consistency and completeness.
 
 ## `analyser-metadata`
 
-Generates additional metadata that will be recorded in the feature model definition. It is configured by defining an `analyser-metadata` section in the feature model definition. The section will be processed by the extension when the feature models are aggregated and will be replaced with the required entries for bundles matching the configuration.
+Generates additional metadata that will be recorded in the feature model definition. This additional metadata is used later on to influence the behaviour of the analysers.
+
+This extension is not available by default using the ServiceLoader mechanism and must be explicitly registered.
+
+It is configured by defining an `analyser-metadata` section in the feature model definition. The section will be processed by the extension when the feature models are aggregated and will be replaced with the required entries for bundles matching the configuration.
 
 The section can have entries that match individual bundle names and entries that match based on regular expressions (if the key contains the "*" character).
 
