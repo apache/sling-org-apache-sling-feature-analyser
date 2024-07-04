@@ -1,4 +1,11 @@
-[
-  "org.cid15.aem.groovy.console:aem-groovy-console-bundle:17.0.0",
-  "org.objectweb.asm:asm:3.1"
-]
+{
+  "unsupported": [
+    {
+      "reason": "Unsupported with Java 21",
+      "bundles": [
+        "org.cid15.aem.groovy.console:aem-groovy-console-bundle:17.0.0",
+        "org.objectweb.asm:asm:3.1"
+      ]
+    }
+  ]
+}

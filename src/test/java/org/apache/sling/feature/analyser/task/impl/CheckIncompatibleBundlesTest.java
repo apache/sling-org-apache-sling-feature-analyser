@@ -93,4 +93,17 @@ public class CheckIncompatibleBundlesTest {
 
         assertTrue(warnings.isEmpty());
     }
+
+    @Test
+    public void testMixUnsupportedBundles() throws Exception {
+        final AnalyserTask task = new CheckIncompatibleBundles();
+        ctx.getFeatureDescriptor().getBundleDescriptors().add(newDescriptor(ArtifactId.parse("org.cid15.aem.groovy.console:aem-groovy-console-bundle:17.0.0")));
+        ctx.getFeatureDescriptor().getBundleDescriptors().add(newDescriptor(ArtifactId.parse("org.cid15.aem.groovy.console:aem-groovy-console-bundle:18.0.0")));
+        ctx.getFeatureDescriptor().getBundleDescriptors().add(newDescriptor(ArtifactId.parse("org.apache.commons:commons-lang3:3.14.0")));
+
+        task.execute(ctx);
+
+        assertEquals(1, warnings.size());
+        assertEquals("org.cid15.aem.groovy.console:aem-groovy-console-bundle:17.0.0", warnings.get(0).toString());
+    }
 }

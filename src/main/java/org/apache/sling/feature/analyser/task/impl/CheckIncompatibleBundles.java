@@ -20,14 +20,13 @@ package org.apache.sling.feature.analyser.task.impl;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.stream.JsonParser;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,7 +35,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,7 +42,6 @@ import java.util.stream.IntStream;
 public class CheckIncompatibleBundles implements AnalyserTask {
 
     private static final String UNSUPPORTED_BUNDLES_FILE_NAME = "unsupported_bundles.json";
-    private static final Logger LOGGER = LoggerFactory.getLogger(CheckIncompatibleBundles.class);
 
     @Override
     public String getName() {
@@ -58,34 +55,41 @@ public class CheckIncompatibleBundles implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) throws IOException {
-        Collection<ArtifactId> unsupportedBundles = getUnsupportedBundles();
+        JsonObject jsonObject;
+        try (JsonReader jsonReader = Json.createReader(new StringReader(getJsonString()))) {
+            jsonObject = jsonReader.readObject();
+        }
+
+        JsonArray unsupported = jsonObject.getJsonArray("unsupported");
+        if (unsupported.size() != 1) {
+            throw new RuntimeException("problem with unsupported bundles file: " + UNSUPPORTED_BUNDLES_FILE_NAME);
+        }
+
+        String message = unsupported.getJsonObject(0).getString("reason");
+        JsonArray bundles = unsupported.getJsonObject(0).getJsonArray("bundles");
+
+        Collection<ArtifactId> unsupportedBundles = getUnsupportedBundles(bundles);
         for (final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             if (matchesAnyOf(info.getArtifact().getId(), unsupportedBundles)) {
-                ctx.reportArtifactWarning(info.getArtifact().getId(), "Unsupported bundle with java 21");
+                ctx.reportArtifactWarning(info.getArtifact().getId(), message);
             }
         }
     }
 
-    private static Collection<ArtifactId> getUnsupportedBundles() {
+    private static String getJsonString() {
         try (InputStream is = JsonParser.class.getClassLoader().getResourceAsStream(UNSUPPORTED_BUNDLES_FILE_NAME);
              BufferedReader reader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            String json = reader.lines().collect(Collectors.joining("\n"));
-            return parse(json);
-        } catch (Exception e) {
-            LOGGER.error("problem with unsupported bundles file: " + UNSUPPORTED_BUNDLES_FILE_NAME, e);
-            return Collections.emptyList();
+            return reader.lines().collect(Collectors.joining("\n"));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private static Collection<ArtifactId> parse(String json) {
-        try (JsonReader jsonReader = Json.createReader(new StringReader(json))) {
-            JsonArray jsonArray = jsonReader.readArray();
-
-            return IntStream.range(0, jsonArray.size())
-                    .mapToObj(jsonArray::getString)
-                    .map(ArtifactId::fromMvnId)
-                    .collect(Collectors.toList());
-        }
+    private static Collection<ArtifactId> getUnsupportedBundles(JsonArray bundles) {
+        return IntStream.range(0, bundles.size())
+                .mapToObj(bundles::getString)
+                .map(ArtifactId::fromMvnId)
+                .collect(Collectors.toList());
     }
 
     private static boolean matchesAnyOf(ArtifactId artifactId, Collection<ArtifactId> unsupportedBundles) {
