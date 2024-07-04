@@ -16,3 +16,4 @@ org.apache.sling.feature.analyser.task.impl.CheckRequirementsCapabilities
 org.apache.sling.feature.analyser.task.impl.CheckUnusedBundles
 org.apache.sling.feature.analyser.task.impl.CheckFeatureId
 org.apache.sling.feature.analyser.task.impl.CheckServiceUserMapping
+org.apache.sling.feature.analyser.task.impl.CheckIncompatibleBundles
