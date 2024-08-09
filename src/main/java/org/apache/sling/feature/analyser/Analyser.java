@@ -236,6 +236,8 @@ public class Analyser {
             final long startTask = System.currentTimeMillis();
             final Map<String, String> taskConfiguration = getConfiguration(task.getId());
 
+            final boolean strict = Boolean.valueOf(taskConfiguration.getOrDefault("strict", "false"));
+
             task.execute(new AnalyserTaskContext() {
                 private final FeatureProvider cachingFeatureProvider = featureProvider != null ? new FeatureProvider() {
                     private final ConcurrentHashMap<ArtifactId, Feature> cache = new ConcurrentHashMap<>();
@@ -272,6 +274,9 @@ public class Analyser {
 
                 @Override
                 public void reportWarning(final String message) {
+                    if (strict) {
+                        reportError(message);
+                    }
                     if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
                         globalWarnings.add(new AnalyserResult.GlobalReport(message, task.getId()));
                     }
@@ -279,6 +284,9 @@ public class Analyser {
 
                 @Override
                 public void reportArtifactWarning(ArtifactId artifactId, String message) {
+                    if (strict) {
+                        reportArtifactError(artifactId, message);
+                    }
                     if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportWarning(artifactId) && analyserMetaDataExtension.reportWarning(feature.getId()))) {
                         artifactWarnings.add(new AnalyserResult.ArtifactReport(artifactId, message, task.getId()));
                     }
@@ -293,6 +301,9 @@ public class Analyser {
 
                 @Override
                 public void reportExtensionWarning(String extension, String message) {
+                    if (strict) {
+                        reportExtensionError(extension, message);
+                    }
                     if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
                         extensionWarnings.add(new AnalyserResult.ExtensionReport(extension, message, task.getId()));
                     }
@@ -321,6 +332,9 @@ public class Analyser {
 
                 @Override
                 public void reportConfigurationWarning(Configuration cfg, String message) {
+                    if (strict) {
+                        reportConfigurationError(cfg, message);
+                    }
                     if (analyserMetaDataExtension == null || analyserMetaDataExtension.reportWarning(feature.getId())) {
                         configurationWarnings.add(new AnalyserResult.ConfigurationReport(cfg, message, task.getId()));
                     }
