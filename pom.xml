@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.feature.analyser</artifactId>
-    <version>2.0.10</version>
+    <version>2.0.11-SNAPSHOT</version>
 
     <name>Apache Sling Feature Model Analyser</name>
     <description>
@@ -37,14 +37,14 @@
 
     <properties>
         <sling.java.version>8</sling.java.version>
-        <project.build.outputTimestamp>1723369446</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1723369461</project.build.outputTimestamp>
     </properties>
 
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</developerConnection>
         <url>https://github.com/apache/sling-org-apache-sling-feature-analyser.git</url>
-      <tag>org.apache.sling.feature.analyser-2.0.10</tag>
+      <tag>org.apache.sling.feature.analyser-1.6.4</tag>
    </scm>
 
     <build>
