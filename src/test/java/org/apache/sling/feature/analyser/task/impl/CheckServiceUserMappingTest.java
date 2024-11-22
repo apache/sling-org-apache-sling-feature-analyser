@@ -33,19 +33,22 @@ import static org.junit.Assert.assertTrue;
 public class CheckServiceUserMappingTest {
 
     public static final String[] DEPRECATED_STATEMENTS = {
-            "org.apache.sling.test_service:sub_service=sling-reader-service", 
-            "org.apache.sling.test_service=sling-reader-service"};
+        "org.apache.sling.test_service:sub_service=sling-reader-service",
+        "org.apache.sling.test_service=sling-reader-service"
+    };
     public static final String[] VALID_STATEMENTS = {
-            "org.apache.sling.test_service:sub_service=[sling-reader-service]", 
-            "org.apache.sling.test_service=[sling-reader-service, sling-writer-service],\n" +
-                    "org.apache.sling.test_service:sub_service=[sling-reader-service]"};
+        "org.apache.sling.test_service:sub_service=[sling-reader-service]",
+        "org.apache.sling.test_service=[sling-reader-service, sling-writer-service],\n"
+                + "org.apache.sling.test_service:sub_service=[sling-reader-service]"
+    };
     public static final String[] INVALID_STATEMENTS = {
-            ":subservice=[sling-reader-service]",
-            "=[sling-reader-service]", 
-            "org.apache.sling.test_service:sub_service=", 
-            "org.apache.sling.test_service:=[sling-reader-service]", 
-            "org.apache.sling.test_service", 
-            ":=[sling-reader-service]"};
+        ":subservice=[sling-reader-service]",
+        "=[sling-reader-service]",
+        "org.apache.sling.test_service:sub_service=",
+        "org.apache.sling.test_service:=[sling-reader-service]",
+        "org.apache.sling.test_service",
+        ":=[sling-reader-service]"
+    };
 
     private AnalyserTaskContextImpl ctx;
     private AnalyserTask task;
@@ -57,17 +60,17 @@ public class CheckServiceUserMappingTest {
         task.execute(ctx);
         assertTrue(ctx.getErrors().isEmpty());
     }
-    
+
     @Test
     public void testId() {
         assertEquals("serviceusermapping", task.getId());
     }
-    
+
     @Test
     public void testName() {
         assertEquals("Service User Mapping Check", task.getName());
     }
-    
+
     @Test
     public void testValidConfiguration() throws Exception {
         // create valid configuration
@@ -103,8 +106,8 @@ public class CheckServiceUserMappingTest {
         task.execute(ctx);
         assertTrue(ctx.getErrors().isEmpty());
     }
-    
-    @Test 
+
+    @Test
     public void testInvalidConfiguration() throws Exception {
         for (String statement : INVALID_STATEMENTS) {
             final Configuration cfg = new Configuration(CheckServiceUserMapping.FACTORY_PID.concat("~name"));
@@ -118,8 +121,9 @@ public class CheckServiceUserMappingTest {
 
     @Test
     public void testDeprecatedMappingInvalied() throws Exception {
-        assertFalse(Boolean.parseBoolean(ctx.getConfiguration().getOrDefault(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT)));
-        
+        assertFalse(Boolean.parseBoolean(ctx.getConfiguration()
+                .getOrDefault(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT)));
+
         for (String statement : DEPRECATED_STATEMENTS) {
             final Configuration cfg = new Configuration(CheckServiceUserMapping.FACTORY_PID.concat("~name"));
             cfg.getProperties().put(USER_MAPPING, statement);
@@ -130,11 +134,12 @@ public class CheckServiceUserMappingTest {
         assertEquals(2, ctx.getErrors().size());
     }
 
-    @Test 
+    @Test
     public void testDeprecatedMappingWarnOnly() throws Exception {
         ctx.putConfigurationValue(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, Boolean.TRUE.toString());
 
-        assertTrue(Boolean.parseBoolean(ctx.getConfiguration().getOrDefault(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT)));
+        assertTrue(Boolean.parseBoolean(ctx.getConfiguration()
+                .getOrDefault(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT)));
         for (String statement : DEPRECATED_STATEMENTS) {
             final Configuration cfg = new Configuration(CheckServiceUserMapping.FACTORY_PID.concat("~name"));
             cfg.getProperties().put(USER_MAPPING, statement);

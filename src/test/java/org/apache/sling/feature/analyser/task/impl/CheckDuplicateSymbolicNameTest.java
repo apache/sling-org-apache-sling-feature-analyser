@@ -18,13 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -39,14 +32,21 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class CheckDuplicateSymbolicNameTest  {
+public class CheckDuplicateSymbolicNameTest {
 
     private List<String> errors = new LinkedList<>();
 
     private AnalyserTaskContext ctx;
 
-    @Before public void setup() {
+    @Before
+    public void setup() {
         ctx = mock(AnalyserTaskContext.class);
 
         final Feature feature = new Feature(ArtifactId.parse("g:a:1"));
@@ -55,10 +55,12 @@ public class CheckDuplicateSymbolicNameTest  {
         when(ctx.getFeatureDescriptor()).thenReturn(featureDescriptor);
 
         doAnswer(invocation -> {
-            String error = invocation.getArgument(0);
-            errors.add(error);
-            return null;
-        }).when(ctx).reportError(anyString());
+                    String error = invocation.getArgument(0);
+                    errors.add(error);
+                    return null;
+                })
+                .when(ctx)
+                .reportError(anyString());
     }
 
     private BundleDescriptor newDescriptor(final ArtifactId id, final String symbolicName) {
@@ -69,7 +71,8 @@ public class CheckDuplicateSymbolicNameTest  {
         return desc;
     }
 
-    @Test public void testNoDuplicates() throws Exception {
+    @Test
+    public void testNoDuplicates() throws Exception {
         final AnalyserTask task = new CheckDuplicateSymbolicName();
 
         ctx.getFeatureDescriptor().getBundleDescriptors().add(newDescriptor(ArtifactId.parse("g:b1:1"), "b1"));
@@ -79,7 +82,8 @@ public class CheckDuplicateSymbolicNameTest  {
         assertTrue(errors.isEmpty());
     }
 
-    @Test public void testDuplicates() throws Exception {
+    @Test
+    public void testDuplicates() throws Exception {
         final AnalyserTask task = new CheckDuplicateSymbolicName();
 
         ctx.getFeatureDescriptor().getBundleDescriptors().add(newDescriptor(ArtifactId.parse("g:b1:1"), "b1"));
@@ -90,5 +94,4 @@ public class CheckDuplicateSymbolicNameTest  {
         task.execute(ctx);
         assertEquals(2, errors.size());
     }
-
 }

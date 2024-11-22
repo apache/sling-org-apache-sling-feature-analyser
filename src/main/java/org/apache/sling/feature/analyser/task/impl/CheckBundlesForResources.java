@@ -52,9 +52,9 @@ public class CheckBundlesForResources implements AnalyserTask {
     @Override
     public void execute(final AnalyserTaskContext ctx) {
         // check for initial content
-        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             final List<String> bundleResources = extractBundleResources(info.getManifest());
-            if ( !bundleResources.isEmpty() ) {
+            if (!bundleResources.isEmpty()) {
                 ctx.reportArtifactWarning(info.getArtifact().getId(), "Found bundle resources : " + bundleResources);
             }
         }
@@ -62,8 +62,8 @@ public class CheckBundlesForResources implements AnalyserTask {
 
     private List<String> extractBundleResources(final Manifest m) {
         final List<String> bundleResources = new ArrayList<>();
-        if ( m != null ) {
-            final String root =  m.getMainAttributes().getValue(BUNDLE_RESOURCE_ROOTS);
+        if (m != null) {
+            final String root = m.getMainAttributes().getValue(BUNDLE_RESOURCE_ROOTS);
             if (root != null) {
                 Clause[] clauses = Parser.parseHeader(root);
                 for (final Clause entry : clauses) {

@@ -39,12 +39,14 @@ public class CheckBundleNativeCode implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) {
-        for(final BundleDescriptor descriptor : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor descriptor : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             final Manifest mf = descriptor.getManifest();
 
             final String nativeCode = mf.getMainAttributes().getValue(Constants.BUNDLE_NATIVECODE);
-            if ( nativeCode != null ) {
-                ctx.reportArtifactError(descriptor.getArtifact().getId(), "Found native code instruction in bundle: ".concat(nativeCode) );
+            if (nativeCode != null) {
+                ctx.reportArtifactError(
+                        descriptor.getArtifact().getId(),
+                        "Found native code instruction in bundle: ".concat(nativeCode));
             }
         }
     }

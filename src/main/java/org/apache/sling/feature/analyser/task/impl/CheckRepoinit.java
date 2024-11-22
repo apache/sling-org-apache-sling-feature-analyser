@@ -35,6 +35,7 @@ public class CheckRepoinit implements AnalyserTask {
     public static final String PID = "org.apache.sling.jcr.repoinit.impl.RepositoryInitializer";
 
     public static final String FACTORY_PID = "org.apache.sling.jcr.repoinit.RepositoryInitializer";
+
     @Override
     public String getName() {
         return "Repoinit Check";
@@ -49,34 +50,34 @@ public class CheckRepoinit implements AnalyserTask {
     public void execute(final AnalyserTaskContext ctx) {
         // check extension
         final Extension ext = ctx.getFeature().getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
-        if ( ext != null ) {
-            if ( ext.getType() != ExtensionType.TEXT ) {
+        if (ext != null) {
+            if (ext.getType() != ExtensionType.TEXT) {
                 ctx.reportExtensionError(Extension.EXTENSION_NAME_REPOINIT, "Repoinit extension must be of type TEXT");
-            } else  {
+            } else {
                 check(ctx, "extension", ext.getText());
             }
         }
 
         // configuration
         final Configuration cfg = ctx.getFeature().getConfigurations().getConfiguration(PID);
-        if ( cfg != null ) {
+        if (cfg != null) {
             check(ctx, cfg, false);
         }
-        for(final Configuration c : ctx.getFeature().getConfigurations()) {
-            if ( FACTORY_PID.equals(c.getFactoryPid()) ) {
+        for (final Configuration c : ctx.getFeature().getConfigurations()) {
+            if (FACTORY_PID.equals(c.getFactoryPid())) {
                 check(ctx, c, true);
             }
         }
-
     }
 
     private void check(final AnalyserTaskContext ctx, final Configuration cfg, final boolean supportsScripts) {
         // for now we only check scripts
-        if ( supportsScripts ) {
+        if (supportsScripts) {
             final Object val = cfg.getProperties().get("scripts");
-            if ( val != null ) {
-                final String[] scripts = Converters.standardConverter().convert(val).to(String[].class);
-                for(final String contents : scripts) {
+            if (val != null) {
+                final String[] scripts =
+                        Converters.standardConverter().convert(val).to(String[].class);
+                for (final String contents : scripts) {
                     check(ctx, "configuration ".concat(cfg.getPid()), contents);
                 }
             }
@@ -88,8 +89,10 @@ public class CheckRepoinit implements AnalyserTask {
 
         try {
             parser.parse(new StringReader(contents));
-        } catch ( RepoInitParsingException e) {
-            ctx.reportExtensionError(Extension.EXTENSION_NAME_REPOINIT, "Parsing error in repoinit from ".concat(id).concat(" : ").concat(e.getMessage()));
+        } catch (RepoInitParsingException e) {
+            ctx.reportExtensionError(
+                    Extension.EXTENSION_NAME_REPOINIT,
+                    "Parsing error in repoinit from ".concat(id).concat(" : ").concat(e.getMessage()));
         }
     }
 }

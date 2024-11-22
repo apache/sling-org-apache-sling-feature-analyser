@@ -53,13 +53,12 @@ public final class AnalyzerTaskProvider {
      * @throws IllegalStateException If an included task is not found
      */
     public static AnalyserTask[] getTasksByIds(Set<String> includes, Set<String> excludes) {
-        if (excludes == null)
-            excludes = Collections.emptySet();
+        if (excludes == null) excludes = Collections.emptySet();
 
         final ServiceLoader<AnalyserTask> loader = ServiceLoader.load(AnalyserTask.class);
         final Set<String> foundTasks = new HashSet<>();
         final List<AnalyserTask> list = new ArrayList<>();
-        for(final AnalyserTask task : loader) {
+        for (final AnalyserTask task : loader) {
             boolean included = includes != null ? includes.contains(task.getId()) : true;
             boolean excluded = excludes.contains(task.getId());
 
@@ -86,7 +85,7 @@ public final class AnalyzerTaskProvider {
      * @return The analyser tasks, array is never {@code null} but might be empty
      * @throws IOException If class names is null or loading fails
      */
-    public static AnalyserTask[] getTasksByClassName(String...taskClassNames) throws IOException {
+    public static AnalyserTask[] getTasksByClassName(String... taskClassNames) throws IOException {
         if (taskClassNames == null) {
             throw new IOException("Impossible to load Tasks from a null string array");
         }
@@ -94,7 +93,8 @@ public final class AnalyzerTaskProvider {
         List<AnalyserTask> list = new ArrayList<>();
         for (String cls : taskClassNames) {
             try {
-                AnalyserTask task = (AnalyserTask) Analyser.class.getClassLoader().loadClass(cls).newInstance();
+                AnalyserTask task = (AnalyserTask)
+                        Analyser.class.getClassLoader().loadClass(cls).newInstance();
                 list.add(task);
             } catch (Exception e) {
                 throw new IOException(e);
@@ -102,5 +102,4 @@ public final class AnalyzerTaskProvider {
         }
         return list.toArray(new AnalyserTask[list.size()]);
     }
-
 }

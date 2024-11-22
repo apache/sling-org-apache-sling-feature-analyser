@@ -36,7 +36,7 @@ public class CheckServiceUserMapping implements AnalyserTask {
 
     static final String CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS = "warnOnlyForDeprecatedMappings";
     static final String CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT = Boolean.FALSE.toString();
-    
+
     @Override
     public String getName() {
         return "Service User Mapping Check";
@@ -49,7 +49,8 @@ public class CheckServiceUserMapping implements AnalyserTask {
 
     @Override
     public void execute(final AnalyserTaskContext ctx) {
-        final boolean warnOnlyForDeprecation = Boolean.parseBoolean(ctx.getConfiguration().getOrDefault(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT));
+        final boolean warnOnlyForDeprecation = Boolean.parseBoolean(ctx.getConfiguration()
+                .getOrDefault(CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS, CFG_WARN_ONLY_FOR_DEPRECATED_MAPPINGS_DEFAULT));
 
         // configuration
         Configurations configurations = ctx.getFeature().getConfigurations();
@@ -62,17 +63,23 @@ public class CheckServiceUserMapping implements AnalyserTask {
         }
     }
 
-    private static void check(final AnalyserTaskContext ctx, final Configuration cfg, final boolean warnOnlyForDeprecation) {
+    private static void check(
+            final AnalyserTaskContext ctx, final Configuration cfg, final boolean warnOnlyForDeprecation) {
         final Object val = cfg.getConfigurationProperties().get(USER_MAPPING);
         if (val != null) {
-            final String[] mappings = Converters.standardConverter().convert(val).to(String[].class);
+            final String[] mappings =
+                    Converters.standardConverter().convert(val).to(String[].class);
             for (final String spec : mappings) {
                 check(ctx, cfg, spec, warnOnlyForDeprecation);
             }
         }
     }
 
-    private static void check(final @NotNull AnalyserTaskContext ctx, final @NotNull Configuration cfg, final @Nullable String spec, final boolean warnOnlyForDeprecation) {
+    private static void check(
+            final @NotNull AnalyserTaskContext ctx,
+            final @NotNull Configuration cfg,
+            final @Nullable String spec,
+            final boolean warnOnlyForDeprecation) {
         final String id = cfg.getPid();
         if (spec == null || spec.trim().isEmpty()) {
             ctx.reportConfigurationWarning(cfg, "Ignoring empty mapping in " + id);
@@ -99,7 +106,8 @@ public class CheckServiceUserMapping implements AnalyserTask {
 
         private final boolean isDeprecated;
 
-        private static @Nullable Mapping parse(@NotNull final String spec, @NotNull final AnalyserTaskContext ctx, @NotNull final Configuration cfg) {
+        private static @Nullable Mapping parse(
+                @NotNull final String spec, @NotNull final AnalyserTaskContext ctx, @NotNull final Configuration cfg) {
             final int colon = spec.indexOf(':');
             final int equals = spec.indexOf('=');
 
@@ -107,7 +115,8 @@ public class CheckServiceUserMapping implements AnalyserTask {
                 ctx.reportConfigurationWarning(cfg, "Invalid service user mapping: serviceName is required");
                 return null;
             } else if (equals == spec.length() - 1) {
-                ctx.reportConfigurationWarning(cfg, "Invalid service user mapping: userName or principalNames is required");
+                ctx.reportConfigurationWarning(
+                        cfg, "Invalid service user mapping: userName or principalNames is required");
                 return null;
             } else if (colon + 1 == equals) {
                 ctx.reportConfigurationWarning(cfg, "Invalid service user mapping: serviceInfo must not be empty");
@@ -133,4 +142,3 @@ public class CheckServiceUserMapping implements AnalyserTask {
         }
     }
 }
-

@@ -19,5 +19,3 @@
 
 @org.osgi.annotation.versioning.Version("1.3.0")
 package org.apache.sling.feature.analyser.task;
-
-

@@ -1,20 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.analyser.task.impl;
+
+import java.util.Map;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -25,8 +29,6 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.builder.FeatureProvider;
-
-import java.util.Map;
 
 public class CheckCompareFeatures implements AnalyserTask {
 
@@ -63,27 +65,26 @@ public class CheckCompareFeatures implements AnalyserTask {
         }
 
         Feature feat = featureProvider.provide(ArtifactId.fromMvnId(aid));
-        if (feat == null)
-            throw new Exception("Feature not found: " + aid);
+        if (feat == null) throw new Exception("Feature not found: " + aid);
 
         Artifacts mainArts = getArtifactsToCompare(feat, ext);
         Artifacts compArts = getArtifactsToCompare(ctx.getFeature(), ext);
 
         String violationMessage = null;
         switch (mode) {
-        case "SAME":
-            violationMessage = assertArtifactsSame(mainArts, compArts, strictMetadata);
-            break;
-        case "DIFFERENT":
-            violationMessage = assertArtifactsSame(mainArts, compArts, strictMetadata);
-            if (violationMessage == null) {
-                violationMessage = "Artifacts are not different";
-            } else {
-                violationMessage = null;
-            }
-            break;
-        default:
-            throw new Exception("Unknown comparison mode: " + mode);
+            case "SAME":
+                violationMessage = assertArtifactsSame(mainArts, compArts, strictMetadata);
+                break;
+            case "DIFFERENT":
+                violationMessage = assertArtifactsSame(mainArts, compArts, strictMetadata);
+                if (violationMessage == null) {
+                    violationMessage = "Artifacts are not different";
+                } else {
+                    violationMessage = null;
+                }
+                break;
+            default:
+                throw new Exception("Unknown comparison mode: " + mode);
         }
 
         if (violationMessage != null) {
@@ -123,8 +124,7 @@ public class CheckCompareFeatures implements AnalyserTask {
 
     private static Artifact findArtifact(Artifacts list, ArtifactId artifactId) {
         for (Artifact a : list) {
-            if (a.getId().equals(artifactId))
-                return a;
+            if (a.getId().equals(artifactId)) return a;
         }
         return null;
     }

@@ -78,7 +78,7 @@ public class CheckBundleNativeCodeTest {
         final Artifact a = new Artifact(aId);
         Mockito.when(bd.getArtifact()).thenReturn(a);
         final Manifest mf = new Manifest();
-        if ( header != null ) {
+        if (header != null) {
             mf.getMainAttributes().putValue(Constants.BUNDLE_NATIVECODE, header);
         }
         Mockito.when(bd.getManifest()).thenReturn(mf);

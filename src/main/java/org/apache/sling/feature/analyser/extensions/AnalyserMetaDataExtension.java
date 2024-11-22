@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.analyser.extensions;
 
@@ -21,6 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import jakarta.json.Json;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonObjectBuilder;
+import jakarta.json.JsonValue;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
@@ -28,30 +34,25 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.osgi.framework.Constants;
 
-import jakarta.json.Json;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonObjectBuilder;
-import jakarta.json.JsonValue;
-
 public class AnalyserMetaDataExtension {
 
     public static final String EXTENSION_NAME = "analyser-metadata";
 
     // use ArtifactId.fromMvnId to ensure the string form can be parsed back to an ArtifactId
-    static final String SYSTEM_BUNDLE_KEY = ArtifactId.fromMvnId("extra-metadata:" + Constants.SYSTEM_BUNDLE_SYMBOLICNAME + ":0").toString();
+    static final String SYSTEM_BUNDLE_KEY = ArtifactId.fromMvnId(
+                    "extra-metadata:" + Constants.SYSTEM_BUNDLE_SYMBOLICNAME + ":0")
+            .toString();
     static final String MANIFEST_KEY = "manifest";
     static final String REPORT_KEY = "report";
     static final String WARNING_KEY = "warning";
     static final String ERROR_KEY = "error";
     static final String ARTIFACT_ID_KEY = "artifactId";
     static final String SCANNER_CACHE_KEY = "scannerCacheKey";
-    
+
     private final Map<ArtifactId, Map<String, String>> manifests = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportWarnings = new HashMap<>();
     private final Map<ArtifactId, Boolean> reportErrors = new HashMap<>();
     private SystemBundle systemBundle;
-
-    
 
     public static AnalyserMetaDataExtension getAnalyserMetaDataExtension(Feature feature) {
         Extension ext = feature == null ? null : feature.getExtensions().getByName(EXTENSION_NAME);
@@ -71,20 +72,22 @@ public class AnalyserMetaDataExtension {
     private AnalyserMetaDataExtension(JsonObject json) {
 
         for (Map.Entry<String, JsonValue> entry : json.entrySet()) {
-            
+
             // handle system bundle separately
-            if ( entry.getKey().equals(SYSTEM_BUNDLE_KEY) ) {
+            if (entry.getKey().equals(SYSTEM_BUNDLE_KEY)) {
                 JsonObject systemBundleConfig = entry.getValue().asJsonObject();
                 JsonObject manifestObj = systemBundleConfig.getJsonObject(MANIFEST_KEY);
-                String artifactId = systemBundleConfig.getJsonString(ARTIFACT_ID_KEY).getString();
-                String scannerCacheKey = systemBundleConfig.getJsonString(SCANNER_CACHE_KEY).getString();
-                
+                String artifactId =
+                        systemBundleConfig.getJsonString(ARTIFACT_ID_KEY).getString();
+                String scannerCacheKey =
+                        systemBundleConfig.getJsonString(SCANNER_CACHE_KEY).getString();
+
                 Map<String, String> manifest = new HashMap<>();
                 for (String key : manifestObj.keySet()) {
                     manifest.put(key, manifestObj.getString(key));
                 }
                 systemBundle = new SystemBundle(manifest, ArtifactId.fromMvnId(artifactId), scannerCacheKey);
-                
+
                 continue;
             }
 
@@ -117,7 +120,7 @@ public class AnalyserMetaDataExtension {
     public Map<String, String> getManifest(final ArtifactId artifactId) {
         return this.manifests.get(artifactId);
     }
-    
+
     public SystemBundle getSystemBundle() {
         return systemBundle;
     }
@@ -132,9 +135,13 @@ public class AnalyserMetaDataExtension {
 
     public Extension toExtension(Extension extension) {
         if (isAnalyserMetaDataExtension(extension)) {
-            JsonObjectBuilder builder = Json.createObjectBuilder(extension.getJSONStructure().asJsonObject());
-            Stream.concat(Stream.concat(manifests.keySet().stream(), reportErrors.keySet().stream()), reportWarnings.keySet().stream()).distinct().forEachOrdered(
-                    id -> {
+            JsonObjectBuilder builder =
+                    Json.createObjectBuilder(extension.getJSONStructure().asJsonObject());
+            Stream.concat(
+                            Stream.concat(manifests.keySet().stream(), reportErrors.keySet().stream()),
+                            reportWarnings.keySet().stream())
+                    .distinct()
+                    .forEachOrdered(id -> {
                         JsonObjectBuilder metadata = Json.createObjectBuilder();
                         if (manifests.containsKey(id)) {
                             JsonObjectBuilder manifest = Json.createObjectBuilder();
@@ -152,8 +159,7 @@ public class AnalyserMetaDataExtension {
                             metadata.add(REPORT_KEY, report);
                         }
                         builder.add(id.toMvnId(), metadata);
-                    }
-            );
+                    });
             extension.setJSONStructure(builder.build());
         }
         return extension;
@@ -176,27 +182,27 @@ public class AnalyserMetaDataExtension {
     public void setReportErrors(ArtifactId id, boolean enabled) {
         reportErrors.put(id, enabled);
     }
-    
+
     public static class SystemBundle {
-        
+
         private Map<String, String> manifest = new HashMap<>();
         private ArtifactId artifactId;
         private String scannerCacheKey;
-        
+
         public SystemBundle(Map<String, String> manifest, ArtifactId artifactId, String scannerCacheKey) {
             this.manifest = manifest;
             this.artifactId = artifactId;
             this.scannerCacheKey = scannerCacheKey;
         }
-        
+
         public ArtifactId getArtifactId() {
             return artifactId;
         }
-        
+
         public Map<String, String> getManifest() {
             return manifest;
         }
-        
+
         public String getScannerCacheKey() {
             return scannerCacheKey;
         }

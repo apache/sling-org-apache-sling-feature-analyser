@@ -59,13 +59,15 @@ public class CheckBundlesForConnect implements AnalyserTask {
                 }
 
                 final Set<String> packages = new HashSet<>();
-                try (final JarInputStream jis = new JarInputStream(bd.getArtifactFile().openStream())) {
+                try (final JarInputStream jis =
+                        new JarInputStream(bd.getArtifactFile().openStream())) {
                     JarEntry entry;
                     while ((entry = jis.getNextJarEntry()) != null) {
                         if (entry.getName().endsWith(".class")) {
                             final int lastPos = entry.getName().lastIndexOf('/');
                             if (lastPos == -1) {
-                                ctx.reportArtifactError(bd.getArtifact().getId(),"Bundle contains classes in the default package");
+                                ctx.reportArtifactError(
+                                        bd.getArtifact().getId(), "Bundle contains classes in the default package");
                             } else {
                                 packages.add(entry.getName().substring(0, lastPos));
                             }
@@ -78,7 +80,8 @@ public class CheckBundlesForConnect implements AnalyserTask {
                                         if (inner.getName().endsWith(".class")) {
                                             final int lastPos = inner.getName().lastIndexOf('/');
                                             if (lastPos == -1) {
-                                                ctx.reportArtifactError(bd.getArtifact().getId(),
+                                                ctx.reportArtifactError(
+                                                        bd.getArtifact().getId(),
                                                         "Bundle contains (embedded) classes in the default package");
                                             } else {
                                                 packages.add(inner.getName().substring(0, lastPos));
@@ -92,7 +95,7 @@ public class CheckBundlesForConnect implements AnalyserTask {
                         jis.closeEntry();
                     }
                 } catch (final IOException ioe) {
-                    ctx.reportArtifactError(bd.getArtifact().getId(),"Unable to scan bundle: " + ioe.getMessage());
+                    ctx.reportArtifactError(bd.getArtifact().getId(), "Unable to scan bundle: " + ioe.getMessage());
                 }
                 for (final String p : packages) {
                     List<Artifact> list = packageMap.get(p);

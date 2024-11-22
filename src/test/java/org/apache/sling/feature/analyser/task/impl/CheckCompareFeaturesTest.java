@@ -1,20 +1,26 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.analyser.task.impl;
+
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -27,10 +33,6 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.junit.Test;
 import org.mockito.Mockito;
-
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -210,13 +212,13 @@ public class CheckCompareFeaturesTest {
         fc.getBundles().add(art2);
 
         @SuppressWarnings("unchecked")
-        AnalyserTaskContext ctx = testExecute("DIFFERENT", f, fc, null,
-                new AbstractMap.SimpleEntry<>("compare-metadata", "false"));
+        AnalyserTaskContext ctx =
+                testExecute("DIFFERENT", f, fc, null, new AbstractMap.SimpleEntry<>("compare-metadata", "false"));
         Mockito.verify(ctx).reportError(Mockito.anyString());
 
         @SuppressWarnings("unchecked")
-        AnalyserTaskContext ctx2 = testExecute("DIFFERENT", f, fc, null,
-                new AbstractMap.SimpleEntry<>("compare-metadata", "true"));
+        AnalyserTaskContext ctx2 =
+                testExecute("DIFFERENT", f, fc, null, new AbstractMap.SimpleEntry<>("compare-metadata", "true"));
         Mockito.verify(ctx2, Mockito.never()).reportError(Mockito.anyString());
     }
 
@@ -237,8 +239,13 @@ public class CheckCompareFeaturesTest {
         return testExecute(mode, f, fc, extension, new Map.Entry[0]);
     }
 
-    private AnalyserTaskContext testExecute(String mode, Feature f, Feature fc, String extension,
-            @SuppressWarnings("unchecked") Map.Entry<String, String> ... cfgEntries) throws Exception {
+    private AnalyserTaskContext testExecute(
+            String mode,
+            Feature f,
+            Feature fc,
+            String extension,
+            @SuppressWarnings("unchecked") Map.Entry<String, String>... cfgEntries)
+            throws Exception {
         Map<String, String> cfg = new HashMap<>();
         cfg.put("compare-with", f.getId().toMvnId());
 
