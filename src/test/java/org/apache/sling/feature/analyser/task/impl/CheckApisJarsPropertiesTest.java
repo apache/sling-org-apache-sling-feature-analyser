@@ -18,8 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +32,8 @@ import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 public class CheckApisJarsPropertiesTest {
 
@@ -101,7 +101,7 @@ public class CheckApisJarsPropertiesTest {
         public Map<String, String> getConfiguration() {
             return Collections.emptyMap();
         }
-        
+
         @Override
         public FeatureProvider getFeatureProvider() {
             return null;
@@ -110,7 +110,7 @@ public class CheckApisJarsPropertiesTest {
         public List<String> getErrors() {
             return errors;
         }
-        
+
         public List<String> getWarnings() {
             return warnings;
         }
@@ -127,42 +127,43 @@ public class CheckApisJarsPropertiesTest {
             warnings.add(message);
         }
     }
-    
+
     static class FeatureStub extends Feature {
 
         public FeatureStub() {
-            super(ArtifactId.fromMvnId("org.apache.sling:org.apache.sling.feature.analyser.test:slingosgifeature:validSourceIds:1.0"));
-            
+            super(ArtifactId.fromMvnId(
+                    "org.apache.sling:org.apache.sling.feature.analyser.test:slingosgifeature:validSourceIds:1.0"));
+
             setComplete(true);
         }
-        
+
         public void addArtifactWithSourceId(String artifactId, String sourceId) {
             Artifact artifact = new Artifact(ArtifactId.parse(artifactId));
-            if ( sourceId != null )
-                artifact.getMetadata().put("source-ids", sourceId);
-            
+            if (sourceId != null) artifact.getMetadata().put("source-ids", sourceId);
+
             getBundles().add(artifact);
         }
-        
+
         public void addArtifact(String artifactId) {
             addArtifactWithSourceId(artifactId, null);
         }
-        
     }
 
     @Test
     public void validSourceIds() throws Exception {
         CheckApisJarsProperties check = new CheckApisJarsProperties();
-        
+
         FeatureStub f = new FeatureStub();
         // 1 entry with CSV sourceId
-        f.addArtifactWithSourceId("org.apache.aries.transaction:org.apache.aries.transaction.manager:1.2.0", 
+        f.addArtifactWithSourceId(
+                "org.apache.aries.transaction:org.apache.aries.transaction.manager:1.2.0",
                 "org.apache.aries.transaction:org.apache.aries.transaction.manager:jar:sources:1.2.0,javax.transaction:javax.transaction-api:jar:sources:1.2,org.apache.geronimo.components:geronimo-transaction:jar:sources:3.1.2");
 
         // 1 entry with simple sourceId
-        f.addArtifactWithSourceId("org.apache.sling:org.apache.sling.scripting.jsp-api:1.0.0", 
+        f.addArtifactWithSourceId(
+                "org.apache.sling:org.apache.sling.scripting.jsp-api:1.0.0",
                 "org.apache.tomcat:tomcat-jsp-api:jar:sources:7.0.96");
-        
+
         // 1 entry with no sourceId
         f.addArtifact("org.apache.sling:org.apache.sling.engine:2.6.20");
 
@@ -171,19 +172,18 @@ public class CheckApisJarsPropertiesTest {
         assertEquals("errors.size", 0, context.getErrors().size());
         assertEquals("warnings.size", 0, context.getWarnings().size());
     }
-    
+
     @Test
     public void invalidSourceId() throws Exception {
         CheckApisJarsProperties check = new CheckApisJarsProperties();
-        
+
         FeatureStub f = new FeatureStub();
         // 1 entry with invalid sourceId
-        f.addArtifactWithSourceId("org.apache.sling:org.apache.sling.scripting.jsp-api:1.0.0", 
-                "invalid-source-id");
+        f.addArtifactWithSourceId("org.apache.sling:org.apache.sling.scripting.jsp-api:1.0.0", "invalid-source-id");
 
         SpyAnalyserTaskContext context = new SpyAnalyserTaskContext(f);
         check.execute(context);
         assertEquals("errors.size", 1, context.getErrors().size());
-        assertEquals("warnings.size", 0, context.getWarnings().size());  
+        assertEquals("warnings.size", 0, context.getWarnings().size());
     }
 }

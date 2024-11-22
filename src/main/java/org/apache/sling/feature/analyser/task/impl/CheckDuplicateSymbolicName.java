@@ -29,7 +29,6 @@ import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 
-
 public class CheckDuplicateSymbolicName implements AnalyserTask {
 
     @Override
@@ -46,7 +45,7 @@ public class CheckDuplicateSymbolicName implements AnalyserTask {
         // build a map of bundles by symbolic name
 
         final SortedMap<String, Set<ArtifactId>> bundleMap = new TreeMap<>();
-        for(final BundleDescriptor desc : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor desc : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             final String key = desc.getBundleSymbolicName();
             final Set<ArtifactId> set = bundleMap.computeIfAbsent(key, id -> new HashSet<>());
             set.add(desc.getArtifact().getId());
@@ -58,15 +57,16 @@ public class CheckDuplicateSymbolicName implements AnalyserTask {
     public void execute(final AnalyserTaskContext ctx) throws Exception {
         final SortedMap<String, Set<ArtifactId>> bundleMap = createBundleMap(ctx);
 
-        for(final Map.Entry<String, Set<ArtifactId>> entry : bundleMap.entrySet()) {
-            if ( entry.getValue().size() > 1 ) {
+        for (final Map.Entry<String, Set<ArtifactId>> entry : bundleMap.entrySet()) {
+            if (entry.getValue().size() > 1) {
                 final StringBuilder sb = new StringBuilder();
                 sb.append("Duplicate symbolic name ");
                 sb.append(entry.getKey());
                 sb.append(" : ");
                 boolean first = true;
-                for(final ArtifactId id : entry.getValue()) {
-                    if ( first ) first = false; else sb.append(", ");
+                for (final ArtifactId id : entry.getValue()) {
+                    if (first) first = false;
+                    else sb.append(", ");
                     sb.append(id.toMvnId());
                 }
                 ctx.reportError(sb.toString());

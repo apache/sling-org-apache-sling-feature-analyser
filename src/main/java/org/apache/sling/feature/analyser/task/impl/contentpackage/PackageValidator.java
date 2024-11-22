@@ -47,11 +47,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Validate a package using filevault validation API.
- * This class contains code from filevault package maven plugin. 
+ * This class contains code from filevault package maven plugin.
  */
 public class PackageValidator {
     private Logger log = LoggerFactory.getLogger(this.getClass());
-    
+
     private final ValidationExecutorFactory validationExecutorFactory;
 
     private final URI artifactURI;
@@ -63,12 +63,12 @@ public class PackageValidator {
     private ValidationExecutor executor;
 
     private Map<String, ? extends ValidatorSettings> validatorSettings;
-    
+
     public PackageValidator(URI artifactURI, Map<String, ? extends ValidatorSettings> validatorSettings) {
         this.artifactURI = artifactURI;
         this.validatorSettings = validatorSettings;
-        validationExecutorFactory = new ValidationExecutorFactory(
-                this.getClass().getClassLoader());
+        validationExecutorFactory =
+                new ValidationExecutorFactory(this.getClass().getClassLoader());
         messages = new LinkedList<>();
     }
 
@@ -89,17 +89,18 @@ public class PackageValidator {
         }
         return messages;
     }
-    
+
     private void validateArchive(Archive archive, Path path) throws IOException {
         validateEntry(archive, archive.getRoot(), Paths.get(""), path);
         messages.addAll(executor.done());
     }
-    
-    private void validateEntry(Archive archive, Archive.Entry entry, Path entryPath, Path packagePath) throws IOException {
+
+    private void validateEntry(Archive archive, Archive.Entry entry, Path entryPath, Path packagePath)
+            throws IOException {
         // sort children to make sure that .content.xml comes first!
         List<Archive.Entry> sortedEntryList = new ArrayList<>(entry.getChildren());
         sortedEntryList.sort(Comparator.comparing(Archive.Entry::getName, new DotContentXmlFirstComparator()));
-        
+
         for (Archive.Entry childEntry : sortedEntryList) {
             if (childEntry.isDirectory()) {
                 validateInputStream(null, entryPath.resolve(childEntry.getName()), packagePath);
@@ -111,21 +112,35 @@ public class PackageValidator {
             }
         }
     }
-    
+
     private void validateInputStream(InputStream inputStream, Path entryPath, Path packagePath) throws IOException {
         if (entryPath.startsWith(Constants.META_INF)) {
-            messages.addAll(executor.validateMetaInf(inputStream, Paths.get(Constants.META_INF).relativize(entryPath), packagePath.resolve(Constants.META_INF)));
+            messages.addAll(executor.validateMetaInf(
+                    inputStream,
+                    Paths.get(Constants.META_INF).relativize(entryPath),
+                    packagePath.resolve(Constants.META_INF)));
         } else if (entryPath.startsWith(Constants.ROOT_DIR)) {
             // strip off jcr_root
             Path relativeJcrPath = Paths.get(Constants.ROOT_DIR).relativize(entryPath);
-            messages.addAll(executor.validateJcrRoot(inputStream, relativeJcrPath, packagePath.resolve(Constants.ROOT_DIR)));
+            messages.addAll(
+                    executor.validateJcrRoot(inputStream, relativeJcrPath, packagePath.resolve(Constants.ROOT_DIR)));
         } else {
-            messages.add(new ValidationViolation(ValidationMessageSeverity.WARN, "Found unexpected file outside of " + Constants.ROOT_DIR + " and " + Constants.META_INF, entryPath, packagePath, null, 0,0, null));
+            messages.add(new ValidationViolation(
+                    ValidationMessageSeverity.WARN,
+                    "Found unexpected file outside of " + Constants.ROOT_DIR + " and " + Constants.META_INF,
+                    entryPath,
+                    packagePath,
+                    null,
+                    0,
+                    0,
+                    null));
         }
     }
-    
+
     private void printUsedValidators(boolean printUnusedValidators) {
-        String packageType = context.getProperties().getPackageType() != null ? context.getProperties().getPackageType().toString() : "unknown";
+        String packageType = context.getProperties().getPackageType() != null
+                ? context.getProperties().getPackageType().toString()
+                : "unknown";
         int numValidators = executor.getAllValidatorsById().entrySet().size();
         log.info("Using {} validators for package of type {}: {}", numValidators, packageType, getValidatorNames());
         if (printUnusedValidators) {
@@ -136,20 +151,20 @@ public class PackageValidator {
             }
         }
     }
-    
+
     private String getValidatorNames() {
         return executor.getAllValidatorsById().entrySet().stream()
                 .map(this::describeValidator)
                 .collect(Collectors.joining(", "));
     }
-    
+
     private String describeValidator(Map.Entry<String, Validator> validatorById) {
         String validatorClassName = validatorById.getValue().getClass().getName();
         return validatorById.getKey() + " (" + validatorClassName + ")";
     }
-    
-    /** 
-     * Comparator on file names (excluding paths) which makes sure that the files named {@code .content.xml} come first. Other file names are ordered lexicographically. 
+
+    /**
+     * Comparator on file names (excluding paths) which makes sure that the files named {@code .content.xml} come first. Other file names are ordered lexicographically.
      */
     static final class DotContentXmlFirstComparator implements Comparator<String> {
         @Override

@@ -82,13 +82,10 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
     }
 
     @Override
-    public void reportWarning(String message) {
-    }
+    public void reportWarning(String message) {}
 
     @Override
-    public void reportArtifactWarning(ArtifactId artifactId, String message) {
-
-    }
+    public void reportArtifactWarning(ArtifactId artifactId, String message) {}
 
     @Override
     public void reportArtifactError(ArtifactId artifactId, String message) {
@@ -96,9 +93,7 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
     }
 
     @Override
-    public void reportExtensionWarning(String extension, String message) {
-
-    }
+    public void reportExtensionWarning(String extension, String message) {}
 
     @Override
     public void reportExtensionError(String extension, String message) {
@@ -120,7 +115,5 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
     }
 
     @Override
-    public void reportConfigurationWarning(Configuration cfg, String message) {
-
-    }
+    public void reportConfigurationWarning(Configuration cfg, String message) {}
 }

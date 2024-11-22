@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
@@ -31,73 +31,27 @@
     <version>2.0.11-SNAPSHOT</version>
 
     <name>Apache Sling Feature Model Analyser</name>
-    <description>
-        A feature describes an OSGi system
-    </description>
+    <description>A feature describes an OSGi system</description>
+
+    <scm>
+        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</connection>
+        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</developerConnection>
+        <tag>org.apache.sling.feature.analyser-1.6.4</tag>
+        <url>https://github.com/apache/sling-org-apache-sling-feature-analyser.git</url>
+    </scm>
 
     <properties>
         <sling.java.version>8</sling.java.version>
         <project.build.outputTimestamp>1723369461</project.build.outputTimestamp>
     </properties>
-
-    <scm>
-        <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</connection>
-        <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</developerConnection>
-        <url>https://github.com/apache/sling-org-apache-sling-feature-analyser.git</url>
-      <tag>org.apache.sling.feature.analyser-1.6.4</tag>
-   </scm>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.rat</groupId>
-                <artifactId>apache-rat-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>readme.md</exclude>
-                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.analyser.task.AnalyserTask</exclude>
-                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.ExtensionScanner</exclude>
-                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.FrameworkScanner</exclude>
-                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.builder.PostProcessHandler</exclude>
-                        <exclude>src/test/resources/origins/**</exclude>
-                        <exclude>src/test/resources/test-bundle-src/**</exclude>
-                        <exclude>src/test/resources/**.xml</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <createSourcesJar>true</createSourcesJar>
-                            <shadeSourcesContent>true</shadeSourcesContent>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <relocations>
-                                <relocation>
-                                    <pattern>org.apache.felix</pattern>
-                                    <shadedPattern>org.apache.sling.feature.analyzer.impl.felix</shadedPattern>
-                                </relocation>
-                            </relocations>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
     <dependencies>
         <dependency>
             <groupId>jakarta.json</groupId>
             <artifactId>jakarta.json-api</artifactId>
             <version>2.0.2</version>
             <scope>provided</scope>
-         </dependency>
-         <dependency>
+        </dependency>
+        <dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.annotation.versioning</artifactId>
             <scope>provided</scope>
@@ -208,8 +162,8 @@
         <dependency>
             <groupId>org.apache.johnzon</groupId>
             <artifactId>johnzon-core</artifactId>
-            <classifier>jakarta</classifier>
             <version>1.2.14</version>
+            <classifier>jakarta</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -231,4 +185,48 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.rat</groupId>
+                <artifactId>apache-rat-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>readme.md</exclude>
+                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.analyser.task.AnalyserTask</exclude>
+                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.ExtensionScanner</exclude>
+                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.scanner.spi.FrameworkScanner</exclude>
+                        <exclude>src/main/resources/META-INF/services/org.apache.sling.feature.builder.PostProcessHandler</exclude>
+                        <exclude>src/test/resources/origins/**</exclude>
+                        <exclude>src/test/resources/test-bundle-src/**</exclude>
+                        <exclude>src/test/resources/**.xml</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <createSourcesJar>true</createSourcesJar>
+                            <shadeSourcesContent>true</shadeSourcesContent>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.apache.felix</pattern>
+                                    <shadedPattern>org.apache.sling.feature.analyzer.impl.felix</shadedPattern>
+                                </relocation>
+                            </relocations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

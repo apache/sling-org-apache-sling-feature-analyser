@@ -18,6 +18,10 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Feature;
@@ -30,10 +34,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import static org.junit.Assert.assertEquals;
 
 public class CheckBundleUnversionedPackagesTest {
@@ -41,9 +41,10 @@ public class CheckBundleUnversionedPackagesTest {
 
     @BeforeClass
     public static void setupClass() {
-        resourceRoot =
-                new File(CheckBundleExportsImportsTest.class.
-                        getResource("/test-content.zip").getFile()).getParentFile();
+        resourceRoot = new File(CheckBundleExportsImportsTest.class
+                        .getResource("/test-content.zip")
+                        .getFile())
+                .getParentFile();
     }
 
     @Test
@@ -68,16 +69,14 @@ public class CheckBundleUnversionedPackagesTest {
 
         Mockito.verify(ctx, Mockito.times(2)).reportArtifactWarning(Mockito.any(), Mockito.anyString());
 
-        Mockito.verify(ctx).reportArtifactWarning(
-                Mockito.eq(ArtifactId.fromMvnId("g:b1:1")),
-                Mockito.contains("org.foo.i"));
-        Mockito.verify(ctx).reportArtifactWarning(
-                Mockito.eq(ArtifactId.fromMvnId("g:b1:1")),
-                Mockito.contains("org.foo.e"));
+        Mockito.verify(ctx)
+                .reportArtifactWarning(Mockito.eq(ArtifactId.fromMvnId("g:b1:1")), Mockito.contains("org.foo.i"));
+        Mockito.verify(ctx)
+                .reportArtifactWarning(Mockito.eq(ArtifactId.fromMvnId("g:b1:1")), Mockito.contains("org.foo.e"));
     }
 
-
-    private void fdAddBundle(FeatureDescriptor fd, String id, String file, ArtifactId... origins) throws URISyntaxException, IOException {
+    private void fdAddBundle(FeatureDescriptor fd, String id, String file, ArtifactId... origins)
+            throws URISyntaxException, IOException {
         Artifact artifact = new Artifact(ArtifactId.fromMvnId(id));
         artifact.setFeatureOrigins(origins);
         BundleDescriptor bd1 = new BundleDescriptorImpl(

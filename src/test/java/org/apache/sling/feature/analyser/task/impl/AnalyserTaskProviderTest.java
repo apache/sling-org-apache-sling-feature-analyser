@@ -18,11 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
@@ -30,6 +25,11 @@ import java.util.ServiceLoader;
 
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.junit.Test;
+
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
+import static org.junit.Assert.assertEquals;
 
 public final class AnalyserTaskProviderTest {
 
@@ -55,18 +55,18 @@ public final class AnalyserTaskProviderTest {
 
     @Test(expected = IOException.class)
     public void failOnLoadingFromNull() throws Exception {
-        getTasksByClassName((String[])null);
+        getTasksByClassName((String[]) null);
     }
 
     @Test
     public void doesNotincludeAnything() throws Exception {
         int expected = 0;
-        int actual = getTasksByIds(Collections.singleton("bundle-packages"),
-                Collections.singleton("bundle-packages")).length;
+        int actual = getTasksByIds(Collections.singleton("bundle-packages"), Collections.singleton("bundle-packages"))
+                .length;
         assertEquals(expected, actual);
     }
 
-    @Test(expected=IllegalStateException.class)
+    @Test(expected = IllegalStateException.class)
     public void testFailOnAnalyzerNotFound() throws Exception {
         getTasksByIds(Collections.singleton("not-found"), null);
     }

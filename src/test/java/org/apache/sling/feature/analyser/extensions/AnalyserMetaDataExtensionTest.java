@@ -18,8 +18,6 @@
  */
 package org.apache.sling.feature.analyser.extensions;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,12 +37,16 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class AnalyserMetaDataExtensionTest {
     @Test
     public void testAnalyserMetaDataExtension() throws Exception {
-        Extension extension = new Extension(ExtensionType.JSON, AnalyserMetaDataExtension.EXTENSION_NAME, ExtensionState.REQUIRED);
+        Extension extension =
+                new Extension(ExtensionType.JSON, AnalyserMetaDataExtension.EXTENSION_NAME, ExtensionState.REQUIRED);
         extension.setJSON("{}");
-        AnalyserMetaDataExtension analyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(extension);
+        AnalyserMetaDataExtension analyserMetaDataExtension =
+                AnalyserMetaDataExtension.getAnalyserMetaDataExtension(extension);
 
         Assert.assertNotNull(analyserMetaDataExtension);
         Manifest manifest = new Manifest();
@@ -58,40 +60,51 @@ public class AnalyserMetaDataExtensionTest {
 
         analyserMetaDataExtension.toExtension(extension);
 
-        Extension testExtension = new Extension(ExtensionType.JSON, AnalyserMetaDataExtension.EXTENSION_NAME, ExtensionState.REQUIRED);
+        Extension testExtension =
+                new Extension(ExtensionType.JSON, AnalyserMetaDataExtension.EXTENSION_NAME, ExtensionState.REQUIRED);
         testExtension.setJSON(extension.getJSON());
 
         Assert.assertTrue(AnalyserMetaDataExtension.isAnalyserMetaDataExtension(testExtension));
 
-        AnalyserMetaDataExtension testAnalyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(testExtension);
+        AnalyserMetaDataExtension testAnalyserMetaDataExtension =
+                AnalyserMetaDataExtension.getAnalyserMetaDataExtension(testExtension);
 
         Assert.assertNotNull(testAnalyserMetaDataExtension.getManifest(artifact.getId()));
-        Assert.assertEquals("bar", testAnalyserMetaDataExtension.getManifest(artifact.getId()).get("foo"));
+        Assert.assertEquals(
+                "bar",
+                testAnalyserMetaDataExtension.getManifest(artifact.getId()).get("foo"));
 
         Assert.assertFalse(testAnalyserMetaDataExtension.reportError(artifact.getId()));
-
     }
-    
+
     @Test
     public void readSystemBundleInformation() throws IOException {
-        InputStream featureStream = Objects.requireNonNull(getClass().getResourceAsStream("/analyse-metadata/feature-output-system-bundle.json"), "Unable to locate feature file");
+        InputStream featureStream = Objects.requireNonNull(
+                getClass().getResourceAsStream("/analyse-metadata/feature-output-system-bundle.json"),
+                "Unable to locate feature file");
         Feature feature = FeatureJSONReader.read(new InputStreamReader(featureStream), null);
-        
-        Extension extension = Objects.requireNonNull(feature.getExtensions().getByName(AnalyserMetaDataExtension.EXTENSION_NAME), "Failed to load analyser-metadata extension");
 
-        AnalyserMetaDataExtension analyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(extension);
+        Extension extension = Objects.requireNonNull(
+                feature.getExtensions().getByName(AnalyserMetaDataExtension.EXTENSION_NAME),
+                "Failed to load analyser-metadata extension");
+
+        AnalyserMetaDataExtension analyserMetaDataExtension =
+                AnalyserMetaDataExtension.getAnalyserMetaDataExtension(extension);
         assertThat(analyserMetaDataExtension).as("metadata extension").isNotNull();
-        
-        SystemBundle systemBundle = analyserMetaDataExtension.getSystemBundle();
-        assertThat(systemBundle).as("system bundle")
-            .isNotNull()
-            .extracting(SystemBundle::getArtifactId)
-            .isEqualTo(ArtifactId.fromMvnId("org.apache.felix:org.apache.felix.framework:7.0.5"));
 
-        assertThat(systemBundle.getScannerCacheKey()).as("system bundle scanner cache key")
-            .isNotBlank();
-        
-        assertThat(systemBundle.getManifest()).as("system bundle manifest")
-            .containsKeys("Export-Package", "Provide-Capability");
+        SystemBundle systemBundle = analyserMetaDataExtension.getSystemBundle();
+        assertThat(systemBundle)
+                .as("system bundle")
+                .isNotNull()
+                .extracting(SystemBundle::getArtifactId)
+                .isEqualTo(ArtifactId.fromMvnId("org.apache.felix:org.apache.felix.framework:7.0.5"));
+
+        assertThat(systemBundle.getScannerCacheKey())
+                .as("system bundle scanner cache key")
+                .isNotBlank();
+
+        assertThat(systemBundle.getManifest())
+                .as("system bundle manifest")
+                .containsKeys("Export-Package", "Provide-Capability");
     }
 }

@@ -64,29 +64,31 @@ public class CheckBundleExportsImports implements AnalyserTask {
         final Map<BundleDescriptor, Report> reports = new HashMap<>();
 
         final SortedMap<Integer, List<BundleDescriptor>> bundlesMap = new TreeMap<>();
-        for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
-            bundlesMap.computeIfAbsent(bi.getArtifact().getStartOrder(), key -> new ArrayList<>()).add(bi);
+        for (final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+            bundlesMap
+                    .computeIfAbsent(bi.getArtifact().getStartOrder(), key -> new ArrayList<>())
+                    .add(bi);
         }
 
         // add all system packages
         final List<BundleDescriptor> exportingBundles = new ArrayList<>();
-        if ( ctx.getFrameworkDescriptor() != null ) {
+        if (ctx.getFrameworkDescriptor() != null) {
             exportingBundles.add(ctx.getFrameworkDescriptor());
         }
 
-        for(final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
+        for (final Map.Entry<Integer, List<BundleDescriptor>> entry : bundlesMap.entrySet()) {
             // first add all exporting bundles
-            for(final BundleDescriptor info : entry.getValue()) {
-                if ( !info.getExportedPackages().isEmpty() ) {
+            for (final BundleDescriptor info : entry.getValue()) {
+                if (!info.getExportedPackages().isEmpty()) {
                     exportingBundles.add(info);
                 }
             }
             // check importing bundles
-            for(final BundleDescriptor info : entry.getValue()) {
-                for(final PackageInfo pck : info.getImportedPackages() ) {
+            for (final BundleDescriptor info : entry.getValue()) {
+                for (final PackageInfo pck : info.getImportedPackages()) {
                     final List<BundleDescriptor> candidates = getCandidates(exportingBundles, pck);
-                    if ( candidates.isEmpty() ) {
-                        if ( pck.isOptional() ) {
+                    if (candidates.isEmpty()) {
+                        if (pck.isOptional()) {
                             getReport(reports, info).missingExportsForOptional.add(pck);
                         } else {
                             getReport(reports, info).missingExports.add(pck);
@@ -98,13 +100,17 @@ public class CheckBundleExportsImports implements AnalyserTask {
                                 matchingCandidates.add(i);
                             }
                         }
-                        if ( matchingCandidates.isEmpty() ) {
-                            if ( pck.isOptional() ) {
-                                getReport(reports, info).missingExportsForOptional.add(pck);
+                        if (matchingCandidates.isEmpty()) {
+                            if (pck.isOptional()) {
+                                getReport(reports, info)
+                                        .missingExportsForOptional
+                                        .add(pck);
                             } else {
-                                getReport(reports, info).missingExportsWithVersion.add(pck);
+                                getReport(reports, info)
+                                        .missingExportsWithVersion
+                                        .add(pck);
                             }
-                        } else if ( matchingCandidates.size() > 1 ) {
+                        } else if (matchingCandidates.size() > 1) {
                             getReport(reports, info).exportMatchingSeveral.add(pck);
                         }
                     }
@@ -113,18 +119,24 @@ public class CheckBundleExportsImports implements AnalyserTask {
         }
 
         boolean errorReported = false;
-        for(final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
-            if ( !entry.getValue().missingExports.isEmpty() ) {
-                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), "Bundle is importing " + getPackageInfo(entry.getValue().missingExports, false) + " with start order " +
-                        String.valueOf(entry.getKey().getArtifact().getStartOrder())
-                        + " but no bundle is exporting these for that start order.");
+        for (final Map.Entry<BundleDescriptor, Report> entry : reports.entrySet()) {
+            if (!entry.getValue().missingExports.isEmpty()) {
+                ctx.reportArtifactError(
+                        entry.getKey().getArtifact().getId(),
+                        "Bundle is importing " + getPackageInfo(entry.getValue().missingExports, false)
+                                + " with start order "
+                                + String.valueOf(entry.getKey().getArtifact().getStartOrder())
+                                + " but no bundle is exporting these for that start order.");
                 errorReported = true;
             }
-            if ( !entry.getValue().missingExportsWithVersion.isEmpty() ) {
-                ctx.reportArtifactError(entry.getKey().getArtifact().getId(), "Bundle is importing "
-                        + getPackageInfo(entry.getValue().missingExportsWithVersion, true) + " with start order "
-                        + String.valueOf(entry.getKey().getArtifact().getStartOrder())
-                        + " but no bundle is exporting these for that start order in the required version range.");
+            if (!entry.getValue().missingExportsWithVersion.isEmpty()) {
+                ctx.reportArtifactError(
+                        entry.getKey().getArtifact().getId(),
+                        "Bundle is importing "
+                                + getPackageInfo(entry.getValue().missingExportsWithVersion, true)
+                                + " with start order "
+                                + String.valueOf(entry.getKey().getArtifact().getStartOrder())
+                                + " but no bundle is exporting these for that start order in the required version range.");
                 errorReported = true;
             }
         }
@@ -134,7 +146,7 @@ public class CheckBundleExportsImports implements AnalyserTask {
     }
 
     private String getPackageInfo(final List<PackageInfo> pcks, final boolean includeVersion) {
-        if ( pcks.size() == 1 ) {
+        if (pcks.size() == 1) {
             final StringBuilder sb = new StringBuilder("package ");
             sb.append(pcks.get(0).getName());
             if (includeVersion) {
@@ -146,8 +158,8 @@ public class CheckBundleExportsImports implements AnalyserTask {
         final StringBuilder sb = new StringBuilder("packages ");
         boolean first = true;
         sb.append('[');
-        for(final PackageInfo info : pcks) {
-            if ( first ) {
+        for (final PackageInfo info : pcks) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(", ");
@@ -164,8 +176,8 @@ public class CheckBundleExportsImports implements AnalyserTask {
 
     private List<BundleDescriptor> getCandidates(final List<BundleDescriptor> exportingBundles, final PackageInfo pck) {
         final List<BundleDescriptor> candidates = new ArrayList<>();
-        for(final BundleDescriptor info : exportingBundles) {
-            if ( info.isExportingPackage(pck.getName()) ) {
+        for (final BundleDescriptor info : exportingBundles) {
+            if (info.isExportingPackage(pck.getName())) {
                 candidates.add(info);
             }
         }

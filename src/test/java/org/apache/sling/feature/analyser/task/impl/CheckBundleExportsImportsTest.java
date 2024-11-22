@@ -18,8 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -39,20 +37,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import static org.junit.Assert.assertEquals;
+
 public class CheckBundleExportsImportsTest {
     private static File resourceRoot;
 
     @BeforeClass
     public static void setupClass() {
-        resourceRoot =
-                new File(CheckBundleExportsImportsTest.class.
-                        getResource("/test-content.zip").getFile()).getParentFile();
+        resourceRoot = new File(CheckBundleExportsImportsTest.class
+                        .getResource("/test-content.zip")
+                        .getFile())
+                .getParentFile();
     }
 
     @Test
     public void testId() {
-        assertEquals("bundle-packages",
-                new CheckBundleExportsImports().getId());
+        assertEquals("bundle-packages", new CheckBundleExportsImports().getId());
     }
 
     @Test
@@ -148,9 +148,9 @@ public class CheckBundleExportsImportsTest {
         AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
         Mockito.when(ctx.getFeature()).thenReturn(f);
         Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
-        Mockito.when(ctx.getConfiguration()).thenReturn(
-                Collections.singletonMap("fileStorage",
-                        resourceRoot + "/origins/testImportFromOtherBundleInSameFeature"));
+        Mockito.when(ctx.getConfiguration())
+                .thenReturn(Collections.singletonMap(
+                        "fileStorage", resourceRoot + "/origins/testImportFromOtherBundleInSameFeature"));
         t.execute(ctx);
 
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
@@ -159,7 +159,8 @@ public class CheckBundleExportsImportsTest {
 
     private void fdAddBundle(FeatureDescriptor fd, String id, String file) throws IOException {
         BundleDescriptor bd1 = new BundleDescriptorImpl(
-                new Artifact(ArtifactId.fromMvnId(id)), new File(resourceRoot, file).toURI().toURL());
+                new Artifact(ArtifactId.fromMvnId(id)),
+                new File(resourceRoot, file).toURI().toURL());
         fd.getBundleDescriptors().add(bd1);
     }
 }

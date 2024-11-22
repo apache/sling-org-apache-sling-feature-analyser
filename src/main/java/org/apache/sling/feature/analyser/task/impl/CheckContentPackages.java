@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.analyser.task.impl;
 
@@ -52,7 +54,7 @@ public class CheckContentPackages implements AnalyserTask {
     static final String ENABLED_VALIDATORS = "enabled-validators";
     static final String MAX_REPORT_LEVEL = "max-report-level";
     private Logger log = LoggerFactory.getLogger(this.getClass());
-    
+
     @Override
     public String getName() {
         return "Content Package validation";
@@ -68,11 +70,16 @@ public class CheckContentPackages implements AnalyserTask {
         String enabledValidators = ctx.getConfiguration().get(ENABLED_VALIDATORS);
         Map<String, ValidatorSettings> validatorSettings = enableValidators(enabledValidators);
         String maxReportLevelSt = ctx.getConfiguration().get(MAX_REPORT_LEVEL);
-        ValidationMessageSeverity maxReportLevel = maxReportLevelSt == null ? ValidationMessageSeverity.WARN : ValidationMessageSeverity.valueOf(maxReportLevelSt); 
-        for (final ContentPackageDescriptor cp : ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
+        ValidationMessageSeverity maxReportLevel = maxReportLevelSt == null
+                ? ValidationMessageSeverity.WARN
+                : ValidationMessageSeverity.valueOf(maxReportLevelSt);
+        for (final ContentPackageDescriptor cp :
+                ctx.getFeatureDescriptor().getDescriptors(ContentPackageDescriptor.class)) {
             URL artifactFile = cp.getArtifactFile();
-            if (artifactFile ==  null) {
-                ctx.reportArtifactError(cp.getArtifact().getId(), "Content package " + cp.getName() + " is not resolved and can not be checked.");
+            if (artifactFile == null) {
+                ctx.reportArtifactError(
+                        cp.getArtifact().getId(),
+                        "Content package " + cp.getName() + " is not resolved and can not be checked.");
             } else {
                 validatePackage(ctx, cp, artifactFile, validatorSettings, maxReportLevel);
             }
@@ -80,7 +87,8 @@ public class CheckContentPackages implements AnalyserTask {
     }
 
     private Map<String, ValidatorSettings> enableValidators(String enabledValidators) {
-        ServiceLoader<ValidatorFactory> validatorFactories = ServiceLoader.load(ValidatorFactory.class, PackageValidator.class.getClassLoader());
+        ServiceLoader<ValidatorFactory> validatorFactories =
+                ServiceLoader.load(ValidatorFactory.class, PackageValidator.class.getClassLoader());
 
         Map<String, ValidatorSettings> validatorSettings = new HashMap<>();
         Set<String> enabledValidatorsSet = split(enabledValidators);
@@ -101,10 +109,13 @@ public class CheckContentPackages implements AnalyserTask {
         return enabled;
     }
 
-    private void validatePackage(final AnalyserTaskContext ctx, 
+    private void validatePackage(
+            final AnalyserTaskContext ctx,
             final ContentPackageDescriptor cp,
-            URL artifactFile, Map<String, ValidatorSettings> validatorSettings, 
-            ValidationMessageSeverity maxReportLevel) throws URISyntaxException, IOException {
+            URL artifactFile,
+            Map<String, ValidatorSettings> validatorSettings,
+            ValidationMessageSeverity maxReportLevel)
+            throws URISyntaxException, IOException {
         URI artifactURI = artifactFile.toURI();
         Path artifactPath = Paths.get(artifactURI);
         PackageValidator validator = new PackageValidator(artifactURI, validatorSettings);
@@ -112,8 +123,12 @@ public class CheckContentPackages implements AnalyserTask {
         reportViolations(ctx, cp, violations, artifactPath, maxReportLevel);
     }
 
-    private void reportViolations(AnalyserTaskContext ctx, ContentPackageDescriptor cp,
-            Collection<ValidationViolation> violations, Path artifactPath, ValidationMessageSeverity maxReportLevel) {
+    private void reportViolations(
+            AnalyserTaskContext ctx,
+            ContentPackageDescriptor cp,
+            Collection<ValidationViolation> violations,
+            Path artifactPath,
+            ValidationMessageSeverity maxReportLevel) {
         for (ValidationViolation violation : violations) {
             ValidationMessageSeverity severity = getMin(maxReportLevel, violation.getSeverity());
             reportViolation(ctx, cp, violation, artifactPath, severity);
@@ -124,25 +139,29 @@ public class CheckContentPackages implements AnalyserTask {
         return a.compareTo(b) < 0 ? a : b;
     }
 
-    private void reportViolation(AnalyserTaskContext ctx, ContentPackageDescriptor cp, ValidationViolation violation, 
-            Path artifactPath, ValidationMessageSeverity severity) {
+    private void reportViolation(
+            AnalyserTaskContext ctx,
+            ContentPackageDescriptor cp,
+            ValidationViolation violation,
+            Path artifactPath,
+            ValidationMessageSeverity severity) {
         String msg = getDetailMessage(violation, artifactPath);
         ArtifactId id = cp.getArtifact().getId();
         switch (severity) {
-        case ERROR:
-            log.error(msg);
-            ctx.reportArtifactError(id, msg);
-            break;
-        case WARN:
-            log.warn(msg);
-            ctx.reportArtifactWarning(id, msg);
-            break;
-        case INFO:
-            log.info(msg);
-            break;
-        default:
-            log.debug(msg);
-            break;
+            case ERROR:
+                log.error(msg);
+                ctx.reportArtifactError(id, msg);
+                break;
+            case WARN:
+                log.warn(msg);
+                ctx.reportArtifactWarning(id, msg);
+                break;
+            case INFO:
+                log.info(msg);
+                break;
+            default:
+                log.debug(msg);
+                break;
         }
     }
 
@@ -162,7 +181,7 @@ public class CheckContentPackages implements AnalyserTask {
         }
         return message.toString();
     }
-    
+
     private static String getMessage(ValidationViolation violation) {
         StringBuilder message = new StringBuilder();
         if (violation.getValidatorId() != null) {
@@ -171,5 +190,4 @@ public class CheckContentPackages implements AnalyserTask {
         message.append(violation.getMessage());
         return message.toString();
     }
-    
 }

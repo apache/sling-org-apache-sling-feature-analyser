@@ -28,11 +28,11 @@ import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.osgi.framework.Version;
 
-
 public class CheckBundleUnversionedPackages implements AnalyserTask {
 
     /** Ignore JDK packages */
-    private static final List<String> IGNORED_IMPORT_PREFIXES = Arrays.asList("java.", "javax.", "org.w3c.", "org.xml.");
+    private static final List<String> IGNORED_IMPORT_PREFIXES =
+            Arrays.asList("java.", "javax.", "org.w3c.", "org.xml.");
 
     @Override
     public String getName() {
@@ -45,55 +45,62 @@ public class CheckBundleUnversionedPackages implements AnalyserTask {
     }
 
     private boolean ignoreImportPackage(final String name) {
-        for(final String prefix : IGNORED_IMPORT_PREFIXES) {
-            if ( name.startsWith(prefix) ) {
+        for (final String prefix : IGNORED_IMPORT_PREFIXES) {
+            if (name.startsWith(prefix)) {
                 return true;
             }
         }
         return false;
     }
-    
+
     @Override
     public void execute(final AnalyserTaskContext ctx) throws Exception {
-        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
 
-                
             final List<PackageInfo> exportWithoutVersion = new ArrayList<>();
-            for(final PackageInfo i : info.getExportedPackages()) {
-                if ( i.getPackageVersion().compareTo(Version.emptyVersion) == 0 ) {
+            for (final PackageInfo i : info.getExportedPackages()) {
+                if (i.getPackageVersion().compareTo(Version.emptyVersion) == 0) {
                     exportWithoutVersion.add(i);
                 }
             }
             final List<PackageInfo> importWithoutVersion = new ArrayList<>();
-            for(final PackageInfo i : info.getImportedPackages()) {
-                if ( i.getVersion() == null && !ignoreImportPackage(i.getName()) ) {
+            for (final PackageInfo i : info.getImportedPackages()) {
+                if (i.getVersion() == null && !ignoreImportPackage(i.getName())) {
                     importWithoutVersion.add(i);
                 }
             }
 
-            final String key = "Bundle ".concat(info.getArtifact().getId().getArtifactId())
-                .concat(":").concat(info.getArtifact().getId().getVersion());
+            final String key = "Bundle "
+                    .concat(info.getArtifact().getId().getArtifactId())
+                    .concat(":")
+                    .concat(info.getArtifact().getId().getVersion());
 
-            if ( !importWithoutVersion.isEmpty() ) {
-                ctx.reportArtifactWarning(info.getArtifact().getId(),
-                        key.concat(" is importing ").concat(getPackageInfo(importWithoutVersion)).concat(" without specifying a version range."));
+            if (!importWithoutVersion.isEmpty()) {
+                ctx.reportArtifactWarning(
+                        info.getArtifact().getId(),
+                        key.concat(" is importing ")
+                                .concat(getPackageInfo(importWithoutVersion))
+                                .concat(" without specifying a version range."));
             }
-            if ( !exportWithoutVersion.isEmpty() ) {
-                ctx.reportArtifactWarning(info.getArtifact().getId(),
-                        key.concat(" is exporting ").concat(getPackageInfo(exportWithoutVersion)).concat(" without a version."));
+            if (!exportWithoutVersion.isEmpty()) {
+                ctx.reportArtifactWarning(
+                        info.getArtifact().getId(),
+                        key.concat(" is exporting ")
+                                .concat(getPackageInfo(exportWithoutVersion))
+                                .concat(" without a version."));
             }
         }
     }
 
     private String getPackageInfo(final List<PackageInfo> pcks) {
-        if ( pcks.size() == 1 ) {
+        if (pcks.size() == 1) {
             return "package ".concat(pcks.get(0).getName());
         }
         final StringBuilder sb = new StringBuilder("packages ");
         boolean first = true;
         sb.append('[');
-        for(final PackageInfo info : pcks) {
-            if ( first ) {
+        for (final PackageInfo info : pcks) {
+            if (first) {
                 first = false;
             } else {
                 sb.append(", ");

@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.scanner.impl;
 
@@ -50,8 +52,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Information about a bundle
  */
-public class BundleDescriptorImpl
-    extends BundleDescriptor {
+public class BundleDescriptorImpl extends BundleDescriptor {
 
     private static final Logger logger = LoggerFactory.getLogger(BundleDescriptorImpl.class);
 
@@ -70,7 +71,6 @@ public class BundleDescriptorImpl
     /** The physical file for analyzing. */
     private URL artifactFile;
 
-
     /** The corresponding artifact from the feature. */
     private final Artifact artifact;
 
@@ -88,7 +88,7 @@ public class BundleDescriptorImpl
             } else {
                 try (JarFile jarFile = IOUtils.getJarFileFromURL(file, true, null)) {
                     manifest = jarFile.getManifest();
-                } catch ( final IOException ioe) {
+                } catch (final IOException ioe) {
                     // rethrow with more info
                     throw new IOException(file + " : " + ioe.getMessage(), ioe);
                 }
@@ -106,8 +106,7 @@ public class BundleDescriptorImpl
      * @throws IOException If the manifest can't be get
      * @throws NullPointerException If artifact is {@code null}
      */
-    public BundleDescriptorImpl(final Artifact artifact,
-            final URL url) throws IOException  {
+    public BundleDescriptorImpl(final Artifact artifact, final URL url) throws IOException {
         this(artifact, url, null, getManifest(url));
     }
 
@@ -119,9 +118,8 @@ public class BundleDescriptorImpl
      * @throws IOException If the manifest can't be get
      * @throws NullPointerException If artifact is {@code null}
      */
-    public BundleDescriptorImpl(final Artifact artifact,
-                                final ArtifactProvider provider,
-                                final Manifest manifest) throws IOException {
+    public BundleDescriptorImpl(final Artifact artifact, final ArtifactProvider provider, final Manifest manifest)
+            throws IOException {
         this(artifact, null, provider, manifest);
     }
 
@@ -134,15 +132,14 @@ public class BundleDescriptorImpl
      * @throws IOException If the manifest can't be get
      * @throws NullPointerException If artifact is {@code null}
      */
-    public BundleDescriptorImpl(final Artifact artifact,
-                                final URL url,
-                                final ArtifactProvider provider,
-                                final Manifest manifest) throws IOException  {
+    public BundleDescriptorImpl(
+            final Artifact artifact, final URL url, final ArtifactProvider provider, final Manifest manifest)
+            throws IOException {
         super(artifact.getId().toMvnId());
         this.artifact = artifact;
         this.artifactFile = url;
         this.artifactProvider = provider;
-        if ( manifest == null ) {
+        if (manifest == null) {
             throw new IOException("File has no manifest");
         }
         this.manifest = new Manifest(manifest);
@@ -194,10 +191,11 @@ public class BundleDescriptorImpl
 
     private void analyze() throws IOException {
         final String name = this.manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-        if ( name != null ) {
+        if (name != null) {
             final String version = this.manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
-            if ( version == null ) {
-                throw new IOException("Unable to get bundle version from artifact " + getArtifact().getId().toMvnId());
+            if (version == null) {
+                throw new IOException("Unable to get bundle version from artifact "
+                        + getArtifact().getId().toMvnId());
             }
             this.symbolicName = name;
             this.bundleVersion = version;
@@ -210,39 +208,44 @@ public class BundleDescriptorImpl
             this.getImportedPackages().addAll(extractImportedPackages(this.manifest));
             this.getDynamicImportedPackages().addAll(extractDynamicImportedPackages(this.manifest));
             try {
-                ResourceImpl resource = ResourceBuilder.build(this.artifact.getId().toMvnUrl(), this.manifest.getMainAttributes().entrySet().stream()
-                    .collect(Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue().toString())));
+                ResourceImpl resource = ResourceBuilder.build(
+                        this.artifact.getId().toMvnUrl(),
+                        this.manifest.getMainAttributes().entrySet().stream()
+                                .collect(
+                                        Collectors.toMap(entry -> entry.getKey().toString(), entry -> entry.getValue()
+                                                .toString())));
                 this.getCapabilities().addAll(resource.getCapabilities(null));
-                this.getRequirements().addAll(resource.getRequirements(null).stream()
-                        .map(entry -> new MatchingRequirementImpl(entry)).collect(Collectors.toList()));
+                this.getRequirements()
+                        .addAll(resource.getRequirements(null).stream()
+                                .map(entry -> new MatchingRequirementImpl(entry))
+                                .collect(Collectors.toList()));
             } catch (Exception ex) {
                 throw new IOException(ex);
             }
         } else {
-            throw new IOException("Unable to get bundle symbolic name from artifact " + getArtifact().getId().toMvnId());
+            throw new IOException("Unable to get bundle symbolic name from artifact "
+                    + getArtifact().getId().toMvnId());
         }
     }
 
-    private static List<PackageInfo> extractPackages(final Manifest m,
-        final String headerName,
-        final String defaultVersion,
-        final boolean checkOptional) {
+    private static List<PackageInfo> extractPackages(
+            final Manifest m, final String headerName, final String defaultVersion, final boolean checkOptional) {
         final String pckInfo = m.getMainAttributes().getValue(headerName);
         if (pckInfo != null) {
             final Clause[] clauses = Parser.parseHeader(pckInfo);
 
             final List<PackageInfo> pcks = new ArrayList<>();
-            for(final Clause entry : clauses) {
+            for (final Clause entry : clauses) {
                 Object versionObj = entry.getAttribute("version");
                 final String version;
-                if ( versionObj == null ) {
+                if (versionObj == null) {
                     version = defaultVersion;
                 } else {
                     version = versionObj.toString();
                 }
 
                 boolean optional = false;
-                if ( checkOptional ) {
+                if (checkOptional) {
                     final String resolution = entry.getDirective("resolution");
                     optional = "optional".equalsIgnoreCase(resolution);
                 }
@@ -257,10 +260,7 @@ public class BundleDescriptorImpl
                     }
                 }
 
-                final PackageInfo pck = new PackageInfo(entry.getName(),
-                    version,
-                    optional,
-                    uses);
+                final PackageInfo pck = new PackageInfo(entry.getName(), version, optional, uses);
                 pcks.add(pck);
             }
 

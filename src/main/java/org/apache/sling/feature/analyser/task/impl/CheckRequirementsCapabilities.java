@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.analyser.task.impl;
 
@@ -50,7 +52,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     @Override
     public void execute(AnalyserTaskContext ctx) throws Exception {
         final SortedMap<Integer, List<Descriptor>> artifactsMap = new TreeMap<>();
-        for(final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             List<Descriptor> list = getDescriptorList(bi.getArtifact().getStartOrder(), artifactsMap);
             list.add(bi);
         }
@@ -58,8 +60,7 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
         if (!ctx.getFeatureDescriptor().getArtifactDescriptors().isEmpty()) {
             artifactsMap.put(
                     (artifactsMap.isEmpty() ? 0 : artifactsMap.lastKey()) + 1,
-                    new ArrayList<>(ctx.getFeatureDescriptor().getArtifactDescriptors())
-                    );
+                    new ArrayList<>(ctx.getFeatureDescriptor().getArtifactDescriptors()));
         }
 
         String featureMavenID = ctx.getFeature().getId().toMvnId();
@@ -77,12 +78,12 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
 
         // add system artifact
         final List<Descriptor> artifacts = new ArrayList<>();
-        if ( ctx.getFrameworkDescriptor() != null ) {
+        if (ctx.getFrameworkDescriptor() != null) {
             artifacts.add(ctx.getFrameworkDescriptor());
         }
 
         boolean errorReported = false;
-        for(final Map.Entry<Integer, List<Descriptor>> entry : artifactsMap.entrySet()) {
+        for (final Map.Entry<Integer, List<Descriptor>> entry : artifactsMap.entrySet()) {
             // first add all providing artifacts
             for (final Descriptor info : entry.getValue()) {
                 if (info.getCapabilities() != null) {
@@ -91,44 +92,65 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
             }
             // check requiring artifacts
             for (final Descriptor info : entry.getValue()) {
-                if (info.getRequirements() != null)
-                {
+                if (info.getRequirements() != null) {
                     for (Requirement requirement : info.getRequirements()) {
                         String ns = requirement.getNamespace();
 
                         // Package namespace is handled by the CheckBundleExportsImports analyzer.
                         // Service namespace is special - we don't provide errors or warnings in this case
-                        if (!BundleRevision.PACKAGE_NAMESPACE.equals(ns) && !ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
-                        {
+                        if (!BundleRevision.PACKAGE_NAMESPACE.equals(ns)
+                                && !ServiceNamespace.SERVICE_NAMESPACE.equals(ns)) {
                             List<Descriptor> candidates = getCandidates(artifacts, requirement);
 
-                            if (candidates.isEmpty())
-                            {
-                                if (!RequirementImpl.isOptional(requirement))
-                                {
-                                    String message = String.format(format, info.getName(), requirement.toString(), entry.getKey(), "no artifact is providing a matching capability in this start level.");
+                            if (candidates.isEmpty()) {
+                                if (!RequirementImpl.isOptional(requirement)) {
+                                    String message = String.format(
+                                            format,
+                                            info.getName(),
+                                            requirement.toString(),
+                                            entry.getKey(),
+                                            "no artifact is providing a matching capability in this start level.");
                                     if (info instanceof ArtifactDescriptor) {
-                                        ctx.reportArtifactError(((ArtifactDescriptor) info).getArtifact().getId(), message);
+                                        ctx.reportArtifactError(
+                                                ((ArtifactDescriptor) info)
+                                                        .getArtifact()
+                                                        .getId(),
+                                                message);
                                     } else {
                                         ctx.reportError(message);
                                     }
                                     errorReported = true;
-                                }
-                                else
-                                {
-                                    String message = String.format(format, info.getName(), requirement.toString(), entry.getKey(), "while the requirement is optional no artifact is providing a matching capability in this start level.");
+                                } else {
+                                    String message = String.format(
+                                            format,
+                                            info.getName(),
+                                            requirement.toString(),
+                                            entry.getKey(),
+                                            "while the requirement is optional no artifact is providing a matching capability in this start level.");
                                     if (info instanceof ArtifactDescriptor) {
-                                        ctx.reportArtifactWarning(((ArtifactDescriptor) info).getArtifact().getId(), message);
+                                        ctx.reportArtifactWarning(
+                                                ((ArtifactDescriptor) info)
+                                                        .getArtifact()
+                                                        .getId(),
+                                                message);
                                     } else {
                                         ctx.reportWarning(message);
                                     }
                                 }
-                            }
-                            else if (candidates.size() > 1)
-                            {
-                                String message = String.format(format, info.getName(), requirement.toString(), entry.getKey(), "there is more than one matching capability in this start level: " + candidates);
+                            } else if (candidates.size() > 1) {
+                                String message = String.format(
+                                        format,
+                                        info.getName(),
+                                        requirement.toString(),
+                                        entry.getKey(),
+                                        "there is more than one matching capability in this start level: "
+                                                + candidates);
                                 if (info instanceof ArtifactDescriptor) {
-                                    ctx.reportArtifactWarning(((ArtifactDescriptor) info).getArtifact().getId(), message);
+                                    ctx.reportArtifactWarning(
+                                            ((ArtifactDescriptor) info)
+                                                    .getArtifact()
+                                                    .getId(),
+                                            message);
                                 } else {
                                     ctx.reportWarning(message);
                                 }
@@ -139,13 +161,14 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
             }
         }
         if (errorReported && ctx.getFeature().isComplete()) {
-            ctx.reportError(ctx.getFeature().getId().toMvnId() + " is marked as 'complete' but has unsatisfied requirements.");
+            ctx.reportError(
+                    ctx.getFeature().getId().toMvnId() + " is marked as 'complete' but has unsatisfied requirements.");
         }
     }
 
     private List<Descriptor> getDescriptorList(int sl, SortedMap<Integer, List<Descriptor>> artifactsMap) {
         List<Descriptor> list = artifactsMap.get(sl);
-        if ( list == null ) {
+        if (list == null) {
             list = new ArrayList<>();
             artifactsMap.put(sl, list);
         }
@@ -155,9 +178,8 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
     private List<Descriptor> getCandidates(List<Descriptor> artifactDescriptors, Requirement requirement) {
         return artifactDescriptors.stream()
                 .filter(artifactDescriptor -> artifactDescriptor.getCapabilities() != null)
-                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream().anyMatch(
-                        capability -> CapabilitySet.matches(capability, requirement))
-                )
+                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream()
+                        .anyMatch(capability -> CapabilitySet.matches(capability, requirement)))
                 .collect(Collectors.toList());
     }
 

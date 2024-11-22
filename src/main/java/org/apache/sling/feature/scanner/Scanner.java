@@ -1,18 +1,20 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.scanner;
 
@@ -81,10 +83,11 @@ public class Scanner {
      * @param frameworkScanners A list of framework scanners
      * @throws IOException If something goes wrong
      */
-    public Scanner(final ArtifactProvider artifactProvider,
+    public Scanner(
+            final ArtifactProvider artifactProvider,
             final List<ExtensionScanner> extensionScanners,
             final List<FrameworkScanner> frameworkScanners)
-    throws IOException {
+            throws IOException {
         this.artifactProvider = artifactProvider;
         this.extensionScanners = extensionScanners == null ? getServices(ExtensionScanner.class) : extensionScanners;
         this.frameworkScanners = frameworkScanners == null ? getServices(FrameworkScanner.class) : frameworkScanners;
@@ -96,8 +99,7 @@ public class Scanner {
      * @param artifactProvider The artifact provider
      * @throws IOException If something goes wrong
      */
-    public Scanner(final ArtifactProvider artifactProvider)
-    throws IOException {
+    public Scanner(final ArtifactProvider artifactProvider) throws IOException {
         this(artifactProvider, null, null);
     }
 
@@ -110,7 +112,7 @@ public class Scanner {
     private static <T> List<T> getServices(final Class<T> clazz) {
         final ServiceLoader<T> loader = ServiceLoader.load(clazz);
         final List<T> list = new ArrayList<>();
-        for(final T task : loader) {
+        for (final T task : loader) {
             list.add(task);
         }
         return list;
@@ -129,9 +131,14 @@ public class Scanner {
     }
 
     private BundleDescriptor doScan(final Artifact bundle, final int startLevel) throws IOException {
-        final String key = bundle.getId().toMvnId().concat(":")
-            .concat(String.valueOf(startLevel)).concat(":")
-            .concat(Stream.of(bundle.getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.joining(",")));
+        final String key = bundle.getId()
+                .toMvnId()
+                .concat(":")
+                .concat(String.valueOf(startLevel))
+                .concat(":")
+                .concat(Stream.of(bundle.getFeatureOrigins())
+                        .map(ArtifactId::toMvnId)
+                        .collect(Collectors.joining(",")));
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {
             final URL file = artifactProvider.provide(bundle.getId());
@@ -152,8 +159,7 @@ public class Scanner {
      * @param desc    The container descriptor
      * @throws IOException If something goes wrong or no suitable scanner is found.
      */
-    private void getBundleInfos(final Bundles bundles, final ContainerDescriptor desc)
-    throws IOException {
+    private void getBundleInfos(final Bundles bundles, final ContainerDescriptor desc) throws IOException {
         for (final Artifact bundle : bundles) {
             final BundleDescriptor bundleDesc = scanBundle(bundle);
             desc.getBundleDescriptors().add(bundleDesc);
@@ -167,20 +173,19 @@ public class Scanner {
      * @param desc The container descriptor
      * @throws IOException If something goes wrong or no suitable scanner is found.
      */
-    private void scanExtensions(final Feature f, final ContainerDescriptor desc)
-    throws IOException {
+    private void scanExtensions(final Feature f, final ContainerDescriptor desc) throws IOException {
         for (final Extension ext : f.getExtensions()) {
             if (AnalyserMetaDataExtension.isAnalyserMetaDataExtension(ext)) {
                 continue;
             }
             ContainerDescriptor extDesc = null;
-            for(final ExtensionScanner scanner : this.extensionScanners) {
+            for (final ExtensionScanner scanner : this.extensionScanners) {
                 extDesc = scanner.scan(f, ext, this.artifactProvider);
-                if ( extDesc != null ) {
+                if (extDesc != null) {
                     break;
                 }
             }
-            if ( extDesc != null ) {
+            if (extDesc != null) {
                 desc.getRequirements().addAll(extDesc.getRequirements());
                 desc.getCapabilities().addAll(extDesc.getCapabilities());
                 desc.getExportedPackages().addAll(extDesc.getExportedPackages());
@@ -242,9 +247,13 @@ public class Scanner {
         if (extension != null) {
             for (Artifact bundle : feature.getBundles()) {
                 ArtifactId id = bundle.getId();
-                final String key = id.toMvnId().concat(":")
-                        .concat(String.valueOf(bundle.getStartOrder())).concat(":")
-                        .concat(Stream.of(bundle.getFeatureOrigins()).map(ArtifactId::toMvnId).collect(Collectors.joining(",")));
+                final String key = id.toMvnId()
+                        .concat(":")
+                        .concat(String.valueOf(bundle.getStartOrder()))
+                        .concat(":")
+                        .concat(Stream.of(bundle.getFeatureOrigins())
+                                .map(ArtifactId::toMvnId)
+                                .collect(Collectors.joining(",")));
                 if (this.cache.get(key) == null) {
                     Map<String, String> headers = extension.getManifest(id);
                     if (headers != null) {
@@ -255,18 +264,18 @@ public class Scanner {
                     }
                 }
             }
-            
+
             SystemBundle systemBundle = extension.getSystemBundle();
-            if ( systemBundle != null ) {
+            if (systemBundle != null) {
                 URL artifactUrl = artifactProvider.provide(systemBundle.getArtifactId());
                 if (artifactUrl == null) {
                     throw new IOException("Unable to find file for " + systemBundle.getArtifactId());
                 }
-                
+
                 BundleDescriptor desc = new SystemBundleDescriptor(systemBundle.getArtifactId(), artifactUrl);
-                
+
                 String capabilities = systemBundle.getManifest().get(Constants.PROVIDE_CAPABILITY);
-                if ( capabilities != null ) {
+                if (capabilities != null) {
                     try {
                         List<Capability> parsedCapabilities = ResourceBuilder.parseCapability(null, capabilities);
                         desc.getCapabilities().addAll(parsedCapabilities);
@@ -274,9 +283,9 @@ public class Scanner {
                         throw new IOException("Failed to parse capabilites for the system bundle", e);
                     }
                 }
-                
+
                 String exports = systemBundle.getManifest().get(Constants.EXPORT_PACKAGE);
-                if ( exports != null ) {
+                if (exports != null) {
                     Clause[] pcks = Parser.parseHeader(exports);
                     for (final Clause pck : pcks) {
                         String version = pck.getAttribute("version");
@@ -285,11 +294,10 @@ public class Scanner {
                     }
                 }
                 desc.lock();
-                
+
                 String key = systemBundle.getScannerCacheKey();
-                
+
                 this.cache.put(key, desc);
-                
             }
         }
     }
@@ -302,7 +310,7 @@ public class Scanner {
      * @return The framework descriptor
      * @throws IOException If something goes wrong or a scanner is missing
      */
-    public BundleDescriptor scan(final ArtifactId framework, final Map<String,String> props) throws IOException {
+    public BundleDescriptor scan(final ArtifactId framework, final Map<String, String> props) throws IOException {
         final String key = SystemBundleDescriptor.createCacheKey(framework, props);
         BundleDescriptor desc = (BundleDescriptor) this.cache.get(key);
         if (desc == null) {

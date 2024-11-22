@@ -45,7 +45,7 @@ public class CheckFeatureId implements AnalyserTask {
         Map<String, String> cfg = ctx.getConfiguration();
         String acceptedFeatureIds = cfg.get(CONFIG_KEY_ACCEPTED_FEATURE_IDS);
         if (acceptedFeatureIds == null) {
-            // this is a comma-separated list of accepted 
+            // this is a comma-separated list of accepted
             throw new IllegalArgumentException("Missing 'accepted-feature-ids' configuration for feature-id analyser.");
         }
         Collection<ArtifactId> acceptedArtifactIds = new ArrayList<>();
@@ -53,7 +53,11 @@ public class CheckFeatureId implements AnalyserTask {
             try {
                 acceptedArtifactIds.add(ArtifactId.fromMvnId(acceptedFeatureId));
             } catch (IllegalArgumentException e) {
-                throw new IllegalArgumentException("Invalid 'accepted-feature-ids' configuration for feature-id analyser, element '" + acceptedFeatureId + "' is not a valid maven coordinate string in format 'groupId:artifactId[:packaging[:classifier]]:version'", e);
+                throw new IllegalArgumentException(
+                        "Invalid 'accepted-feature-ids' configuration for feature-id analyser, element '"
+                                + acceptedFeatureId
+                                + "' is not a valid maven coordinate string in format 'groupId:artifactId[:packaging[:classifier]]:version'",
+                        e);
             }
         }
         if (!matchesAnyOf(ctx.getFeature().getId(), acceptedArtifactIds)) {
@@ -71,24 +75,29 @@ public class CheckFeatureId implements AnalyserTask {
     }
 
     static boolean matches(ArtifactId artifactId, ArtifactId expectedArtifactId) {
-        if (!expectedArtifactId.getGroupId().equals(artifactId.getGroupId()) && !expectedArtifactId.getGroupId().equals("*")) {
+        if (!expectedArtifactId.getGroupId().equals(artifactId.getGroupId())
+                && !expectedArtifactId.getGroupId().equals("*")) {
             return false;
         }
-        if (!expectedArtifactId.getArtifactId().equals(artifactId.getArtifactId()) && !expectedArtifactId.getArtifactId().equals("*")) {
+        if (!expectedArtifactId.getArtifactId().equals(artifactId.getArtifactId())
+                && !expectedArtifactId.getArtifactId().equals("*")) {
             return false;
         }
-        if (!expectedArtifactId.getVersion().equals(artifactId.getVersion()) && !expectedArtifactId.getVersion().equals("*")) {
+        if (!expectedArtifactId.getVersion().equals(artifactId.getVersion())
+                && !expectedArtifactId.getVersion().equals("*")) {
             return false;
         }
-        if (!expectedArtifactId.getType().equals(artifactId.getType()) && !expectedArtifactId.getType().equals("*")) {
+        if (!expectedArtifactId.getType().equals(artifactId.getType())
+                && !expectedArtifactId.getType().equals("*")) {
             return false;
         }
         // classifier is optional
-        if ( (expectedArtifactId.getClassifier() == null && artifactId.getClassifier() != null) || 
-             (expectedArtifactId.getClassifier() != null && !expectedArtifactId.getClassifier().equals(artifactId.getClassifier()) && !expectedArtifactId.getClassifier().equals("*"))) {
+        if ((expectedArtifactId.getClassifier() == null && artifactId.getClassifier() != null)
+                || (expectedArtifactId.getClassifier() != null
+                        && !expectedArtifactId.getClassifier().equals(artifactId.getClassifier())
+                        && !expectedArtifactId.getClassifier().equals("*"))) {
             return false;
         }
         return true;
     }
-
 }

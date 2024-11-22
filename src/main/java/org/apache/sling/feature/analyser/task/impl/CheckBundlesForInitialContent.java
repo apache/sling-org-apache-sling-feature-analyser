@@ -52,10 +52,10 @@ public class CheckBundlesForInitialContent implements AnalyserTask {
     @Override
     public void execute(final AnalyserTaskContext ctx) {
         // check for initial content
-        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
             final List<String> initialContent = extractInitialContent(info.getManifest());
 
-            if ( !initialContent.isEmpty() ) {
+            if (!initialContent.isEmpty()) {
                 ctx.reportArtifactWarning(info.getArtifact().getId(), "Found initial content : " + initialContent);
             }
         }
@@ -63,11 +63,11 @@ public class CheckBundlesForInitialContent implements AnalyserTask {
 
     private List<String> extractInitialContent(final Manifest m) {
         final List<String> initialContent = new ArrayList<>();
-        if ( m != null ) {
-            final String root =  m.getMainAttributes().getValue(CONTENT_HEADER);
+        if (m != null) {
+            final String root = m.getMainAttributes().getValue(CONTENT_HEADER);
             if (root != null) {
                 Clause[] clauses = Parser.parseHeader(root);
-                for (final Clause entry :clauses) {
+                for (final Clause entry : clauses) {
 
                     String path = entry.getDirective(PATH_DIRECTIVE);
                     if (path == null) {

@@ -37,11 +37,12 @@ public class CheckConfigurations implements AnalyserTask {
 
     @Override
     public void execute(AnalyserTaskContext ctx) throws Exception {
-        for(final Configuration cfg : ctx.getFeature().getConfigurations()) {
+        for (final Configuration cfg : ctx.getFeature().getConfigurations()) {
             // check that service ranking is of type integer
             final Object val = cfg.getProperties().get(Constants.SERVICE_RANKING);
-            if ( val != null && !(val instanceof Integer) ) {
-                ctx.reportConfigurationError(cfg, "Service.ranking is not of type Integer. Use 'service.ranking:Integer' as the key.");
+            if (val != null && !(val instanceof Integer)) {
+                ctx.reportConfigurationError(
+                        cfg, "Service.ranking is not of type Integer. Use 'service.ranking:Integer' as the key.");
             }
         }
     }

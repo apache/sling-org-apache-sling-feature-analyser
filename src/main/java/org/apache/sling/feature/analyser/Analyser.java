@@ -1,24 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.analyser;
-
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
-import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +41,10 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.Scanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasks;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByClassName;
+import static org.apache.sling.feature.analyser.task.AnalyzerTaskProvider.getTasksByIds;
 
 public class Analyser {
     /**
@@ -79,8 +81,9 @@ public class Analyser {
      * @param tasks          The tasks
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
-            final AnalyserTask... tasks) throws IOException {
+    public Analyser(
+            final Scanner scanner, final Map<String, Map<String, String>> configurations, final AnalyserTask... tasks)
+            throws IOException {
         this.tasks = tasks;
         this.configurations = configurations;
         this.scanner = scanner;
@@ -106,8 +109,11 @@ public class Analyser {
      * @param taskClassNames The task class names
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
-            final String... taskClassNames) throws IOException {
+    public Analyser(
+            final Scanner scanner,
+            final Map<String, Map<String, String>> configurations,
+            final String... taskClassNames)
+            throws IOException {
         this(scanner, configurations, getTasksByClassName(taskClassNames));
         if (this.tasks.length != taskClassNames.length) {
             throw new IOException("Couldn't find all tasks " + Arrays.toString(taskClassNames));
@@ -137,8 +143,12 @@ public class Analyser {
      * @param excludes       The excludes for the task ids - can be {@code null}
      * @throws IOException If setting up the analyser fails
      */
-    public Analyser(final Scanner scanner, final Map<String, Map<String, String>> configurations,
-            final Set<String> includes, final Set<String> excludes) throws IOException {
+    public Analyser(
+            final Scanner scanner,
+            final Map<String, Map<String, String>> configurations,
+            final Set<String> includes,
+            final Set<String> excludes)
+            throws IOException {
         this(scanner, configurations, getTasksByIds(includes, excludes));
     }
 
@@ -202,8 +212,8 @@ public class Analyser {
         BundleDescriptor bd = null;
         ArtifactId framework = fwk;
         if (framework == null) {
-            final ExecutionEnvironmentExtension ext = ExecutionEnvironmentExtension
-                    .getExecutionEnvironmentExtension(feature);
+            final ExecutionEnvironmentExtension ext =
+                    ExecutionEnvironmentExtension.getExecutionEnvironmentExtension(feature);
             if (ext != null && ext.getFramework() != null) {
                 framework = ext.getFramework().getId();
             }
@@ -226,7 +236,8 @@ public class Analyser {
         final List<AnalyserResult.ExtensionReport> extensionErrors = new ArrayList<>();
         final List<AnalyserResult.ConfigurationReport> configurationErrors = new ArrayList<>();
 
-        AnalyserMetaDataExtension analyserMetaDataExtension = AnalyserMetaDataExtension.getAnalyserMetaDataExtension(feature);
+        AnalyserMetaDataExtension analyserMetaDataExtension =
+                AnalyserMetaDataExtension.getAnalyserMetaDataExtension(feature);
 
         // execute analyser tasks
         for (final AnalyserTask task : tasks) {
@@ -239,13 +250,16 @@ public class Analyser {
             final boolean strict = Boolean.valueOf(taskConfiguration.getOrDefault("strict", "false"));
 
             task.execute(new AnalyserTaskContext() {
-                private final FeatureProvider cachingFeatureProvider = featureProvider != null ? new FeatureProvider() {
-                    private final ConcurrentHashMap<ArtifactId, Feature> cache = new ConcurrentHashMap<>();
-                    @Override
-                    public Feature provide(ArtifactId artifactId) {
-                        return cache.computeIfAbsent(artifactId, key -> featureProvider.provide(artifactId));
-                    }
-                }: null;
+                private final FeatureProvider cachingFeatureProvider = featureProvider != null
+                        ? new FeatureProvider() {
+                            private final ConcurrentHashMap<ArtifactId, Feature> cache = new ConcurrentHashMap<>();
+
+                            @Override
+                            public Feature provide(ArtifactId artifactId) {
+                                return cache.computeIfAbsent(artifactId, key -> featureProvider.provide(artifactId));
+                            }
+                        }
+                        : null;
 
                 @Override
                 public Feature getFeature() {
@@ -287,14 +301,18 @@ public class Analyser {
                     if (strict) {
                         reportArtifactError(artifactId, message);
                     }
-                    if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportWarning(artifactId) && analyserMetaDataExtension.reportWarning(feature.getId()))) {
+                    if (analyserMetaDataExtension == null
+                            || (analyserMetaDataExtension.reportWarning(artifactId)
+                                    && analyserMetaDataExtension.reportWarning(feature.getId()))) {
                         artifactWarnings.add(new AnalyserResult.ArtifactReport(artifactId, message, task.getId()));
                     }
                 }
 
                 @Override
                 public void reportArtifactError(ArtifactId artifactId, String message) {
-                    if (analyserMetaDataExtension == null || (analyserMetaDataExtension.reportError(artifactId) && analyserMetaDataExtension.reportError(feature.getId()))) {
+                    if (analyserMetaDataExtension == null
+                            || (analyserMetaDataExtension.reportError(artifactId)
+                                    && analyserMetaDataExtension.reportError(feature.getId()))) {
                         artifactErrors.add(new AnalyserResult.ArtifactReport(artifactId, message, task.getId()));
                     }
                 }
@@ -341,14 +359,26 @@ public class Analyser {
                 }
             });
             if (this.outputTaskDetails) {
-                logger.info("- Executed {} [{}] in {}ms", task.getName(), task.getId(), System.currentTimeMillis() - startTask);
+                logger.info(
+                        "- Executed {} [{}] in {}ms",
+                        task.getName(),
+                        task.getId(),
+                        System.currentTimeMillis() - startTask);
             }
         }
 
-        final int allWarnings = globalWarnings.size() + artifactWarnings.size() + extensionWarnings.size() + configurationWarnings.size();
-        final int allErrors = globalErrors.size() + artifactErrors.size() + extensionErrors.size()  + configurationErrors.size();
-        logger.info("Finished analyzing feature '{}' in {}ms : {} warnings, {} errors.",
-            feature.getId(), System.currentTimeMillis() - start, allWarnings, allErrors);
+        final int allWarnings = globalWarnings.size()
+                + artifactWarnings.size()
+                + extensionWarnings.size()
+                + configurationWarnings.size();
+        final int allErrors =
+                globalErrors.size() + artifactErrors.size() + extensionErrors.size() + configurationErrors.size();
+        logger.info(
+                "Finished analyzing feature '{}' in {}ms : {} warnings, {} errors.",
+                feature.getId(),
+                System.currentTimeMillis() - start,
+                allWarnings,
+                allErrors);
 
         return new AnalyserResult() {
             @Override
@@ -403,17 +433,14 @@ public class Analyser {
         };
     }
 
-    Map<String,String> getConfiguration(final String id) {
-        final Map<String,String> result = new HashMap<>();
+    Map<String, String> getConfiguration(final String id) {
+        final Map<String, String> result = new HashMap<>();
 
         Map<String, String> globalCfg = this.configurations.get(ALL_TASKS_KEY);
-        if (globalCfg != null)
-            result.putAll(globalCfg);
-
+        if (globalCfg != null) result.putAll(globalCfg);
 
         Map<String, String> specificCfg = this.configurations.get(id);
-        if (specificCfg != null)
-            result.putAll(specificCfg);
+        if (specificCfg != null) result.putAll(specificCfg);
 
         return result;
     }

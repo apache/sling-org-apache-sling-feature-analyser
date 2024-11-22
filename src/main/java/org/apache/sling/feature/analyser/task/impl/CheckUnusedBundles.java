@@ -43,30 +43,31 @@ public class CheckUnusedBundles implements AnalyserTask {
     @Override
     public void execute(final AnalyserTaskContext ctx) throws IOException {
         // iterate over all bundles
-        for(final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+        for (final BundleDescriptor info : ctx.getFeatureDescriptor().getBundleDescriptors()) {
 
-            if ( !info.getExportedPackages().isEmpty() ) {
+            if (!info.getExportedPackages().isEmpty()) {
 
                 final Set<PackageInfo> exports = new HashSet<>(info.getExportedPackages());
-                
+
                 final Set<String> optionalImports = new HashSet<>();
 
                 // find importing bundle
-                for(final BundleDescriptor inner : ctx.getFeatureDescriptor().getBundleDescriptors()) {
-                    if ( inner == info ) {
+                for (final BundleDescriptor inner : ctx.getFeatureDescriptor().getBundleDescriptors()) {
+                    if (inner == info) {
                         continue;
                     }
 
                     final Iterator<PackageInfo> iter = exports.iterator();
-                    while ( iter.hasNext() ) {
+                    while (iter.hasNext()) {
                         final PackageInfo expPck = iter.next();
 
                         boolean found = false;
-                        for(final PackageInfo impPck : inner.getImportedPackages()) {
-                            
-                            if ( expPck.getName().equals(impPck.getName())) {
-                                if ( impPck.getVersion() == null || impPck.getPackageVersionRange().includes(expPck.getPackageVersion()) ) {
-                                    if ( impPck.isOptional() ) {
+                        for (final PackageInfo impPck : inner.getImportedPackages()) {
+
+                            if (expPck.getName().equals(impPck.getName())) {
+                                if (impPck.getVersion() == null
+                                        || impPck.getPackageVersionRange().includes(expPck.getPackageVersion())) {
+                                    if (impPck.isOptional()) {
                                         optionalImports.add(impPck.getName());
                                     } else {
                                         found = true;
@@ -76,25 +77,27 @@ public class CheckUnusedBundles implements AnalyserTask {
                             }
                         }
 
-                        if ( found ) {
+                        if (found) {
                             iter.remove();
                         }
-     
                     }
 
-                    if ( exports.isEmpty() ) {
+                    if (exports.isEmpty()) {
                         break;
                     }
                 }
 
-                if ( exports.size() == info.getExportedPackages().size() ) {
-                    if ( !optionalImports.isEmpty() ) {
-                        ctx.reportArtifactWarning(info.getArtifact().getId(), "Exports from bundle are only imported optionally by other bundles.");
+                if (exports.size() == info.getExportedPackages().size()) {
+                    if (!optionalImports.isEmpty()) {
+                        ctx.reportArtifactWarning(
+                                info.getArtifact().getId(),
+                                "Exports from bundle are only imported optionally by other bundles.");
                     } else {
-                        ctx.reportArtifactWarning(info.getArtifact().getId(), "Exports from bundle are not imported by any other bundle.");
+                        ctx.reportArtifactWarning(
+                                info.getArtifact().getId(),
+                                "Exports from bundle are not imported by any other bundle.");
                     }
                 }
-
             }
         }
     }

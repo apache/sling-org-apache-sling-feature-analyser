@@ -1,26 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.feature.scanner.impl;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +33,13 @@ import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.Configuration;
 import org.junit.Test;
 
-public class ContentPackageScannerTest {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
+public class ContentPackageScannerTest {
 
     @Test
     public void testScan() throws URISyntaxException, IOException {
@@ -48,18 +49,23 @@ public class ContentPackageScannerTest {
         final ArtifactId TEST_PACKAGE_AID_A_10 = ArtifactId.fromMvnId(COORDINATES_TEST_PACKAGE_A_10);
 
         ContentPackageScanner scanner = new ContentPackageScanner();
-        Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+        Set<ContentPackageDescriptorImpl> descriptors =
+                scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
         assertEquals(2, descriptors.size());
-        for(ContentPackageDescriptorImpl desc : descriptors) {
+        for (ContentPackageDescriptorImpl desc : descriptors) {
             if (desc.getName().equals("test-content")) {
-                assetDescriptor(desc, "test-content", TEST_PACKAGE_AID_A_10, file.toURI().toURL());
+                assetDescriptor(
+                        desc,
+                        "test-content",
+                        TEST_PACKAGE_AID_A_10,
+                        file.toURI().toURL());
             } else {
                 assertEquals(desc.getName(), "sub-content");
             }
             assertNotNull(desc.getManifest());
         }
     }
-    
+
     @Test
     public void testMultipleMavenPropertyDirectoryPicking() throws URISyntaxException, IOException {
         // this test case is to cover where we have multiple pom.properties files present in our package.
@@ -69,13 +75,15 @@ public class ContentPackageScannerTest {
         final ArtifactId TEST_PACKAGE_AID_A_10 = ArtifactId.fromMvnId(COORDINATES_TEST_PACKAGE_A_10);
 
         ContentPackageScanner scanner = new ContentPackageScanner();
-        Set<ContentPackageDescriptorImpl> descriptors = scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
-        
-        for(ContentPackageDescriptorImpl descriptor: descriptors){
-            if(descriptor.getName().equals("test-content-felix-bundle-multi-maven-properties")){
-                assertEquals("org.apache.felix:org.apache.felix.framework:6.0.1", descriptor.getBundles().get(0).getName());
+        Set<ContentPackageDescriptorImpl> descriptors =
+                scanner.scan(new Artifact(TEST_PACKAGE_AID_A_10), file.toURI().toURL());
+
+        for (ContentPackageDescriptorImpl descriptor : descriptors) {
+            if (descriptor.getName().equals("test-content-felix-bundle-multi-maven-properties")) {
+                assertEquals(
+                        "org.apache.felix:org.apache.felix.framework:6.0.1",
+                        descriptor.getBundles().get(0).getName());
             }
-       
         }
     }
 
@@ -93,7 +101,11 @@ public class ContentPackageScannerTest {
         acs.put("artifactId", "acs-aem-commons-bundle");
         acs.put("version", "5.3.7");
         candidates.add(acs);
-        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4.jar", ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        final ArtifactId id = scanner.extractArtifactId(
+                candidates,
+                "acs-aem-commons-bundle-5.3.4.jar",
+                ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip")); // xample we are extracting
+        // com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
         assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:5.3.7"), id);
     }
 
@@ -106,7 +118,11 @@ public class ContentPackageScannerTest {
         acs.put("artifactId", "acs-aem-commons-bundle");
         acs.put("version", "5.3.4");
         candidates.add(acs);
-        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4-test.jar", ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        final ArtifactId id = scanner.extractArtifactId(
+                candidates,
+                "acs-aem-commons-bundle-5.3.4-test.jar",
+                ArtifactId.parse("com.adobe.acs:acs-aem-commons-content:zip:5.4.3.zip")); // xample we are extracting
+        // com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
         assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:jar:test:5.3.4"), id);
     }
 
@@ -124,7 +140,11 @@ public class ContentPackageScannerTest {
         acs.put("artifactId", "acs-aem-commons-bundle");
         acs.put("version", "5.3.4");
         candidates.add(acs);
-        final ArtifactId id = scanner.extractArtifactId(candidates, "acs-aem-commons-bundle-5.3.4.jar", ArtifactId.parse("something:acs-aem-commons-content:zip:5.4.3.zip"));        // xample we are extracting com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
+        final ArtifactId id = scanner.extractArtifactId(
+                candidates,
+                "acs-aem-commons-bundle-5.3.4.jar",
+                ArtifactId.parse("something:acs-aem-commons-content:zip:5.4.3.zip")); // xample we are extracting
+        // com.acs.aem.acs-aem-commons-content-5.4.3.zip > acs-aem-commons-bundle-5.3.4.jar
         assertEquals(ArtifactId.parse("com.adobe.acs:acs-aem-commons-bundle:5.3.4"), id);
     }
 
@@ -132,15 +152,21 @@ public class ContentPackageScannerTest {
         return new File(getClass().getResource(path).toURI());
     }
 
-    private void assetDescriptor(ContentPackageDescriptorImpl desc, String descName, final ArtifactId descArtifactId, final URL descUrl) {
+    private void assetDescriptor(
+            ContentPackageDescriptorImpl desc, String descName, final ArtifactId descArtifactId, final URL descUrl) {
         assertEquals(descName, desc.getName());
         assertEquals(descArtifactId, desc.getArtifact().getId());
         assertEquals(descUrl, desc.getArtifactFile());
 
         assertEquals(1, desc.getBundles().size());
 
-        assertEquals(desc.getBundles().get(0).getArtifact().getId(), ArtifactId.parse("org.apache.felix:org.apache.felix.framework:6.0.1"));
-        assertEquals("artifact start order",20, desc.getBundles().get(0).getArtifact().getStartOrder());
+        assertEquals(
+                desc.getBundles().get(0).getArtifact().getId(),
+                ArtifactId.parse("org.apache.felix:org.apache.felix.framework:6.0.1"));
+        assertEquals(
+                "artifact start order",
+                20,
+                desc.getBundles().get(0).getArtifact().getStartOrder());
 
         assertEquals(1, desc.getConfigurations().size());
         assertConfiguration(desc.getConfigurations().get(0));
@@ -167,15 +193,27 @@ public class ContentPackageScannerTest {
         final ContentPackageScanner scanner = new ContentPackageScanner();
 
         // content packages need to be below /libs, /apps or /etc/packages/
-        assertEquals(ContentPackageScanner.FileType.PACKAGE, scanner.detectContentFileType("/etc/packages/a/b/my-package.zip"));
-        assertEquals(ContentPackageScanner.FileType.PACKAGE, scanner.detectContentFileType("/libs/app/install/component.zip"));
+        assertEquals(
+                ContentPackageScanner.FileType.PACKAGE,
+                scanner.detectContentFileType("/etc/packages/a/b/my-package.zip"));
+        assertEquals(
+                ContentPackageScanner.FileType.PACKAGE,
+                scanner.detectContentFileType("/libs/app/install/component.zip"));
         assertNull(scanner.detectContentFileType("/content/app/install/component.zip"));
 
         // configs need to be below /libs, /apps in install or config folders
-        assertEquals(ContentPackageScanner.FileType.CONFIG, scanner.detectContentFileType("/libs/app/install/component.cfg"));
-        assertEquals(ContentPackageScanner.FileType.CONFIG, scanner.detectContentFileType("/libs/app/install/component.config"));
-        assertEquals(ContentPackageScanner.FileType.CONFIG, scanner.detectContentFileType("/libs/app/install/component.xml"));
-        assertEquals(ContentPackageScanner.FileType.CONFIG, scanner.detectContentFileType("/libs/app/install/component.cfg.json"));
+        assertEquals(
+                ContentPackageScanner.FileType.CONFIG,
+                scanner.detectContentFileType("/libs/app/install/component.cfg"));
+        assertEquals(
+                ContentPackageScanner.FileType.CONFIG,
+                scanner.detectContentFileType("/libs/app/install/component.config"));
+        assertEquals(
+                ContentPackageScanner.FileType.CONFIG,
+                scanner.detectContentFileType("/libs/app/install/component.xml"));
+        assertEquals(
+                ContentPackageScanner.FileType.CONFIG,
+                scanner.detectContentFileType("/libs/app/install/component.cfg.json"));
         assertNull(scanner.detectContentFileType("/libs/app/install/component.txt"));
         assertNull(scanner.detectContentFileType("/content/app/install/component.cfg"));
         assertNull(scanner.detectContentFileType("/content/app/install/component.config"));
@@ -183,7 +221,9 @@ public class ContentPackageScannerTest {
         assertNull(scanner.detectContentFileType("/content/app/install/component.cfg.json"));
 
         // bundles need to be below /libs, /apps in install orfolders
-        assertEquals(ContentPackageScanner.FileType.BUNDLE, scanner.detectContentFileType("/libs/app/install/component.jar"));
+        assertEquals(
+                ContentPackageScanner.FileType.BUNDLE,
+                scanner.detectContentFileType("/libs/app/install/component.jar"));
         assertNull(scanner.detectContentFileType("/content/app/install/component.jar"));
     }
 
