@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.sling.feature.MatchingRequirement;
+import org.apache.sling.feature.scanner.impl.PackageInfos;
 import org.osgi.resource.Capability;
 
 /**
@@ -39,7 +40,7 @@ public abstract class Descriptor {
 
     private boolean locked;
 
-    private final Set<PackageInfo> exports = new HashSet<>();
+    private final PackageInfos exports = new PackageInfos();
 
     private final Set<PackageInfo> imports = new HashSet<>();
 
@@ -95,7 +96,11 @@ public abstract class Descriptor {
         caps.addAll(d.getCapabilities());
         dynImports.addAll(d.getDynamicImportedPackages());
         imports.addAll(d.getImportedPackages());
-        exports.addAll(d.getExportedPackages());
+        d.getExportedPackages().forEach(exports::add);
+    }
+
+    final PackageInfos getExports() {
+        return this.exports;
     }
 
     /**
@@ -103,7 +108,8 @@ public abstract class Descriptor {
      * @return The exported packages. Might be empty.
      */
     public final Set<PackageInfo> getExportedPackages() {
-        return locked ? Collections.unmodifiableSet(exports) : exports;
+        Set<PackageInfo> exportedPackageInfos = getExports().getPackageInfos();
+        return locked ? Collections.unmodifiableSet(exportedPackageInfos) : exportedPackageInfos;
     }
 
     /**
