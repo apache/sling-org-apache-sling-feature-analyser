@@ -25,7 +25,6 @@ import java.util.Set;
 import org.apache.sling.feature.MatchingRequirement;
 import org.apache.sling.feature.scanner.impl.NamespacedSets;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.osgi.resource.Capability;
 
 /**
