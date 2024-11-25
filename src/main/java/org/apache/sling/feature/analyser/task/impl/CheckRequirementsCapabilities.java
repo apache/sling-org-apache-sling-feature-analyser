@@ -19,8 +19,10 @@
 package org.apache.sling.feature.analyser.task.impl;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
@@ -177,9 +179,10 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
 
     private List<Descriptor> getCandidates(List<Descriptor> artifactDescriptors, Requirement requirement) {
         return artifactDescriptors.stream()
-                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities() != null)
-                .filter(artifactDescriptor -> artifactDescriptor.getCapabilities().stream()
-                        .anyMatch(capability -> CapabilitySet.matches(capability, requirement)))
+                .filter(ad -> Optional.ofNullable(ad.getCapabilities(requirement.getNamespace()))
+                        .map(Collection::stream)
+                        .map(capabilities -> capabilities.anyMatch(c -> CapabilitySet.matches(c, requirement)))
+                        .orElse(false))
                 .collect(Collectors.toList());
     }
 
