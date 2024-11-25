@@ -55,7 +55,7 @@ class NamespacedSetsTest {
     void addAndremove() {
         NamespacedSets<PackageInfo> infos = new NamespacedSets<>(PackageInfo.class, PackageInfo::getName);
 
-        assertThat(infos.asSet()).hasSize(0);
+        assertThat(infos.asSet()).isEmpty();
 
         assertThat(infos.add(exportPackage("a.b.c", "1.0.0"))).isTrue();
         assertThat(infos.add(exportPackage("a.b.c", "1.0.0")))
@@ -83,7 +83,7 @@ class NamespacedSetsTest {
                 .isFalse();
         assertThat(infos.remove(exportPackage("a.b.c", "1.2.0"))).isTrue();
 
-        assertThat(infos.asSet()).hasSize(0);
+        assertThat(infos.asSet()).isEmpty();
     }
 
     @Test
@@ -108,10 +108,7 @@ class NamespacedSetsTest {
     @Test
     void setView() {
         Set<PackageInfo> setView = packageInfos.asSet();
-        assertThat(setView).hasSize(3);
-        assertThat(setView).containsExactlyInAnyOrderElementsOf(exportPackageList);
-        assertThat(setView.contains(exportPackage("a.b.c", "1.0.0"))).isTrue();
-        assertThat(setView.contains(exportPackage("a.b.c", "2.0.0"))).isFalse();
+        assertThat(setView).hasSize(3).containsExactlyInAnyOrderElementsOf(exportPackageList);
         assertThat(setView.contains(new Object())).isFalse();
     }
 
@@ -124,8 +121,7 @@ class NamespacedSetsTest {
             assertThat(setView.add(packageInfo)).isTrue();
             assertThat(setView.add(packageInfo)).isFalse();
         }
-        assertThat(setView).containsExactlyInAnyOrderElementsOf(exportPackageList);
-        assertThat(setView).hasSize(exportPackageList.size());
+        assertThat(setView).hasSize(exportPackageList.size()).containsExactlyInAnyOrderElementsOf(exportPackageList);
 
         assertThat(setView.remove(new Object())).isFalse();
 
@@ -134,7 +130,7 @@ class NamespacedSetsTest {
             assertThat(setView.remove(packageInfo)).isFalse();
         }
 
-        assertThat(setView).hasSize(0);
+        assertThat(setView).isEmpty();
     }
 
     @Test

@@ -46,7 +46,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class NamespacedSets<T> {
 
-    private final Map<String, Set<T>> namespacedSets = new HashMap<>();
+    private final Map<String, Set<T>> sets = new HashMap<>();
 
     private final AtomicInteger size = new AtomicInteger(0);
 
@@ -61,7 +61,7 @@ public class NamespacedSets<T> {
 
     public boolean add(T t) {
         int before = size.get();
-        namespacedSets.compute(getNamespace.apply(t), (namespace, set) -> {
+        sets.compute(getNamespace.apply(t), (namespace, set) -> {
             if (set == null) {
                 size.incrementAndGet();
                 return Collections.singleton(t);
@@ -79,7 +79,7 @@ public class NamespacedSets<T> {
 
     public boolean remove(T t) {
         int before = size.get();
-        namespacedSets.computeIfPresent(getNamespace.apply(t), (namespace, set) -> {
+        sets.computeIfPresent(getNamespace.apply(t), (namespace, set) -> {
             if (set.size() <= 1) {
                 if (set.contains(t)) {
                     size.decrementAndGet();
@@ -107,7 +107,7 @@ public class NamespacedSets<T> {
      * @return The sub-set for the specified namespace, or {@code null} if the namespace does not exist.
      */
     public @Nullable Set<T> getNamespacedSet(String namespace) {
-        return namespacedSets.get(namespace);
+        return sets.get(namespace);
     }
 
     private class SetView extends AbstractSet<T> {
@@ -148,10 +148,9 @@ public class NamespacedSets<T> {
         public @NotNull Iterator<T> iterator() {
             return new Iterator<T>() {
 
-                private final List<Set<T>> listOfSets = NamespacedSets.this.namespacedSets.values().stream()
+                private final List<Set<T>> listOfSets = NamespacedSets.this.sets.values().stream()
                         .filter(s -> !s.isEmpty())
                         .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
-                ;
 
                 private int currentListIndex = -1;
 
@@ -172,7 +171,8 @@ public class NamespacedSets<T> {
                 @Override
                 public T next() {
                     if (hasNext()) {
-                        return (latestItem = currentIterator.next());
+                        latestItem = currentIterator.next();
+                        return latestItem;
                     }
                     throw new NoSuchElementException();
                 }
@@ -183,7 +183,7 @@ public class NamespacedSets<T> {
                         Set<T> currentSet = listOfSets.get(currentListIndex);
                         if (currentSet.contains(latestItem) && currentSet.size() > 1) {
                             // replace the underlying mutable Set with a copy before removal ...
-                            NamespacedSets.this.namespacedSets.put(
+                            NamespacedSets.this.sets.put(
                                     getNamespace.apply(latestItem), new LinkedHashSet<>(currentSet));
                             // ... but also remove from our copy
                             currentIterator.remove();
