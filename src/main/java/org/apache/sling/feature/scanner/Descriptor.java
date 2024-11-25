@@ -24,6 +24,8 @@ import java.util.Set;
 
 import org.apache.sling.feature.MatchingRequirement;
 import org.apache.sling.feature.scanner.impl.NamespacedSets;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.resource.Capability;
 
 /**
@@ -155,6 +157,7 @@ public abstract class Descriptor {
         return unmodifiableIfLocked(caps.getNamespacedSet(namespace));
     }
 
+    @Contract("null -> null")
     private <T> Set<T> unmodifiableIfLocked(Set<T> set) {
         return locked && set != null ? Collections.unmodifiableSet(set) : set;
     }

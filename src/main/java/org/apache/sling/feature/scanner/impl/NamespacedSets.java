@@ -96,7 +96,7 @@ public class NamespacedSets<T> {
         return before > size.get();
     }
 
-    public Set<T> asSet() {
+    public @NotNull Set<T> asSet() {
         return setView;
     }
 
