@@ -18,6 +18,7 @@
  */
 package org.apache.sling.feature.scanner;
 
+import java.util.Set;
 import java.util.jar.Manifest;
 
 /**
@@ -64,7 +65,8 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
      * @return {@code true} if that package is exported.
      */
     public boolean isExportingPackage(final String packageName) {
-        return getExports().has(packageName);
+        Set<PackageInfo> exportedPackages = getExportedPackages(packageName);
+        return exportedPackages != null && !exportedPackages.isEmpty();
     }
 
     /**
@@ -74,11 +76,13 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
      */
     public boolean isExportingPackage(final PackageInfo info) {
         String packageName = info.getName();
-        return getExports()
-                .has(
-                        packageName,
-                        packageInfo -> info.getVersion() == null
-                                || info.getPackageVersionRange().includes(packageInfo.getPackageVersion()));
+        Set<PackageInfo> exportedPackages = getExportedPackages(packageName);
+        if (exportedPackages == null) {
+            return false;
+        }
+        return exportedPackages.stream()
+                .anyMatch(packageInfo -> info.getVersion() == null
+                        || info.getPackageVersionRange().includes(packageInfo.getPackageVersion()));
     }
 
     @Override

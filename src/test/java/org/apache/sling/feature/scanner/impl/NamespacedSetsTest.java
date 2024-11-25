@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.sling.feature.scanner.PackageInfo;
@@ -36,24 +37,25 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class PackageInfosTest {
+class NamespacedSetsTest {
 
-    private PackageInfos packageInfos;
+    private NamespacedSets<PackageInfo> packageInfos;
+
     private List<PackageInfo> exportPackageList;
 
     @BeforeEach
     void setUp() {
         exportPackageList = Collections.unmodifiableList(asList(
                 exportPackage("a.b.c", "1.0.0"), exportPackage("a.b.c", "1.1.0"), exportPackage("a.b.d", "1.1.0")));
-        packageInfos = new PackageInfos();
+        packageInfos = new NamespacedSets<>(PackageInfo.class, PackageInfo::getName);
         exportPackageList.forEach(packageInfos::add);
     }
 
     @Test
     void addAndremove() {
-        PackageInfos infos = new PackageInfos();
+        NamespacedSets<PackageInfo> infos = new NamespacedSets<>(PackageInfo.class, PackageInfo::getName);
 
-        assertThat(infos.getPackageInfos()).hasSize(0);
+        assertThat(infos.asSet()).hasSize(0);
 
         assertThat(infos.add(exportPackage("a.b.c", "1.0.0"))).isTrue();
         assertThat(infos.add(exportPackage("a.b.c", "1.0.0")))
@@ -64,7 +66,7 @@ class PackageInfosTest {
         assertThat(infos.add(exportPackage("a.b.c", "1.3.0"))).isTrue();
         assertThat(infos.add(exportPackage("a.b.c", "1.4.0"))).isTrue();
 
-        assertThat(infos.getPackageInfos()).hasSize(5);
+        assertThat(infos.asSet()).hasSize(5);
 
         assertThat(infos.remove(exportPackage("a.b.c", "1.3.0"))).isTrue();
         assertThat(infos.remove(exportPackage("a.b.c", "1.4.0"))).isTrue();
@@ -72,7 +74,7 @@ class PackageInfosTest {
                 .describedAs("removing non-existing PackageInfo returns false")
                 .isFalse();
 
-        assertThat(infos.getPackageInfos()).hasSize(3);
+        assertThat(infos.asSet()).hasSize(3);
 
         assertThat(infos.remove(exportPackage("a.b.c", "1.0.0"))).isTrue();
         assertThat(infos.remove(exportPackage("a.b.c", "1.1.0"))).isTrue();
@@ -81,7 +83,7 @@ class PackageInfosTest {
                 .isFalse();
         assertThat(infos.remove(exportPackage("a.b.c", "1.2.0"))).isTrue();
 
-        assertThat(infos.getPackageInfos()).hasSize(0);
+        assertThat(infos.asSet()).hasSize(0);
     }
 
     @Test
@@ -105,7 +107,7 @@ class PackageInfosTest {
 
     @Test
     void setView() {
-        Set<PackageInfo> setView = packageInfos.getPackageInfos();
+        Set<PackageInfo> setView = packageInfos.asSet();
         assertThat(setView).hasSize(3);
         assertThat(setView).containsExactlyInAnyOrderElementsOf(exportPackageList);
         assertThat(setView.contains(exportPackage("a.b.c", "1.0.0"))).isTrue();
@@ -115,8 +117,8 @@ class PackageInfosTest {
 
     @Test
     void setViewMutability() {
-        PackageInfos infos = new PackageInfos();
-        Set<PackageInfo> setView = infos.getPackageInfos();
+        NamespacedSets<PackageInfo> infos = new NamespacedSets<>(PackageInfo.class, PackageInfo::getName);
+        Set<PackageInfo> setView = infos.asSet();
 
         for (PackageInfo packageInfo : exportPackageList) {
             assertThat(setView.add(packageInfo)).isTrue();
@@ -137,7 +139,7 @@ class PackageInfosTest {
 
     @Test
     void setViewIterator() {
-        Set<PackageInfo> setView = packageInfos.getPackageInfos();
+        Set<PackageInfo> setView = packageInfos.asSet();
         Set<PackageInfo> copy = new HashSet<>(exportPackageList);
         Iterator<PackageInfo> iterator = setView.iterator();
         while (iterator.hasNext()) {
@@ -151,9 +153,9 @@ class PackageInfosTest {
 
     @Test
     void setViewIteratorRemove() {
-        Set<PackageInfo> setView = packageInfos.getPackageInfos();
+        Set<PackageInfo> setView = packageInfos.asSet();
         Iterator<PackageInfo> iterator = setView.iterator();
-        int initialSize = packageInfos.getPackageInfos().size();
+        int initialSize = packageInfos.asSet().size();
         for (int i = 1; i <= initialSize; i++) {
             if (iterator.hasNext()) {
                 PackageInfo packageInfo = iterator.next();
@@ -167,10 +169,10 @@ class PackageInfosTest {
 
     @Test
     void setViewIteratorEdgeCases() {
-        PackageInfos infos = new PackageInfos();
+        NamespacedSets<PackageInfo> infos = new NamespacedSets<>(PackageInfo.class, PackageInfo::getName);
         infos.add(exportPackage("a.b.c", "1.0.0"));
         infos.add(exportPackage("a.b.c", "1.1.0"));
-        Iterator<PackageInfo> iterator = infos.getPackageInfos().iterator();
+        Iterator<PackageInfo> iterator = infos.asSet().iterator();
 
         // remove before next
         assertThatThrownBy(iterator::remove).isInstanceOf(IllegalStateException.class);
@@ -192,37 +194,42 @@ class PackageInfosTest {
         return new PackageInfo(name, version, false);
     }
 
-    private static PackageInfosAssert assertPackageInfos(PackageInfos packageInfos) {
+    private static PackageInfosAssert assertPackageInfos(NamespacedSets<PackageInfo> packageInfos) {
         return new PackageInfosAssert(packageInfos);
     }
 
-    private static class PackageInfosAssert extends AbstractAssert<PackageInfosAssert, PackageInfos> {
-        protected PackageInfosAssert(PackageInfos packageInfos) {
+    private static class PackageInfosAssert extends AbstractAssert<PackageInfosAssert, NamespacedSets<PackageInfo>> {
+        protected PackageInfosAssert(NamespacedSets<PackageInfo> packageInfos) {
             super(packageInfos, PackageInfosAssert.class);
         }
 
         public void has(String packageName) {
-            assertThat(this.actual.has(packageName))
+            assertThat(getSetOrEmpty(packageName).isEmpty())
                     .describedAs("has %s", packageName)
-                    .isTrue();
-        }
-
-        public void doesNotHave(String packageName) {
-            assertThat(this.actual.has(packageName))
-                    .describedAs("doesNotHave %s", packageName)
                     .isFalse();
         }
 
+        public void doesNotHave(String packageName) {
+            assertThat(getSetOrEmpty(packageName).isEmpty())
+                    .describedAs("doesNotHave %s", packageName)
+                    .isTrue();
+        }
+
         public void has(String packageName, String version) {
-            assertThat(this.actual.has(packageName, p -> Objects.equals(p.getVersion(), version)))
+            assertThat(getSetOrEmpty(packageName).stream().anyMatch(p -> Objects.equals(p.getVersion(), version)))
                     .describedAs("has %s:%s", packageName, version)
                     .isTrue();
         }
 
         public void doesNotHave(String packageName, String version) {
-            assertThat(this.actual.has(packageName, p -> Objects.equals(p.getVersion(), version)))
+            assertThat(getSetOrEmpty(packageName).stream().anyMatch(p -> Objects.equals(p.getVersion(), version)))
                     .describedAs("doesNotHave %s:%s", packageName, version)
                     .isFalse();
+        }
+
+        private @NotNull Set<PackageInfo> getSetOrEmpty(String packageName) {
+            return Optional.ofNullable(this.actual.getNamespacedSet(packageName))
+                    .orElseGet(Collections::emptySet);
         }
     }
 }

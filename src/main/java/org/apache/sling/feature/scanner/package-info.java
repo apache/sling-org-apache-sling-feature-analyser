@@ -17,5 +17,5 @@
  * under the License.
  */
 
-@org.osgi.annotation.versioning.Version("3.0.0")
+@org.osgi.annotation.versioning.Version("3.1.0")
 package org.apache.sling.feature.scanner;

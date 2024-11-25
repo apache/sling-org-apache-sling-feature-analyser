@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.sling.feature.MatchingRequirement;
-import org.apache.sling.feature.scanner.impl.PackageInfos;
+import org.apache.sling.feature.scanner.impl.NamespacedSets;
 import org.osgi.resource.Capability;
 
 /**
@@ -40,7 +40,7 @@ public abstract class Descriptor {
 
     private boolean locked;
 
-    private final PackageInfos exports = new PackageInfos();
+    private final NamespacedSets<PackageInfo> exports = new NamespacedSets<>(PackageInfo.class, PackageInfo::getName);
 
     private final Set<PackageInfo> imports = new HashSet<>();
 
@@ -48,7 +48,7 @@ public abstract class Descriptor {
 
     private final Set<MatchingRequirement> reqs = new HashSet<>();
 
-    private final Set<Capability> caps = new HashSet<>();
+    private final NamespacedSets<Capability> caps = new NamespacedSets<>(Capability.class, Capability::getNamespace);
 
     /**
      * Constructor for a new descriptor
@@ -93,14 +93,10 @@ public abstract class Descriptor {
      */
     protected void aggregate(final Descriptor d) {
         reqs.addAll(d.getRequirements());
-        caps.addAll(d.getCapabilities());
+        d.getCapabilities().forEach(caps::add);
         dynImports.addAll(d.getDynamicImportedPackages());
         imports.addAll(d.getImportedPackages());
         d.getExportedPackages().forEach(exports::add);
-    }
-
-    final PackageInfos getExports() {
-        return this.exports;
     }
 
     /**
@@ -108,8 +104,11 @@ public abstract class Descriptor {
      * @return The exported packages. Might be empty.
      */
     public final Set<PackageInfo> getExportedPackages() {
-        Set<PackageInfo> exportedPackageInfos = getExports().getPackageInfos();
-        return locked ? Collections.unmodifiableSet(exportedPackageInfos) : exportedPackageInfos;
+        return unmodifiableIfLocked(exports.asSet());
+    }
+
+    public final Set<PackageInfo> getExportedPackages(String packageName) {
+        return unmodifiableIfLocked(exports.getNamespacedSet(packageName));
     }
 
     /**
@@ -117,7 +116,7 @@ public abstract class Descriptor {
      * @return The imported packages. Might be empty.
      */
     public final Set<PackageInfo> getImportedPackages() {
-        return locked ? Collections.unmodifiableSet(imports) : imports;
+        return unmodifiableIfLocked(imports);
     }
 
     /**
@@ -125,7 +124,7 @@ public abstract class Descriptor {
      * @return The dynamic imported packages. Might be empty.
      */
     public final Set<PackageInfo> getDynamicImportedPackages() {
-        return locked ? Collections.unmodifiableSet(dynImports) : dynImports;
+        return unmodifiableIfLocked(dynImports);
     }
 
     /**
@@ -141,7 +140,7 @@ public abstract class Descriptor {
      * @return The list of requirements. The list might be empty.
      */
     public final Set<MatchingRequirement> getRequirements() {
-        return locked ? Collections.unmodifiableSet(reqs) : reqs;
+        return unmodifiableIfLocked(reqs);
     }
 
     /**
@@ -149,7 +148,15 @@ public abstract class Descriptor {
      * @return The list of capabilities. The list might be empty.
      */
     public final Set<Capability> getCapabilities() {
-        return locked ? Collections.unmodifiableSet(caps) : caps;
+        return unmodifiableIfLocked(caps.asSet());
+    }
+
+    public final Set<Capability> getCapabilities(String namespace) {
+        return unmodifiableIfLocked(caps.getNamespacedSet(namespace));
+    }
+
+    private <T> Set<T> unmodifiableIfLocked(Set<T> set) {
+        return locked && set != null ? Collections.unmodifiableSet(set) : set;
     }
 
     @Override
