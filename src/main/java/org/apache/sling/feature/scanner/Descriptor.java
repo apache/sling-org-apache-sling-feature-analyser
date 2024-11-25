@@ -156,7 +156,7 @@ public abstract class Descriptor {
         return unmodifiableIfLocked(caps.getNamespacedSet(namespace));
     }
 
-    @Contract("null -> null")
+    @Contract("null -> null; !null -> !null")
     private <T> Set<T> unmodifiableIfLocked(Set<T> set) {
         return locked && set != null ? Collections.unmodifiableSet(set) : set;
     }
