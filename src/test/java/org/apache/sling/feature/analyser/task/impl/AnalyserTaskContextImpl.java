@@ -30,6 +30,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.builder.FeatureProvider;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
+import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 
 public class AnalyserTaskContextImpl implements AnalyserTaskContext {
 
@@ -46,6 +47,7 @@ public class AnalyserTaskContextImpl implements AnalyserTaskContext {
 
     public AnalyserTaskContextImpl(String artifactId) {
         f = new Feature(ArtifactId.parse(artifactId));
+        featureDescriptor = new FeatureDescriptorImpl(f);
     }
 
     @Override
