@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -36,6 +37,7 @@ import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.Descriptor;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
 public class CheckRequirementsCapabilities implements AnalyserTask {
@@ -104,6 +106,10 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                                 && !ServiceNamespace.SERVICE_NAMESPACE.equals(ns)) {
                             List<Descriptor> candidates = getCandidates(artifacts, requirement);
 
+                            String cardinality = requirement
+                                    .getDirectives()
+                                    .getOrDefault(
+                                            Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE, Namespace.CARDINALITY_SINGLE);
                             if (candidates.isEmpty()) {
                                 if (!RequirementImpl.isOptional(requirement)) {
                                     String message = String.format(
@@ -139,7 +145,8 @@ public class CheckRequirementsCapabilities implements AnalyserTask {
                                         ctx.reportWarning(message);
                                     }
                                 }
-                            } else if (candidates.size() > 1) {
+                            } else if (candidates.size() > 1
+                                    && Objects.equals(cardinality, Namespace.CARDINALITY_SINGLE)) {
                                 String message = String.format(
                                         format,
                                         info.getName(),

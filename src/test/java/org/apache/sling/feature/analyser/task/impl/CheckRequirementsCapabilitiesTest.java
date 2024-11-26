@@ -18,10 +18,13 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import java.io.File;
-import java.util.Arrays;
+import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.apache.felix.utils.resource.CapabilityImpl;
 import org.apache.felix.utils.resource.RequirementImpl;
@@ -31,96 +34,273 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.MatchingRequirement;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
-import org.apache.sling.feature.scanner.FeatureDescriptor;
-import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
-import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Resource;
+
+import static java.util.Arrays.asList;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 
 public class CheckRequirementsCapabilitiesTest {
     @Test
     public void testCheckRequirementsCapabilitiesAllOk() throws Exception {
-        File f = new File(getClass().getResource("/test-bundle5.jar").getFile());
+        AnalyserTaskContext ctx = Mockito.spy(createAnalyserTaskContext(
+                requirement("org.zzz", "(&(zzz=aaa)(qqq=123))"),
+                capability("org.foo.blah", Collections.singletonMap("abc", "def")),
+                capability("org.foo.bar", Collections.singletonMap("abc", "def"))));
 
-        BundleDescriptor bd1 = new BundleDescriptorImpl(
-                new Artifact(ArtifactId.fromMvnId("g:b1:1.2.0")), f.toURI().toURL());
+        BundleDescriptor bundleDescriptor = createTestBundleDescriptor();
 
-        Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
-
-        Capability cap1 = new CapabilityImpl(
-                null, "org.foo.blah", Collections.emptyMap(), Collections.singletonMap("abc", "def"));
-        Capability cap2 =
-                new CapabilityImpl(null, "org.foo.bar", Collections.emptyMap(), Collections.singletonMap("abc", "def"));
-        MatchingRequirement req = new MatchingRequirementImpl(null, "org.zzz", "(&(zzz=aaa)(qqq=123))");
-
-        feature.getCapabilities().addAll(Arrays.asList(cap1, cap2));
-        feature.getRequirements().add(req);
-
-        FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
-        fd.getBundleDescriptors().add(bd1);
-
-        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
-        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        ctx.getFeatureDescriptor().getBundleDescriptors().add(bundleDescriptor);
 
         CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
         crc.execute(ctx);
 
+        Mockito.verify(ctx, Mockito.never()).reportArtifactError(Mockito.any(), Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
 
     @Test
     public void testCheckRequirementsCapabilitiesMissingFromBundle() throws Exception {
-        File f = new File(getClass().getResource("/test-bundle5.jar").getFile());
-
-        BundleDescriptor bd1 = new BundleDescriptorImpl(
-                new Artifact(ArtifactId.fromMvnId("g:b1:1.2.0")), f.toURI().toURL());
-
-        Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
-        FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
-        fd.getBundleDescriptors().add(bd1);
-
-        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
-        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        AnalyserTaskContextImpl ctx = Mockito.spy(new AnalyserTaskContextImpl());
+        ctx.getFeatureDescriptor().getBundleDescriptors().add(createTestBundleDescriptor());
 
         CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
         crc.execute(ctx);
 
-        Mockito.verify(ctx).reportArtifactError(Mockito.any(), Mockito.contains("org.foo.bar"));
+        Mockito.verify(ctx, times(1)).reportArtifactError(Mockito.any(), Mockito.contains("org.foo.bar"));
+        Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
     }
 
     @Test
     public void testCheckRequirementsCapabilitiesMissingFromFeature() throws Exception {
-        Feature feature = new Feature(ArtifactId.fromMvnId("a:b:1"));
-
-        Capability cap1 = new CapabilityImpl(
-                null, "org.foo.blah", Collections.emptyMap(), Collections.singletonMap("abc", "def"));
-        Capability cap2 =
-                new CapabilityImpl(null, "org.foo.bar", Collections.emptyMap(), Collections.singletonMap("abc", "def"));
-        MatchingRequirement req = new MatchingRequirementImpl(null, "org.zzz", "(&(zzz=aaa)(qqq=123))");
-
-        feature.getCapabilities().addAll(Arrays.asList(cap1, cap2));
-        feature.getRequirements().add(req);
-
-        FeatureDescriptor fd = new FeatureDescriptorImpl(feature);
-
-        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
-        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        AnalyserTaskContext ctx = Mockito.spy(createAnalyserTaskContext(
+                requirement("org.zzz", "(&(zzz=aaa)(qqq=123))"),
+                capability("org.foo.blah", Collections.singletonMap("abc", "def")),
+                capability("org.foo.bar", Collections.singletonMap("abc", "def"))));
 
         CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
         crc.execute(ctx);
 
-        Mockito.verify(ctx).reportError(Mockito.contains("org.zzz"));
+        Mockito.verify(ctx, times(1)).reportError(Mockito.contains("org.zzz"));
+        Mockito.verify(ctx, never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, never()).reportWarning(Mockito.anyString());
+        Mockito.verify(ctx, never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void testMissingOptionalRequirementCausesWarning() throws Exception {
+        AnalyserTaskContext ctx = Mockito.spy(new AnalyserTaskContextImpl());
+
+        BundleDescriptor consumer = createBundleDescriptor("requirement:optional:1.0.0");
+        consumer.getRequirements()
+                .add(requirement(
+                        "osgi.serviceloader",
+                        directives(
+                                Namespace.REQUIREMENT_FILTER_DIRECTIVE,
+                                "(osgi.serviceloader=org.example.Foo)",
+                                Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE,
+                                Namespace.RESOLUTION_OPTIONAL)));
+
+        ctx.getFeatureDescriptor().getBundleDescriptors().add(consumer);
+
+        CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
+        crc.execute(ctx);
+
+        Mockito.verify(ctx, never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, never()).reportError(Mockito.anyString());
+        Mockito.verify(ctx, times(1))
+                .reportArtifactWarning(
+                        Mockito.any(),
+                        Mockito.contains(
+                                "while the requirement is optional no artifact is providing a matching capability in this start level."));
+        Mockito.verify(ctx, never()).reportWarning(Mockito.anyString());
+    }
+
+    @Test
+    public void testSingleCardinalityRequirementCausesWarningWhenSatisfiedTwice() throws Exception {
+        AnalyserTaskContext ctx = Mockito.spy(new AnalyserTaskContextImpl());
+
+        ctx.getFeatureDescriptor()
+                .getBundleDescriptors()
+                .addAll(asList(
+                        serviceLoaderConsumer(Namespace.CARDINALITY_SINGLE),
+                        serviceLoaderProvider("serviceloader:providerA:1.0.0", "org.acme.FooImpl"),
+                        serviceLoaderProvider("serviceloader:providerB:1.0.0", "org.boo.FooImpl")));
+
+        CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
+        crc.execute(ctx);
+
+        Mockito.verify(ctx, never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, never()).reportError(Mockito.anyString());
+        Mockito.verify(ctx, times(1))
+                .reportArtifactWarning(
+                        Mockito.any(),
+                        Mockito.contains("there is more than one matching capability in this start level"));
+        Mockito.verify(ctx, never()).reportWarning(Mockito.anyString());
+    }
+
+    @Test
+    public void testMultipleCardinalityRequirementCausesNoWarningWhenSatisfiedTwice() throws Exception {
+        AnalyserTaskContext ctx = Mockito.spy(new AnalyserTaskContextImpl());
+
+        ctx.getFeatureDescriptor()
+                .getBundleDescriptors()
+                .addAll(asList(
+                        serviceLoaderConsumer(Namespace.CARDINALITY_MULTIPLE),
+                        serviceLoaderProvider("serviceloader:providerA:1.0.0", "org.acme.FooImpl"),
+                        serviceLoaderProvider("serviceloader:providerB:1.0.0", "org.boo.FooImpl")));
+
+        CheckRequirementsCapabilities crc = new CheckRequirementsCapabilities();
+        crc.execute(ctx);
+
+        Mockito.verify(ctx, never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, never()).reportError(Mockito.anyString());
+        Mockito.verify(ctx, never()).reportArtifactWarning(Mockito.any(), Mockito.anyString());
+        Mockito.verify(ctx, never()).reportWarning(Mockito.anyString());
+    }
+
+    private BundleDescriptor createBundleDescriptor(String mvnId) {
+        ArtifactId artifactId = ArtifactId.fromMvnId(mvnId);
+        return new BundleDescriptor(mvnId) {
+
+            @Override
+            public String getBundleSymbolicName() {
+                return artifactId.getArtifactId();
+            }
+
+            @Override
+            public String getBundleVersion() {
+                return artifactId.getVersion();
+            }
+
+            @Override
+            public Manifest getManifest() {
+                Manifest manifest = new Manifest();
+                Attributes mainAttributes = manifest.getMainAttributes();
+                mainAttributes.putValue("Manifest-Version", "1.0");
+                mainAttributes.putValue("Bundle-SymbolicName", getBundleSymbolicName());
+                mainAttributes.putValue("Bundle-Version", getBundleVersion());
+                return manifest;
+            }
+
+            @Override
+            public URL getArtifactFile() {
+                throw new UnsupportedOperationException("not implemented");
+            }
+
+            @Override
+            public Artifact getArtifact() {
+                return new Artifact(artifactId);
+            }
+        };
+    }
+
+    private @NotNull BundleDescriptor createTestBundleDescriptor() {
+        BundleDescriptor bundleDescriptor = createBundleDescriptor("g:b1:1.2.0");
+        bundleDescriptor
+                .getCapabilities()
+                .add(capability("org.zzz", attributes("qqq", "123", "vvv", "vvv", "zzz", "aaa")));
+        bundleDescriptor.getRequirements().add(requirement("org.foo.bar", "(abc=def)"));
+        return bundleDescriptor;
+    }
+
+    private Map<String, String> directives(String... keyValues) {
+        if (keyValues.length % 2 != 0) {
+            throw new IllegalArgumentException("keyValues must have an even number of elements");
+        }
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < keyValues.length; ) {
+            map.put(keyValues[i++], keyValues[i++]);
+        }
+        return map;
+    }
+
+    private Map<String, Object> attributes(Object... keyValues) {
+        if (keyValues.length % 2 != 0) {
+            throw new IllegalArgumentException("keyValues must have an even number of elements");
+        }
+
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 0; i < keyValues.length; ) {
+            Object key = keyValues[i++];
+            if (!(key instanceof String)) {
+                throw new IllegalArgumentException("all keys must be of type String");
+            }
+            map.put((String) key, keyValues[i++]);
+        }
+        return map;
+    }
+
+    private @NotNull BundleDescriptor serviceLoaderConsumer(String cardinality) {
+        BundleDescriptor consumer = createBundleDescriptor("serviceloader:consumer:1.0.0");
+        consumer.getRequirements()
+                .add(requirement(
+                        "osgi.serviceloader",
+                        directives(
+                                Namespace.REQUIREMENT_FILTER_DIRECTIVE,
+                                "(osgi.serviceloader=org.example.Foo)",
+                                Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
+                                cardinality)));
+        return consumer;
+    }
+
+    private @NotNull BundleDescriptor serviceLoaderProvider(String mvnId, String implClass) {
+        BundleDescriptor providerA = createBundleDescriptor(mvnId);
+        providerA
+                .getCapabilities()
+                .add(capability(
+                        "osgi.serviceloader",
+                        attributes("osgi.serviceloader", "org.example.Foo", "register", implClass)));
+        return providerA;
+    }
+
+    private static @NotNull AnalyserTaskContext createAnalyserTaskContext(
+            MatchingRequirement requirement, Capability... capabilities) {
+        AnalyserTaskContextImpl analyserTaskContext = new AnalyserTaskContextImpl("test:feature:1");
+        Feature feature = analyserTaskContext.getFeature();
+        feature.getCapabilities().addAll(asList(capabilities));
+        feature.getRequirements().add(requirement);
+        return analyserTaskContext;
+    }
+
+    private static @NotNull MatchingRequirement requirement(String namespace, String filter) {
+        return new MatchingRequirementImpl(null, namespace, filter);
+    }
+
+    private static @NotNull MatchingRequirement requirement(String namespace, Map<String, String> directives) {
+        return new MatchingRequirementImpl(null, namespace, directives, Collections.emptyMap());
+    }
+
+    private static @NotNull Capability capability(String namespace, Map<String, Object> attributes) {
+        return capability(namespace, Collections.emptyMap(), attributes);
+    }
+
+    private static @NotNull Capability capability(
+            String namespace, Map<String, String> directives, Map<String, Object> attributes) {
+        return new CapabilityImpl(null, namespace, directives, attributes);
     }
 
     private static class MatchingRequirementImpl extends RequirementImpl implements MatchingRequirement {
 
-        public MatchingRequirementImpl(Resource res, String ns, String filter) {
+        MatchingRequirementImpl(Resource res, String ns, String filter) {
             super(res, ns, filter);
+        }
+
+        MatchingRequirementImpl(
+                final Resource res,
+                final String ns,
+                final Map<String, String> directives,
+                final Map<String, Object> attributes) {
+            super(res, ns, directives, attributes);
         }
 
         @Override
@@ -128,7 +308,7 @@ public class CheckRequirementsCapabilitiesTest {
             if (this == o) {
                 return true;
             }
-            if (o == null || !(o instanceof RequirementImpl)) {
+            if (!(o instanceof RequirementImpl)) {
                 return false;
             }
             final RequirementImpl that = (RequirementImpl) o;
