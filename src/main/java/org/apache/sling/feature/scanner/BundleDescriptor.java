@@ -18,9 +18,8 @@
  */
 package org.apache.sling.feature.scanner;
 
+import java.util.Set;
 import java.util.jar.Manifest;
-
-import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 
 /**
  * Information about a bundle.
@@ -66,12 +65,8 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
      * @return {@code true} if that package is exported.
      */
     public boolean isExportingPackage(final String packageName) {
-        for (final PackageInfo i : getExportedPackages()) {
-            if (i.getName().equals(packageName)) {
-                return true;
-            }
-        }
-        return false;
+        Set<PackageInfo> exportedPackages = getExportedPackages(packageName);
+        return exportedPackages != null && !exportedPackages.isEmpty();
     }
 
     /**
@@ -80,21 +75,21 @@ public abstract class BundleDescriptor extends ArtifactDescriptor implements Com
      * @return {@code true} if that package is exported.
      */
     public boolean isExportingPackage(final PackageInfo info) {
-        for (final PackageInfo i : getExportedPackages()) {
-            if (i.getName().equals(info.getName())
-                    && (info.getVersion() == null
-                            || info.getPackageVersionRange().includes(i.getPackageVersion()))) {
-                return true;
-            }
+        String packageName = info.getName();
+        Set<PackageInfo> exportedPackages = getExportedPackages(packageName);
+        if (exportedPackages == null) {
+            return false;
         }
-        return false;
+        return exportedPackages.stream()
+                .anyMatch(packageInfo -> info.getVersion() == null
+                        || info.getPackageVersionRange().includes(packageInfo.getPackageVersion()));
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof BundleDescriptorImpl) {
-            return this.getBundleSymbolicName().equals(((BundleDescriptorImpl) obj).getBundleSymbolicName())
-                    && this.getBundleVersion().equals(((BundleDescriptorImpl) obj).getBundleVersion());
+        if (obj instanceof BundleDescriptor) {
+            return this.getBundleSymbolicName().equals(((BundleDescriptor) obj).getBundleSymbolicName())
+                    && this.getBundleVersion().equals(((BundleDescriptor) obj).getBundleVersion());
         }
         return false;
     }
