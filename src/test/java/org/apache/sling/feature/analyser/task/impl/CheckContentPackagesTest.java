@@ -26,7 +26,6 @@ import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
 import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.impl.ContentPackageDescriptorImpl;
-import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -41,8 +40,7 @@ public class CheckContentPackagesTest {
     public CheckContentPackagesTest() {
         analyser = new CheckContentPackages();
         ctx = new AnalyserTaskContextImpl();
-        fd = new FeatureDescriptorImpl(ctx.getFeature());
-        ctx.setFeatureDescriptor(fd);
+        fd = ctx.getFeatureDescriptor();
     }
 
     @Test
