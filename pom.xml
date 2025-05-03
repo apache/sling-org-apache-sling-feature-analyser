@@ -113,13 +113,19 @@
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>org.apache.jackrabbit.vault</artifactId>
-            <version>3.5.4</version>
+            <version>3.8.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.jackrabbit.vault</groupId>
             <artifactId>vault-validation</artifactId>
-            <version>3.5.4</version>
+            <version>3.8.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.17.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -167,8 +173,7 @@
         <dependency>
             <groupId>org.apache.johnzon</groupId>
             <artifactId>johnzon-core</artifactId>
-            <version>1.2.14</version>
-            <classifier>jakarta</classifier>
+            <version>2.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>

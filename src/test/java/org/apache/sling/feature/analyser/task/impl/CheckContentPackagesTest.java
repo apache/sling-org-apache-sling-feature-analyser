@@ -91,7 +91,8 @@ public class CheckContentPackagesTest {
         assertThat(
                 errors.get(0),
                 equalTo(String.format(
-                        "ValidationViolation: \"jackrabbit-docviewparser: Invalid XML found: The reference to entity \"se\" must end with the ';' delimiter.\", filePath=%s, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid",
+                        "ValidationViolation: \"jackrabbit-docviewparser: Could not parse FileVault Document View XML: The reference to entity \"se\" must end with the ';' delimiter.\", "
+                                + "filePath=%s, nodePath=/apps/cschneidervalidation/configs/com.adobe.test.Invalid, line=3, column=38",
                         "jcr_root/apps/cschneidervalidation/configs/com.adobe.test.Invalid.xml"
                                 .replace('/', File.separatorChar))));
     }

@@ -21,6 +21,7 @@ package org.apache.sling.feature.analyser.task.impl.contentpackage;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Set;
 
 import org.apache.jackrabbit.vault.fs.api.WorkspaceFilter;
 import org.apache.jackrabbit.vault.fs.io.Archive;
@@ -68,5 +69,20 @@ public class ArchiveValidationContextImpl implements ValidationContext {
     @Override
     public Collection<PackageInfo> getDependenciesPackageInfo() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Object setAttribute(String name, Object value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Object getAttribute(String name) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Set<String> getAttributeNames() {
+        throw new UnsupportedOperationException();
     }
 }
