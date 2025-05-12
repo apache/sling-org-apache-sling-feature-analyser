@@ -35,13 +35,18 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jackrabbit.vault.fs.io.Archive;
 import org.apache.jackrabbit.vault.fs.io.ZipArchive;
+import org.apache.jackrabbit.vault.packaging.PackageInfo;
 import org.apache.jackrabbit.vault.util.Constants;
 import org.apache.jackrabbit.vault.validation.ValidationExecutor;
 import org.apache.jackrabbit.vault.validation.ValidationExecutorFactory;
 import org.apache.jackrabbit.vault.validation.ValidationViolation;
+import org.apache.jackrabbit.vault.validation.context.AbstractDependencyResolver;
+import org.apache.jackrabbit.vault.validation.context.ArchiveValidationContext;
 import org.apache.jackrabbit.vault.validation.spi.ValidationMessageSeverity;
 import org.apache.jackrabbit.vault.validation.spi.Validator;
 import org.apache.jackrabbit.vault.validation.spi.ValidatorSettings;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,7 +63,7 @@ public class PackageValidator {
 
     private final Collection<ValidationViolation> messages;
 
-    private ArchiveValidationContextImpl context;
+    private ArchiveValidationContext context;
 
     private ValidationExecutor executor;
 
@@ -76,7 +81,7 @@ public class PackageValidator {
         Path artifactPath = Paths.get(artifactURI);
         try (Archive archive = new ZipArchive(new File(artifactURI))) {
             archive.open(true);
-            context = new ArchiveValidationContextImpl(archive, artifactPath);
+            context = new ArchiveValidationContext(archive, artifactPath, new NoopDependencyResolver());
             executor = validationExecutorFactory.createValidationExecutor(context, false, false, validatorSettings);
             if (executor != null) {
                 printUsedValidators(true);
@@ -177,6 +182,14 @@ public class PackageValidator {
                 return 1;
             }
             return s1.compareTo(s2);
+        }
+    }
+
+    static final class NoopDependencyResolver extends AbstractDependencyResolver {
+
+        @Override
+        public @Nullable PackageInfo resolvePackageInfo(@NotNull MavenCoordinates mavenCoordinates) throws IOException {
+            return null;
         }
     }
 }
