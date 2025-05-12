@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.feature.analyser</artifactId>
-    <version>2.0.13-SNAPSHOT</version>
+    <version>2.0.14</version>
 
     <name>Apache Sling Feature Model Analyser</name>
     <description>A feature describes an OSGi system</description>
@@ -36,13 +36,13 @@
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-feature-analyser.git</developerConnection>
-        <tag>org.apache.sling.feature.analyser-1.6.4</tag>
+        <tag>org.apache.sling.feature.analyser-2.0.14</tag>
         <url>https://github.com/apache/sling-org-apache-sling-feature-analyser.git</url>
     </scm>
 
     <properties>
         <sling.java.version>8</sling.java.version>
-        <project.build.outputTimestamp>1732806487</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1747070928</project.build.outputTimestamp>
     </properties>
     <dependencies>
         <dependency>
