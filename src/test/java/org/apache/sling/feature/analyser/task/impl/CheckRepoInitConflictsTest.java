@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CheckRepoInitConflictsTest {
 
     @Test
-    public void testConstants() {
+    void testConstants() {
         final AnalyserTask task = new CheckRepoInitConflicts();
 
         assertEquals("repoinit-conflict-validation", task.getId());
