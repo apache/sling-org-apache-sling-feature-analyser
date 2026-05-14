@@ -67,7 +67,7 @@ public class RepoInitValidator {
             List<Operation> operations = new RepoInitParserImpl(new StringReader(repoinitExtension.getText())).parse();
 
             List<CreatePath> createPaths = operations.stream()
-                    .filter(op -> op instanceof CreatePath)
+                    .filter(CreatePath.class::isInstance)
                     .map(op -> (CreatePath) op)
                     .collect(Collectors.toList());
 
