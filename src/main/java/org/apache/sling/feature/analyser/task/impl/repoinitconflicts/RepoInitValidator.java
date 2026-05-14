@@ -36,6 +36,7 @@ import org.apache.sling.repoinit.parser.operations.PathSegmentDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("java:S1874")
 public class RepoInitValidator {
     private RepoInitValidator() {}
 
