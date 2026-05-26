@@ -37,33 +37,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("java:S1874")
-public class RepoInitValidator {
-    private RepoInitValidator() {}
+public class RepoInitConflictsValidator {
+    private RepoInitConflictsValidator() {}
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RepoInitValidator.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RepoInitConflictsValidator.class);
 
-    public static RepoInitValidationReport validateRepoinit(final Feature feature) {
-        RepoInitValidationReport report = new RepoInitValidationReport();
+    public static ValidationReport validate(final Feature feature) {
+        ValidationReport report = new ValidationReport();
 
-        if (feature.getExtensions().getByName("repoinit") == null) {
+        final Extension repoinitExtension = feature.getExtensions().getByName(Extension.EXTENSION_NAME_REPOINIT);
+
+        if (repoinitExtension == null
+                || repoinitExtension.getText() == null
+                || repoinitExtension.getType() != ExtensionType.TEXT) {
             return report;
         }
 
-        final Extension repoinitExtension = feature.getExtensions().getByName("repoinit");
-        List<CreatePath[]> conflicts = doesRepoinitHaveConflicts(repoinitExtension);
+        List<CreatePath[]> conflicts = findConflicts(repoinitExtension);
 
         report.addConflicts(feature, conflicts);
 
         return report;
     }
 
-    private static List<CreatePath[]> doesRepoinitHaveConflicts(Extension repoinitExtension) {
-        if (repoinitExtension == null
-                || repoinitExtension.getText() == null
-                || repoinitExtension.getType() != ExtensionType.TEXT) {
-            return Collections.emptyList();
-        }
-
+    private static List<CreatePath[]> findConflicts(Extension repoinitExtension) {
         try {
             List<Operation> operations = new RepoInitParserImpl(new StringReader(repoinitExtension.getText())).parse();
 
@@ -72,7 +69,7 @@ public class RepoInitValidator {
                     .map(op -> (CreatePath) op)
                     .collect(Collectors.toList());
 
-            return hasConflicts(createPaths);
+            return findConflictingPairs(createPaths);
         } catch (ParseException e) {
             LOGGER.error(
                     "Failed to parse repoinit statements, skipping conflict validation. Error: {}", e.getMessage(), e);
@@ -80,12 +77,12 @@ public class RepoInitValidator {
         }
     }
 
-    private static List<CreatePath[]> hasConflicts(List<CreatePath> createPaths) {
+    private static List<CreatePath[]> findConflictingPairs(List<CreatePath> createPaths) {
         int size = createPaths.size();
         List<CreatePath[]> conflicts = new ArrayList<>();
         for (int i = 0; i < size; i++) {
             for (int j = i + 1; j < size; j++) {
-                List<CreatePath[]> conflict = hasConflict(createPaths.get(i), createPaths.get(j));
+                List<CreatePath[]> conflict = findConflictPair(createPaths.get(i), createPaths.get(j));
                 if (!conflict.isEmpty()) {
                     conflicts.addAll(conflict);
                 }
@@ -94,7 +91,7 @@ public class RepoInitValidator {
         return conflicts;
     }
 
-    private static List<CreatePath[]> hasConflict(CreatePath a, CreatePath b) {
+    private static List<CreatePath[]> findConflictPair(CreatePath a, CreatePath b) {
         List<PathSegmentDefinition> aDefs = a.getDefinitions();
         List<PathSegmentDefinition> bDefs = b.getDefinitions();
 

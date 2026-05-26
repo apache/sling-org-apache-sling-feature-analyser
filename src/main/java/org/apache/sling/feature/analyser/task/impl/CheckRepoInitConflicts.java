@@ -23,26 +23,26 @@ import java.util.List;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
-import org.apache.sling.feature.analyser.task.impl.repoinitconflicts.RepoInitValidationReport;
-import org.apache.sling.feature.analyser.task.impl.repoinitconflicts.RepoInitValidator;
+import org.apache.sling.feature.analyser.task.impl.repoinitconflicts.RepoInitConflictsValidator;
+import org.apache.sling.feature.analyser.task.impl.repoinitconflicts.ValidationReport;
 
 public class CheckRepoInitConflicts implements AnalyserTask {
 
     @Override
     public String getId() {
-        return "repoinit-conflict-validation";
+        return "repoinit-conflicts";
     }
 
     @Override
     public String getName() {
-        return "Repoinit Conflict Validation";
+        return "Repoinit Conflicts check";
     }
 
     /**
      * Executes the Repoinit conflict validation.
      * <p>
      * This method retrieves the feature from the context, validates it using
-     * {@link RepoInitValidator}, and reports a warning if any conflicts are found.
+     * {@link RepoInitConflictsValidator}, and reports a warning if any conflicts are found.
      *
      * @param context analyser task context containing the feature to validate
      */
@@ -50,7 +50,7 @@ public class CheckRepoInitConflicts implements AnalyserTask {
     public void execute(final AnalyserTaskContext context) {
         Feature feature = context.getFeature();
 
-        RepoInitValidationReport report = RepoInitValidator.validateRepoinit(feature);
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
 
         if (!report.hasConflicts()) {
             return;

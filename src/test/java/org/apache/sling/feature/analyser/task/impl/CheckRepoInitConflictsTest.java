@@ -34,8 +34,8 @@ class CheckRepoInitConflictsTest {
     void testConstants() {
         final AnalyserTask task = new CheckRepoInitConflicts();
 
-        assertEquals("repoinit-conflict-validation", task.getId());
-        assertEquals("Repoinit Conflict Validation", task.getName());
+        assertEquals("repoinit-conflicts", task.getId());
+        assertEquals("Repoinit Conflicts check", task.getName());
     }
 
     @Test

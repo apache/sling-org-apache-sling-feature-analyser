@@ -106,7 +106,7 @@ This analyser requires additional configuration:
 
 Checks the syntax of all repoinit sections.
 
-## `repoinit-conflict-validation`
+## `repoinit-conflicts`
 
 Validates repoinit sections for potential conflicts and reports findings as warnings.
 

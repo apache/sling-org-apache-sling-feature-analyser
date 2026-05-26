@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class RepoInitValidatorTest {
+class RepoInitConflictsValidatorTest {
 
     @Test
     void shouldReturnNoIssuesWhenFeatureHasNoRepoinit() {
@@ -38,7 +38,7 @@ class RepoInitValidatorTest {
         when(feature.getExtensions()).thenReturn(mock(org.apache.sling.feature.Extensions.class));
         when(feature.getExtensions().getByName("repoinit")).thenReturn(null);
 
-        RepoInitValidationReport report = RepoInitValidator.validateRepoinit(feature);
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
 
         assertFalse(report.hasConflicts());
         assertTrue(report.generate().contains("No issues found"));
@@ -48,11 +48,11 @@ class RepoInitValidatorTest {
     void shouldReturnNoIssuesForCorrectRepoinit() {
         Extension extension =
                 textExtension("create path (sling:Folder) /apps/a/b\n" + "create path (sling:Folder) /apps/a/c\n"
-                        + "create path (sling:Folder) /apps/a/c/d(cq:ClientLibraryFolder)");
+                        + "create path (sling:Folder) /apps/a/c/d(sling:OrderedFolder)");
 
         Feature feature = featureWithExtension(extension);
 
-        RepoInitValidationReport report = RepoInitValidator.validateRepoinit(feature);
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
 
         assertFalse(report.hasConflicts());
         assertTrue(report.generate().contains("No issues found"));
@@ -60,12 +60,12 @@ class RepoInitValidatorTest {
 
     @Test
     void shouldReportConflictForSamePathDifferentType() {
-        Extension extension = textExtension("create path (sling:Folder) /apps/a/b(cq:ClientLibraryFolder)\n"
-                + "create path (sling:Folder) /apps/a/b");
+        Extension extension = textExtension(
+                "create path (sling:Folder) /apps/a/b(sling:OrderedFolder)\n" + "create path (sling:Folder) /apps/a/b");
 
         Feature feature = featureWithExtension(extension);
 
-        RepoInitValidationReport report = RepoInitValidator.validateRepoinit(feature);
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
         assertTrue(report.hasConflicts());
 
         List<String> result = report.generate();
@@ -76,14 +76,14 @@ class RepoInitValidatorTest {
 
     @Test
     void shouldReportMultipleConflicts() {
-        Extension extension = textExtension("create path (sling:Folder) /apps/a/b(cq:ClientLibraryFolder)\n"
+        Extension extension = textExtension("create path (sling:Folder) /apps/a/b(sling:OrderedFolder)\n"
                 + "create path (sling:Folder) /apps/a/b\n"
-                + "create path (sling:Folder) /apps/x/y(cq:ClientLibraryFolder)\n"
+                + "create path (sling:Folder) /apps/x/y(sling:OrderedFolder)\n"
                 + "create path (sling:Folder) /apps/x/y");
 
         Feature feature = featureWithExtension(extension);
 
-        RepoInitValidationReport report = RepoInitValidator.validateRepoinit(feature);
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
         assertTrue(report.hasConflicts());
 
         List<String> result = report.generate();
@@ -96,7 +96,7 @@ class RepoInitValidatorTest {
 
         Feature feature = featureWithExtension(extension);
 
-        RepoInitValidationReport report = RepoInitValidator.validateRepoinit(feature);
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
 
         assertFalse(report.hasConflicts());
         assertTrue(report.generate().contains("No issues found"));

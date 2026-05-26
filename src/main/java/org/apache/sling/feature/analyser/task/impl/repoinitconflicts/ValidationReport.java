@@ -27,7 +27,7 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.repoinit.parser.operations.CreatePath;
 
 @SuppressWarnings("java:S1874")
-public class RepoInitValidationReport {
+public class ValidationReport {
 
     private final Map<Feature, List<CreatePath[]>> conflicts = new LinkedHashMap<>();
 
