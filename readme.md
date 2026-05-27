@@ -106,6 +106,10 @@ This analyser requires additional configuration:
 
 Checks the syntax of all repoinit sections.
 
+## `repoinit-conflicts`
+
+Validates repoinit sections for potential conflicts and reports findings as warnings.
+
 ## `requirements-capabilities`
 
 Checks bundle requirements/capabilities for consistency and completeness.
