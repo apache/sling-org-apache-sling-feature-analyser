@@ -31,6 +31,10 @@ public class ValidationReport {
 
     private final Map<Feature, List<CreatePath[]>> conflicts = new LinkedHashMap<>();
 
+    public Map<Feature, List<CreatePath[]>> getConflicts() {
+        return conflicts;
+    }
+
     public void addConflicts(Feature feature, List<CreatePath[]> featureConflicts) {
         if (!featureConflicts.isEmpty()) {
             conflicts.put(feature, featureConflicts);
