@@ -89,6 +89,22 @@ class CheckRepoInitConflictsTest {
     }
 
     @Test
+    void shouldNotReportWarningWhenSimilarPaths() {
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+
+        Feature feature = featureWithExtension(textExtension("create path (sling:Folder) /con/tent/my/nestedpath\n"
+                + "create path (sling:Folder) /content/my/nested/path(cq:ClientLibraryFolder)"));
+
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+
+        CheckRepoInitConflicts task = new CheckRepoInitConflicts();
+        task.execute(ctx);
+
+        Mockito.verify(ctx).getFeature();
+        Mockito.verifyNoMoreInteractions(ctx);
+    }
+
+    @Test
     void shouldNotReportWarningWhenOddNumberOfPaths() {
         final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
 

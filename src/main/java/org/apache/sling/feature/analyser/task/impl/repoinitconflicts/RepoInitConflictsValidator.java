@@ -122,6 +122,6 @@ public class RepoInitConflictsValidator {
     private static String pathWithoutTypes(final CreatePath createPath) {
         return createPath.getDefinitions().stream()
                 .map(PathSegmentDefinition::getSegment)
-                .collect(Collectors.joining());
+                .collect(Collectors.joining("/"));
     }
 }
