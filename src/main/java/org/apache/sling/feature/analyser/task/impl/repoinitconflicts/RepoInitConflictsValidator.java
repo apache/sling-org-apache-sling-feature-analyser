@@ -95,19 +95,16 @@ public class RepoInitConflictsValidator {
         List<PathSegmentDefinition> aDefs = a.getDefinitions();
         List<PathSegmentDefinition> bDefs = b.getDefinitions();
 
-        // different depth → no conflict
-        if (aDefs.size() != bDefs.size()) {
+        String aWithoutTypes = pathWithoutTypes(a);
+        String bWithoutTypes = pathWithoutTypes(b);
+        if (!aWithoutTypes.equals(bWithoutTypes)) {
             return Collections.emptyList();
         }
+
         List<CreatePath[]> conflicts = new ArrayList<>();
         for (int i = 0; i < aDefs.size(); i++) {
             PathSegmentDefinition aSeg = aDefs.get(i);
             PathSegmentDefinition bSeg = bDefs.get(i);
-
-            // segments diverge → stop comparing this pair
-            if (!Objects.equals(aSeg.getSegment(), bSeg.getSegment())) {
-                return Collections.emptyList();
-            }
 
             // same segment but different type → conflict
             if (!Objects.equals(aSeg.getPrimaryType(), bSeg.getPrimaryType())) {
@@ -120,5 +117,11 @@ public class RepoInitConflictsValidator {
             }
         }
         return conflicts;
+    }
+
+    private static String pathWithoutTypes(final CreatePath createPath) {
+        return createPath.getDefinitions().stream()
+                .map(PathSegmentDefinition::getSegment)
+                .collect(Collectors.joining("/"));
     }
 }
