@@ -24,9 +24,9 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
 
 class CheckRepoInitConflictsTest {
 
@@ -40,148 +40,148 @@ class CheckRepoInitConflictsTest {
 
     @Test
     void shouldNotReportWarningWhenNoRepoinit() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
-        Feature feature = Mockito.mock(Feature.class);
-        org.apache.sling.feature.Extensions extensions = Mockito.mock(org.apache.sling.feature.Extensions.class);
+        Feature feature = mock(Feature.class);
+        org.apache.sling.feature.Extensions extensions = mock(org.apache.sling.feature.Extensions.class);
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
-        Mockito.when(feature.getExtensions()).thenReturn(extensions);
-        Mockito.when(extensions.getByName("repoinit")).thenReturn(null);
+        when(ctx.getFeature()).thenReturn(feature);
+        when(feature.getExtensions()).thenReturn(extensions);
+        when(extensions.getByName("repoinit")).thenReturn(null);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verifyNoMoreInteractions(ctx);
+        verify(ctx).getFeature();
+        verifyNoMoreInteractions(ctx);
     }
 
     @Test
     void shouldNotReportWarningWhenNoConflicts() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature = featureWithExtension(
                 textExtension("create path (sling:Folder) /apps/a/b\n" + "create path (sling:Folder) /apps/a/c"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verifyNoMoreInteractions(ctx);
+        verify(ctx).getFeature();
+        verifyNoMoreInteractions(ctx);
     }
 
     @Test
     void shouldNotReportWarningWhenDifferentTypesOnTheBeginning() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature = featureWithExtension(textExtension(
                 "create path (sling:Folder) /content/dam/a\n" + "create path (sling:OrderedFolder) /content/dam/b"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verifyNoMoreInteractions(ctx);
+        verify(ctx).getFeature();
+        verifyNoMoreInteractions(ctx);
     }
 
     @Test
     void shouldNotReportWarningWhenSimilarPaths() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature = featureWithExtension(textExtension("create path (sling:Folder) /con/tent/my/nestedpath\n"
                 + "create path (sling:Folder) /content/my/nested/path(cq:ClientLibraryFolder)"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verifyNoMoreInteractions(ctx);
+        verify(ctx).getFeature();
+        verifyNoMoreInteractions(ctx);
     }
 
     @Test
     void shouldNotReportWarningWhenOddNumberOfPaths() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature = featureWithExtension(textExtension("create path (sling:Folder) /content/dam/a\n"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verifyNoMoreInteractions(ctx);
+        verify(ctx).getFeature();
+        verifyNoMoreInteractions(ctx);
     }
 
     @Test
     void shouldReportWarningWhenConflictExists() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature =
                 featureWithExtension(textExtension("create path (sling:Folder) /apps/a/b(cq:ClientLibraryFolder)\n"
                         + "create path (sling:Folder) /apps/a/b"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verify(ctx).reportWarning(Mockito.contains("conflicting repoinit"));
-        Mockito.verify(ctx).reportWarning(Mockito.contains("Conflicting statement"));
+        verify(ctx).getFeature();
+        verify(ctx).reportWarning(contains("conflicting repoinit"));
+        verify(ctx).reportWarning(contains("Conflicting statement"));
     }
 
     @Test
     void shouldReportWarningWhenConflictExistsInTheFirstPrimaryType() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature = featureWithExtension(textExtension(
                 "create path (sling:Folder) /content/dam/a\n" + "create path (sling:OrderedFolder) /content/dam/a"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verify(ctx).reportWarning(Mockito.contains("conflicting repoinit"));
-        Mockito.verify(ctx).reportWarning(Mockito.contains("Conflicting statement"));
+        verify(ctx).getFeature();
+        verify(ctx).reportWarning(contains("conflicting repoinit"));
+        verify(ctx).reportWarning(contains("Conflicting statement"));
     }
 
     @Test
     void shouldIgnoreInvalidRepoinitSyntax() {
-        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
         Feature feature = featureWithExtension(textExtension("invalid $$$"));
 
-        Mockito.when(ctx.getFeature()).thenReturn(feature);
+        when(ctx.getFeature()).thenReturn(feature);
 
         CheckRepoInitConflicts task = new CheckRepoInitConflicts();
         task.execute(ctx);
 
-        Mockito.verify(ctx).getFeature();
-        Mockito.verifyNoMoreInteractions(ctx);
+        verify(ctx).getFeature();
+        verifyNoMoreInteractions(ctx);
     }
 
     private Extension textExtension(String text) {
-        Extension extension = Mockito.mock(Extension.class);
-        Mockito.when(extension.getType()).thenReturn(ExtensionType.TEXT);
-        Mockito.when(extension.getText()).thenReturn(text);
+        Extension extension = mock(Extension.class);
+        when(extension.getType()).thenReturn(ExtensionType.TEXT);
+        when(extension.getText()).thenReturn(text);
         return extension;
     }
 
     private Feature featureWithExtension(Extension extension) {
-        Feature feature = Mockito.mock(Feature.class);
-        org.apache.sling.feature.Extensions extensions = Mockito.mock(org.apache.sling.feature.Extensions.class);
+        Feature feature = mock(Feature.class);
+        org.apache.sling.feature.Extensions extensions = mock(org.apache.sling.feature.Extensions.class);
 
-        Mockito.when(feature.getExtensions()).thenReturn(extensions);
-        Mockito.when(extensions.getByName("repoinit")).thenReturn(extension);
+        when(feature.getExtensions()).thenReturn(extensions);
+        when(extensions.getByName("repoinit")).thenReturn(extension);
 
         return feature;
     }
