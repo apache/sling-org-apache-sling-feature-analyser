@@ -73,12 +73,60 @@ class CheckRepoInitConflictsTest {
     }
 
     @Test
+    void shouldNotReportWarningWhenDifferentTypesOnTheBeginning() {
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+
+        Feature feature = featureWithExtension(textExtension(
+                "create path (sling:Folder) /content/dam/a\n" + "create path (sling:OrderedFolder) /content/dam/b"));
+
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+
+        CheckRepoInitConflicts task = new CheckRepoInitConflicts();
+        task.execute(ctx);
+
+        Mockito.verify(ctx).getFeature();
+        Mockito.verifyNoMoreInteractions(ctx);
+    }
+
+    @Test
+    void shouldNotReportWarningWhenOddNumberOfPaths() {
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+
+        Feature feature = featureWithExtension(textExtension("create path (sling:Folder) /content/dam/a\n"));
+
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+
+        CheckRepoInitConflicts task = new CheckRepoInitConflicts();
+        task.execute(ctx);
+
+        Mockito.verify(ctx).getFeature();
+        Mockito.verifyNoMoreInteractions(ctx);
+    }
+
+    @Test
     void shouldReportWarningWhenConflictExists() {
         final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
 
         Feature feature =
                 featureWithExtension(textExtension("create path (sling:Folder) /apps/a/b(cq:ClientLibraryFolder)\n"
                         + "create path (sling:Folder) /apps/a/b"));
+
+        Mockito.when(ctx.getFeature()).thenReturn(feature);
+
+        CheckRepoInitConflicts task = new CheckRepoInitConflicts();
+        task.execute(ctx);
+
+        Mockito.verify(ctx).getFeature();
+        Mockito.verify(ctx).reportWarning(Mockito.contains("conflicting repoinit"));
+        Mockito.verify(ctx).reportWarning(Mockito.contains("Conflicting statement"));
+    }
+
+    @Test
+    void shouldReportWarningWhenConflictExistsInTheFirstPrimaryType() {
+        final AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+
+        Feature feature = featureWithExtension(textExtension(
+                "create path (sling:Folder) /content/dam/a\n" + "create path (sling:OrderedFolder) /content/dam/a"));
 
         Mockito.when(ctx.getFeature()).thenReturn(feature);
 
