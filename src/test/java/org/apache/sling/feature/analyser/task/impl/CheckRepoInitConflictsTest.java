@@ -18,12 +18,17 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
+import java.util.stream.Stream;
+
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.contains;
@@ -60,12 +65,12 @@ class CheckRepoInitConflictsTest {
         verifyNoMoreInteractions(ctx);
     }
 
-    @Test
-    void shouldNotReportWarningWhenNoConflicts() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("nonConflictingRepoinitStatements")
+    void shouldNotReportWarningWhenNoConflicts(String scenario, String repoinitText) {
         final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
 
-        Feature feature = featureWithExtension(
-                textExtension("create path (sling:Folder) /apps/a/b\n" + "create path (sling:Folder) /apps/a/c"));
+        Feature feature = featureWithExtension(textExtension(repoinitText));
 
         when(ctx.getFeature()).thenReturn(feature);
 
@@ -76,36 +81,19 @@ class CheckRepoInitConflictsTest {
         verifyNoMoreInteractions(ctx);
     }
 
-    @Test
-    void shouldNotReportWarningWhenDifferentTypesOnTheBeginning() {
-        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
-
-        Feature feature = featureWithExtension(textExtension(
-                "create path (sling:Folder) /content/dam/a\n" + "create path (sling:OrderedFolder) /content/dam/b"));
-
-        when(ctx.getFeature()).thenReturn(feature);
-
-        CheckRepoInitConflicts task = new CheckRepoInitConflicts();
-        task.execute(ctx);
-
-        verify(ctx).getFeature();
-        verifyNoMoreInteractions(ctx);
-    }
-
-    @Test
-    void shouldNotReportWarningWhenSimilarPaths() {
-        final AnalyserTaskContext ctx = mock(AnalyserTaskContext.class);
-
-        Feature feature = featureWithExtension(textExtension("create path (sling:Folder) /con/tent/my/nestedpath\n"
-                + "create path (sling:Folder) /content/my/nested/path(cq:ClientLibraryFolder)"));
-
-        when(ctx.getFeature()).thenReturn(feature);
-
-        CheckRepoInitConflicts task = new CheckRepoInitConflicts();
-        task.execute(ctx);
-
-        verify(ctx).getFeature();
-        verifyNoMoreInteractions(ctx);
+    private static Stream<Arguments> nonConflictingRepoinitStatements() {
+        return Stream.of(
+                Arguments.of(
+                        "shouldNotReportWarningWhenNoConflicts",
+                        "create path (sling:Folder) /apps/a/b\n" + "create path (sling:Folder) /apps/a/c"),
+                Arguments.of(
+                        "shouldNotReportWarningWhenDifferentTypesOnTheBeginning",
+                        "create path (sling:Folder) /content/dam/a\n"
+                                + "create path (sling:OrderedFolder) /content/dam/b"),
+                Arguments.of(
+                        "shouldNotReportWarningWhenSimilarPaths",
+                        "create path (sling:Folder) /con/tent/my/nestedpath\n"
+                                + "create path (sling:Folder) /content/my/nested/path(cq:ClientLibraryFolder)"));
     }
 
     @Test
