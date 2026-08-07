@@ -69,9 +69,10 @@ class RepoInitConflictsValidatorTest {
         assertTrue(report.hasConflicts());
 
         List<String> result = report.generate();
-        assertTrue(result.get(1).contains("Incorrect repoinit for feature"));
-        assertTrue(result.get(2).contains("Found 1 sets of conflicting repoinit statements"));
-        assertTrue(result.get(3).contains("/apps/a/b"));
+        assertTrue(result.get(1).contains("Repoinit validation conflict summary"));
+        assertTrue(result.get(1).contains("conflicts=1"));
+        assertTrue(result.get(2).contains("Conflicting statement"));
+        assertTrue(result.get(2).contains("/apps/a/b"));
     }
 
     @Test
@@ -87,7 +88,7 @@ class RepoInitConflictsValidatorTest {
         assertTrue(report.hasConflicts());
 
         List<String> result = report.generate();
-        assertTrue(result.get(2).contains("Found 2 sets of conflicting repoinit statements"));
+        assertTrue(result.get(1).contains("conflicts=2"));
     }
 
     @Test
