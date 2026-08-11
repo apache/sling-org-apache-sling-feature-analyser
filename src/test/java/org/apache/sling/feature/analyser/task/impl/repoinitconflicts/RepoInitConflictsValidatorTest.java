@@ -123,23 +123,3 @@ class RepoInitConflictsValidatorTest {
         return feature;
     }
 }
-
-/*
-    public static void main(String[] args) {
-        Extension extension = org.mockito.Mockito.mock(Extension.class);
-        org.mockito.Mockito.when(extension.getType()).thenReturn(ExtensionType.TEXT);
-        org.mockito.Mockito.when(extension.getText()).thenReturn(
-            "create path (sling:Folder) /apps/a/b(sling:OrderedFolder)\n" + "create path (sling:Folder) /apps/a/b");
-
-        Feature feature = org.mockito.Mockito.mock(Feature.class);
-        org.apache.sling.feature.Extensions extensions = org.mockito.Mockito.mock(org.apache.sling.feature.Extensions.class);
-        org.mockito.Mockito.when(feature.getExtensions()).thenReturn(extensions);
-        org.mockito.Mockito.when(extensions.getByName("repoinit")).thenReturn(extension);
-
-        ValidationReport report = RepoInitConflictsValidator.validate(feature);
-        String result = report.generate();
-        System.out.println("===START===");
-        System.out.println(result);
-        System.out.println("===END===");
-    }
-*/
