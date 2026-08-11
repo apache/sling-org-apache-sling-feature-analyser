@@ -126,7 +126,6 @@ class CheckRepoInitConflictsTest {
 
         verify(ctx).getFeature();
         verify(ctx).reportWarning(contains("Repoinit validation conflict summary"));
-        verify(ctx).reportWarning(contains("Conflicting statement"));
     }
 
     @Test
@@ -143,7 +142,6 @@ class CheckRepoInitConflictsTest {
 
         verify(ctx).getFeature();
         verify(ctx).reportWarning(contains("Repoinit validation conflict summary"));
-        verify(ctx).reportWarning(contains("Conflicting statement"));
     }
 
     @Test

@@ -18,13 +18,12 @@
  */
 package org.apache.sling.feature.analyser.task.impl.repoinitconflicts;
 
-import java.util.List;
-
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -68,11 +67,15 @@ class RepoInitConflictsValidatorTest {
         ValidationReport report = RepoInitConflictsValidator.validate(feature);
         assertTrue(report.hasConflicts());
 
-        List<String> result = report.generate();
-        assertTrue(result.get(1).contains("Repoinit validation conflict summary"));
-        assertTrue(result.get(1).contains("conflicts=1"));
-        assertTrue(result.get(2).contains("Conflicting statement"));
-        assertTrue(result.get(2).contains("/apps/a/b"));
+        String result = report.generate();
+        String[] lines = result.split("\n");
+        assertEquals(5, lines.length);
+        assertEquals("Repoinit validation results:", lines[0]);
+        assertTrue(lines[1].contains("Repoinit validation conflict summary"));
+        assertTrue(lines[1].contains("found 1 conflict(s)"));
+        assertTrue(lines[2].contains("Conflicting repoinit statement set 1/1:"));
+        assertTrue(lines[3].contains("/apps/a/b(sling:OrderedFolder)"));
+        assertTrue(lines[4].contains("/apps/a/b"));
     }
 
     @Test
@@ -87,8 +90,8 @@ class RepoInitConflictsValidatorTest {
         ValidationReport report = RepoInitConflictsValidator.validate(feature);
         assertTrue(report.hasConflicts());
 
-        List<String> result = report.generate();
-        assertTrue(result.get(1).contains("conflicts=2"));
+        String result = report.generate();
+        assertTrue(result.contains("2 conflict(s)"));
     }
 
     @Test
@@ -120,3 +123,23 @@ class RepoInitConflictsValidatorTest {
         return feature;
     }
 }
+
+/*
+    public static void main(String[] args) {
+        Extension extension = org.mockito.Mockito.mock(Extension.class);
+        org.mockito.Mockito.when(extension.getType()).thenReturn(ExtensionType.TEXT);
+        org.mockito.Mockito.when(extension.getText()).thenReturn(
+            "create path (sling:Folder) /apps/a/b(sling:OrderedFolder)\n" + "create path (sling:Folder) /apps/a/b");
+
+        Feature feature = org.mockito.Mockito.mock(Feature.class);
+        org.apache.sling.feature.Extensions extensions = org.mockito.Mockito.mock(org.apache.sling.feature.Extensions.class);
+        org.mockito.Mockito.when(feature.getExtensions()).thenReturn(extensions);
+        org.mockito.Mockito.when(extensions.getByName("repoinit")).thenReturn(extension);
+
+        ValidationReport report = RepoInitConflictsValidator.validate(feature);
+        String result = report.generate();
+        System.out.println("===START===");
+        System.out.println(result);
+        System.out.println("===END===");
+    }
+*/

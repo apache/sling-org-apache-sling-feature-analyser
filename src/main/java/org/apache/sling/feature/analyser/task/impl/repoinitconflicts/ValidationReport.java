@@ -46,7 +46,7 @@ public class ValidationReport {
         return !conflicts.isEmpty();
     }
 
-    public List<String> generate() {
+    public String generate() {
         List<String> messages = new ArrayList<>();
         messages.add("Repoinit validation results:");
 
@@ -57,18 +57,20 @@ public class ValidationReport {
                 Feature feature = entry.getKey();
                 List<CreatePath[]> featureConflicts = entry.getValue();
 
-                messages.add("Repoinit validation conflict summary feature=" + feature + " conflicts="
-                        + featureConflicts.size());
+                messages.add("Repoinit validation conflict summary for feature " + feature + ": found "
+                        + featureConflicts.size() + " conflict(s)");
 
+                int conflictIndex = 1;
                 for (CreatePath[] conflict : featureConflicts) {
-                    messages.add("Conflicting statement :\n  "
-                            + StringUtils.trim(conflict[0].asRepoInitString())
-                            + "\n"
-                            + StringUtils.trim(conflict[1].asRepoInitString()));
+                    messages.add("Conflicting repoinit statement set " + conflictIndex + "/" + featureConflicts.size()
+                            + ":");
+                    messages.add(StringUtils.trim(conflict[0].asRepoInitString()));
+                    messages.add(StringUtils.trim(conflict[1].asRepoInitString()));
+                    conflictIndex++;
                 }
             }
         }
 
-        return messages;
+        return String.join("\n", messages);
     }
 }
