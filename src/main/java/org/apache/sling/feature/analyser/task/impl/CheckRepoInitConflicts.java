@@ -18,8 +18,6 @@
  */
 package org.apache.sling.feature.analyser.task.impl;
 
-import java.util.List;
-
 import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
@@ -55,8 +53,6 @@ public class CheckRepoInitConflicts implements AnalyserTask {
         if (!report.hasConflicts()) {
             return;
         }
-
-        List<String> messages = report.generate();
-        messages.forEach(context::reportWarning);
+        context.reportWarning(report.generate());
     }
 }

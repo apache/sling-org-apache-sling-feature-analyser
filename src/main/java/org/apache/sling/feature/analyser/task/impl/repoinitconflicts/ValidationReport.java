@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.sling.feature.Feature;
 import org.apache.sling.repoinit.parser.operations.CreatePath;
 
@@ -45,7 +46,7 @@ public class ValidationReport {
         return !conflicts.isEmpty();
     }
 
-    public List<String> generate() {
+    public String generate() {
         List<String> messages = new ArrayList<>();
         messages.add("Repoinit validation results:");
 
@@ -56,18 +57,20 @@ public class ValidationReport {
                 Feature feature = entry.getKey();
                 List<CreatePath[]> featureConflicts = entry.getValue();
 
-                messages.add("Incorrect repoinit for feature " + feature);
-                messages.add("Found " + featureConflicts.size() + " sets of conflicting repoinit statements");
+                messages.add("Repoinit validation conflict summary for feature " + feature + ": found "
+                        + featureConflicts.size() + " conflict(s)");
 
+                int conflictIndex = 1;
                 for (CreatePath[] conflict : featureConflicts) {
-                    messages.add("Conflicting statement :\n  "
-                            + conflict[0].asRepoInitString()
-                            + "\n"
-                            + conflict[1].asRepoInitString());
+                    messages.add("Conflicting repoinit statement set " + conflictIndex + "/" + featureConflicts.size()
+                            + ":");
+                    messages.add(StringUtils.trim(conflict[0].asRepoInitString()));
+                    messages.add(StringUtils.trim(conflict[1].asRepoInitString()));
+                    conflictIndex++;
                 }
             }
         }
 
-        return messages;
+        return String.join("\n", messages);
     }
 }

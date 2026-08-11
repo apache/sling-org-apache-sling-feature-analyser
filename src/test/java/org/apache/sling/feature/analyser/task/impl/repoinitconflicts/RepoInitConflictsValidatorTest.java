@@ -18,13 +18,12 @@
  */
 package org.apache.sling.feature.analyser.task.impl.repoinitconflicts;
 
-import java.util.List;
-
 import org.apache.sling.feature.Extension;
 import org.apache.sling.feature.ExtensionType;
 import org.apache.sling.feature.Feature;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -68,10 +67,15 @@ class RepoInitConflictsValidatorTest {
         ValidationReport report = RepoInitConflictsValidator.validate(feature);
         assertTrue(report.hasConflicts());
 
-        List<String> result = report.generate();
-        assertTrue(result.get(1).contains("Incorrect repoinit for feature"));
-        assertTrue(result.get(2).contains("Found 1 sets of conflicting repoinit statements"));
-        assertTrue(result.get(3).contains("/apps/a/b"));
+        String result = report.generate();
+        String[] lines = result.split("\n");
+        assertEquals(5, lines.length);
+        assertEquals("Repoinit validation results:", lines[0]);
+        assertTrue(lines[1].contains("Repoinit validation conflict summary"));
+        assertTrue(lines[1].contains("found 1 conflict(s)"));
+        assertTrue(lines[2].contains("Conflicting repoinit statement set 1/1:"));
+        assertTrue(lines[3].contains("/apps/a/b(sling:OrderedFolder)"));
+        assertTrue(lines[4].contains("/apps/a/b"));
     }
 
     @Test
@@ -86,8 +90,8 @@ class RepoInitConflictsValidatorTest {
         ValidationReport report = RepoInitConflictsValidator.validate(feature);
         assertTrue(report.hasConflicts());
 
-        List<String> result = report.generate();
-        assertTrue(result.get(2).contains("Found 2 sets of conflicting repoinit statements"));
+        String result = report.generate();
+        assertTrue(result.contains("2 conflict(s)"));
     }
 
     @Test

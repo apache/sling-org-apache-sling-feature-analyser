@@ -125,8 +125,7 @@ class CheckRepoInitConflictsTest {
         task.execute(ctx);
 
         verify(ctx).getFeature();
-        verify(ctx).reportWarning(contains("conflicting repoinit"));
-        verify(ctx).reportWarning(contains("Conflicting statement"));
+        verify(ctx).reportWarning(contains("Repoinit validation conflict summary"));
     }
 
     @Test
@@ -142,8 +141,7 @@ class CheckRepoInitConflictsTest {
         task.execute(ctx);
 
         verify(ctx).getFeature();
-        verify(ctx).reportWarning(contains("conflicting repoinit"));
-        verify(ctx).reportWarning(contains("Conflicting statement"));
+        verify(ctx).reportWarning(contains("Repoinit validation conflict summary"));
     }
 
     @Test
