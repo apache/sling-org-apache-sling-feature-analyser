@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.StringJoiner;
-import java.util.jar.JarFile;
 
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
@@ -44,9 +43,9 @@ import org.apache.sling.feature.Feature;
 import org.apache.sling.feature.builder.HandlerContext;
 import org.apache.sling.feature.builder.PostProcessHandler;
 import org.apache.sling.feature.impl.felix.utils.resource.ResourceUtils;
-import org.apache.sling.feature.io.IOUtils;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.apache.sling.feature.scanner.impl.BundleDescriptorImpl;
 import org.apache.sling.feature.scanner.impl.SystemBundleDescriptor;
 import org.apache.sling.feature.scanner.spi.FrameworkScanner;
 import org.osgi.framework.Constants;
@@ -196,8 +195,8 @@ public class AnalyserMetaDataHandler implements PostProcessHandler {
 
     private Optional<JsonObject> getManifest(HandlerContext handlerContext, ArtifactId bundle) {
         URL url = handlerContext.getArtifactProvider().provide(bundle);
-        try (JarFile jarFile = IOUtils.getJarFileFromURL(url, false, null)) {
-            return Optional.ofNullable(jarFile.getManifest()).map(manifest -> {
+        try {
+            return Optional.ofNullable(BundleDescriptorImpl.getManifest(url)).map(manifest -> {
                 JsonObjectBuilder manifestBuilder = Json.createObjectBuilder();
                 manifest.getMainAttributes().entrySet().stream()
                         .forEachOrdered(

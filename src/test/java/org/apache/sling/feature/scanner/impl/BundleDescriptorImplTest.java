@@ -24,10 +24,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
@@ -39,6 +44,10 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.apache.sling.feature.scanner.Scanner;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
 
 import static org.junit.Assert.assertEquals;
@@ -91,6 +100,47 @@ public class BundleDescriptorImplTest {
                         .getValue("Manifest-Version"));
     }
 
+    @ParameterizedTest(name = "Java {0}")
+    @CsvSource({"8, 1.8, true", "21, 21, false"})
+    void testMultiReleaseBundle(int javaVersion, String requiredExecutionEnvironmentVersion, boolean importsSunMisc)
+            throws Exception {
+        String rootManifest = "Bundle-SymbolicName: test.bundle\n"
+                + "Bundle-Version: 1\n"
+                + "Bundle-ManifestVersion: 2\n"
+                + "Multi-Release: true\n"
+                + "Import-Package: java.util,sun.misc\n"
+                + "Require-Capability: osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=1.8))\"\n";
+        Map<String, String> entries = new HashMap<>();
+        for (int version : new int[] {11, 21}) {
+            entries.put(
+                    "META-INF/versions/" + version + "/OSGI-INF/MANIFEST.MF",
+                    "Manifest-Version: 1.0\n"
+                            + "Import-Package: java.util\n"
+                            + "Require-Capability: osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=" + version + "))\"\n");
+        }
+        URL jar = createBundle(rootManifest, entries).toURI().toURL();
+        BundleDescriptorImpl descriptor = new BundleDescriptorImpl(
+                new Artifact(ArtifactId.fromMvnId("test:multi-release:1")),
+                jar,
+                null,
+                BundleDescriptorImpl.getManifest(jar, javaVersion));
+
+        Assertions.assertEquals(
+                importsSunMisc,
+                descriptor.getImportedPackages().stream().anyMatch(p -> "sun.misc".equals(p.getName())));
+        Assertions.assertEquals(
+                "osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=" + requiredExecutionEnvironmentVersion + "))\"",
+                descriptor.getManifest().getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
+        Assertions.assertEquals(
+                "(&(osgi.ee=JavaSE)(version=" + requiredExecutionEnvironmentVersion + "))",
+                descriptor.getRequirements().stream()
+                        .filter(r -> "osgi.ee".equals(r.getNamespace()))
+                        .findFirst()
+                        .get()
+                        .getDirectives()
+                        .get("filter"));
+    }
+
     /**
      * for SLING-10182
      */
@@ -119,12 +169,21 @@ public class BundleDescriptorImplTest {
     }
 
     private File createBundle(String manifest) throws IOException {
+        return createBundle(manifest, Collections.emptyMap());
+    }
+
+    private File createBundle(String manifest, Map<String, String> entries) throws IOException {
         File f = Files.createTempFile("bundle", ".jar").toFile();
         f.deleteOnExit();
-        Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("UTF-8")));
+        Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes(StandardCharsets.UTF_8)));
         mf.getMainAttributes().putValue("Manifest-Version", "1.0");
-        JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf);
-        os.close();
+        try (JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf)) {
+            for (Map.Entry<String, String> entry : entries.entrySet()) {
+                os.putNextEntry(new JarEntry(entry.getKey()));
+                os.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
+                os.closeEntry();
+            }
+        }
         return f;
     }
 
