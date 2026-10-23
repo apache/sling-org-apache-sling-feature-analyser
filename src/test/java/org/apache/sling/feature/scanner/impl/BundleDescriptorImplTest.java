@@ -44,6 +44,7 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.apache.sling.feature.scanner.Scanner;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.osgi.framework.Constants;
@@ -101,8 +102,8 @@ public class BundleDescriptorImplTest {
 
     @ParameterizedTest(name = "Java {0}")
     @CsvSource({"8, 1.8, true", "21, 21, false"})
-    public void testMultiReleaseBundle(
-            int javaVersion, String requiredExecutionEnvironmentVersion, boolean importsSunMisc) throws Exception {
+    void testMultiReleaseBundle(int javaVersion, String requiredExecutionEnvironmentVersion, boolean importsSunMisc)
+            throws Exception {
         String rootManifest = "Bundle-SymbolicName: test.bundle\n"
                 + "Bundle-Version: 1\n"
                 + "Bundle-ManifestVersion: 2\n"
@@ -124,12 +125,13 @@ public class BundleDescriptorImplTest {
                 null,
                 BundleDescriptorImpl.getManifest(jar, javaVersion));
 
-        assertEquals(importsSunMisc, descriptor.getImportedPackages().stream().anyMatch(p -> "sun.misc"
-                .equals(p.getName())));
-        assertEquals(
+        Assertions.assertEquals(
+                importsSunMisc,
+                descriptor.getImportedPackages().stream().anyMatch(p -> "sun.misc".equals(p.getName())));
+        Assertions.assertEquals(
                 "osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=" + requiredExecutionEnvironmentVersion + "))\"",
                 descriptor.getManifest().getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
-        assertEquals(
+        Assertions.assertEquals(
                 "(&(osgi.ee=JavaSE)(version=" + requiredExecutionEnvironmentVersion + "))",
                 descriptor.getRequirements().stream()
                         .filter(r -> "osgi.ee".equals(r.getNamespace()))
