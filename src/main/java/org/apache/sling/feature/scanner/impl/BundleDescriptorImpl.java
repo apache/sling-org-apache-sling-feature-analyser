@@ -21,6 +21,7 @@ package org.apache.sling.feature.scanner.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -32,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
@@ -74,7 +76,20 @@ public class BundleDescriptorImpl extends BundleDescriptor {
     /** The corresponding artifact from the feature. */
     private final Artifact artifact;
 
-    static Manifest getManifest(URL file) throws IOException {
+    /**
+     * Read the bundle manifest, applying the OSGi multi-release JAR supplemental
+     * manifest for the running Java platform, if present.
+     * @param file The bundle URL
+     * @return The effective manifest, or {@code null} if there is no manifest
+     * @throws IOException If the manifest cannot be read
+     */
+    public static Manifest getManifest(URL file) throws IOException {
+        String javaVersion = System.getProperty("java.specification.version");
+        int majorVersion = Integer.parseInt(javaVersion.startsWith("1.") ? javaVersion.substring(2) : javaVersion);
+        return getManifest(file, majorVersion);
+    }
+
+    static Manifest getManifest(URL file, int javaVersion) throws IOException {
         Manifest manifest = null;
         try {
             if ("file".equals(file.getProtocol()) && new File(file.toURI()).isDirectory()) {
@@ -88,6 +103,31 @@ public class BundleDescriptorImpl extends BundleDescriptor {
             } else {
                 try (JarFile jarFile = IOUtils.getJarFileFromURL(file, true, null)) {
                     manifest = jarFile.getManifest();
+                    if (manifest != null
+                            && "true"
+                                    .equalsIgnoreCase(
+                                            manifest.getMainAttributes().getValue("Multi-Release"))) {
+                        // OSGi Core 3.2.8: use only the first supplemental manifest found,
+                        // and replace only Import-Package and Require-Capability.
+                        for (int version = javaVersion; version >= 9; version--) {
+                            JarEntry entry =
+                                    jarFile.getJarEntry("META-INF/versions/" + version + "/OSGI-INF/MANIFEST.MF");
+                            if (entry != null) {
+                                try (InputStream is = jarFile.getInputStream(entry)) {
+                                    Manifest supplemental = new Manifest(is);
+                                    for (String header :
+                                            new String[] {Constants.IMPORT_PACKAGE, Constants.REQUIRE_CAPABILITY}) {
+                                        String value =
+                                                supplemental.getMainAttributes().getValue(header);
+                                        if (value != null) {
+                                            manifest.getMainAttributes().putValue(header, value);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
                 } catch (final IOException ioe) {
                     // rethrow with more info
                     throw new IOException(file + " : " + ioe.getMessage(), ioe);

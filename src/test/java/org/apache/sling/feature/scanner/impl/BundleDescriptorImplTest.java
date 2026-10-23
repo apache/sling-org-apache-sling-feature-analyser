@@ -39,7 +39,11 @@ import org.apache.sling.feature.scanner.FeatureDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
 import org.apache.sling.feature.scanner.Scanner;
 import org.junit.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import reactor.core.Disposable;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -89,6 +93,32 @@ public class BundleDescriptorImplTest {
                         .getManifest()
                         .getMainAttributes()
                         .getValue("Manifest-Version"));
+    }
+
+    @ParameterizedTest(name = "Java {0}")
+    @CsvSource({"8, 1.8, true", "21, 21, false"})
+    public void testReactorMultiReleaseBundle(
+            int javaVersion, String requiredExecutionEnvironmentVersion, boolean importsSunMisc) throws Exception {
+        URL jar = Disposable.class.getProtectionDomain().getCodeSource().getLocation();
+        BundleDescriptorImpl descriptor = new BundleDescriptorImpl(
+                new Artifact(ArtifactId.fromMvnId("io.projectreactor:reactor-core:3.8.8")),
+                jar,
+                null,
+                BundleDescriptorImpl.getManifest(jar, javaVersion));
+
+        assertEquals(importsSunMisc, descriptor.getImportedPackages().stream().anyMatch(p -> "sun.misc"
+                .equals(p.getName())));
+        assertEquals(
+                "osgi.ee;filter:=\"(&(osgi.ee=JavaSE)(version=" + requiredExecutionEnvironmentVersion + "))\"",
+                descriptor.getManifest().getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
+        assertEquals(
+                "(&(osgi.ee=JavaSE)(version=" + requiredExecutionEnvironmentVersion + "))",
+                descriptor.getRequirements().stream()
+                        .filter(r -> "osgi.ee".equals(r.getNamespace()))
+                        .findFirst()
+                        .get()
+                        .getDirectives()
+                        .get("filter"));
     }
 
     /**
