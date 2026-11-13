@@ -21,6 +21,7 @@ package org.apache.sling.feature.analyser.task.impl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.jar.Manifest;
 
 import org.apache.sling.feature.Artifact;
 import org.apache.sling.feature.ArtifactId;
@@ -36,6 +37,7 @@ import org.apache.sling.feature.scanner.impl.FeatureDescriptorImpl;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.osgi.framework.Constants;
 
 import static org.junit.Assert.assertEquals;
 
@@ -155,6 +157,76 @@ public class CheckBundleExportsImportsTest {
 
         Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
         Mockito.verify(ctx, Mockito.never()).reportWarning(Mockito.anyString());
+    }
+
+    @Test
+    public void testBootDelegationMatches() throws IOException {
+        for (String bootDelegation : new String[] {
+            "org.foo.bar", "org.foo.*", "org.*", "*", " org.other , org.foo.bar ", "org.other, org.foo.*"
+        }) {
+            AnalyserTaskContext ctx = bootDelegationContext(bootDelegation, null);
+
+            new CheckBundleExportsImports().execute(ctx);
+
+            Mockito.verify(ctx, Mockito.never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+            Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
+        }
+    }
+
+    @Test
+    public void testBootDelegationDoesNotMatch() throws IOException {
+        for (String bootDelegation : new String[] {
+            null, "", " ", "org.other", "org.foo", "org.foo.bar.*", "org.fo.*", "org.foo.b*", "org.foo.bar.other"
+        }) {
+            AnalyserTaskContext ctx = bootDelegationContext(bootDelegation, null);
+
+            new CheckBundleExportsImports().execute(ctx);
+
+            Mockito.verify(ctx).reportArtifactError(Mockito.any(), Mockito.contains("org.foo.bar"));
+            Mockito.verify(ctx).reportError(Mockito.contains("marked as 'complete'"));
+        }
+    }
+
+    @Test
+    public void testBootDelegationWithExistingExport() throws IOException {
+        for (String exportVersion : new String[] {"1.0", "2.0"}) {
+            for (String bootDelegation : new String[] {"org.foo.*", "org.other"}) {
+                AnalyserTaskContext ctx = bootDelegationContext(bootDelegation, exportVersion);
+
+                new CheckBundleExportsImports().execute(ctx);
+
+                if ("1.0".equals(exportVersion) && "org.other".equals(bootDelegation)) {
+                    Mockito.verify(ctx).reportArtifactError(Mockito.any(), Mockito.contains("required version range"));
+                    Mockito.verify(ctx).reportError(Mockito.contains("marked as 'complete'"));
+                } else {
+                    Mockito.verify(ctx, Mockito.never()).reportArtifactError(Mockito.any(), Mockito.anyString());
+                    Mockito.verify(ctx, Mockito.never()).reportError(Mockito.anyString());
+                }
+            }
+        }
+    }
+
+    private AnalyserTaskContext bootDelegationContext(String bootDelegation, String exportVersion) throws IOException {
+        Feature f = new Feature(ArtifactId.fromMvnId("f:f:1"));
+        f.setComplete(true);
+        if (bootDelegation != null) {
+            f.getFrameworkProperties().put(Constants.FRAMEWORK_BOOTDELEGATION, bootDelegation);
+        }
+        FeatureDescriptor fd = new FeatureDescriptorImpl(f);
+        Manifest manifest = new Manifest();
+        manifest.getMainAttributes().putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
+        manifest.getMainAttributes().putValue(Constants.BUNDLE_SYMBOLICNAME, "test-bundle");
+        manifest.getMainAttributes().putValue(Constants.BUNDLE_VERSION, "1.0.0");
+        manifest.getMainAttributes().putValue(Constants.IMPORT_PACKAGE, "org.foo.bar;version=\"[2.0,3.0)\"");
+        if (exportVersion != null) {
+            manifest.getMainAttributes().putValue(Constants.EXPORT_PACKAGE, "org.foo.bar;version=" + exportVersion);
+        }
+        fd.getBundleDescriptors()
+                .add(new BundleDescriptorImpl(new Artifact(ArtifactId.fromMvnId("g:b:1")), null, manifest));
+        AnalyserTaskContext ctx = Mockito.mock(AnalyserTaskContext.class);
+        Mockito.when(ctx.getFeature()).thenReturn(f);
+        Mockito.when(ctx.getFeatureDescriptor()).thenReturn(fd);
+        return ctx;
     }
 
     private void fdAddBundle(FeatureDescriptor fd, String id, String file) throws IOException {

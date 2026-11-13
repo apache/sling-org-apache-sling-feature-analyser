@@ -30,6 +30,7 @@ import org.apache.sling.feature.analyser.task.AnalyserTask;
 import org.apache.sling.feature.analyser.task.AnalyserTaskContext;
 import org.apache.sling.feature.scanner.BundleDescriptor;
 import org.apache.sling.feature.scanner.PackageInfo;
+import org.osgi.framework.Constants;
 
 public class CheckBundleExportsImports implements AnalyserTask {
 
@@ -62,6 +63,10 @@ public class CheckBundleExportsImports implements AnalyserTask {
     public void execute(final AnalyserTaskContext ctx) throws IOException {
         // basic checks
         final Map<BundleDescriptor, Report> reports = new HashMap<>();
+        final String[] bootDelegation = ctx.getFeature()
+                .getFrameworkProperties()
+                .getOrDefault(Constants.FRAMEWORK_BOOTDELEGATION, "")
+                .split(",");
 
         final SortedMap<Integer, List<BundleDescriptor>> bundlesMap = new TreeMap<>();
         for (final BundleDescriptor bi : ctx.getFeatureDescriptor().getBundleDescriptors()) {
@@ -88,6 +93,9 @@ public class CheckBundleExportsImports implements AnalyserTask {
                 for (final PackageInfo pck : info.getImportedPackages()) {
                     final List<BundleDescriptor> candidates = getCandidates(exportingBundles, pck);
                     if (candidates.isEmpty()) {
+                        if (isBootDelegated(bootDelegation, pck.getName())) {
+                            continue;
+                        }
                         if (pck.isOptional()) {
                             getReport(reports, info).missingExportsForOptional.add(pck);
                         } else {
@@ -101,6 +109,9 @@ public class CheckBundleExportsImports implements AnalyserTask {
                             }
                         }
                         if (matchingCandidates.isEmpty()) {
+                            if (isBootDelegated(bootDelegation, pck.getName())) {
+                                continue;
+                            }
                             if (pck.isOptional()) {
                                 getReport(reports, info)
                                         .missingExportsForOptional
@@ -143,6 +154,18 @@ public class CheckBundleExportsImports implements AnalyserTask {
         if (errorReported && ctx.getFeature().isComplete()) {
             ctx.reportError(ctx.getFeature().getId().toMvnId() + " is marked as 'complete' but has missing imports.");
         }
+    }
+
+    private boolean isBootDelegated(final String[] bootDelegation, final String packageName) {
+        for (final String entry : bootDelegation) {
+            final String pattern = entry.trim();
+            if ("*".equals(pattern)
+                    || packageName.equals(pattern)
+                    || (pattern.endsWith(".*") && packageName.startsWith(pattern.substring(0, pattern.length() - 1)))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private String getPackageInfo(final List<PackageInfo> pcks, final boolean includeVersion) {
